@@ -9,6 +9,7 @@
     input { width: 100%; padding: 12px; font-size: 18px; border: 1px solid #ccc; border-radius: 6px; margin-top: 20px; }
     .card { padding: 30px; background: #f9f9f9; border-radius: 10px; text-align: center; }
     .def { font-size: 20px; color: #333; }
+    .ex { font-size: 14px; color: #666; margin-top: 10px; font-style: italic; }
     .msg { margin-top: 10px; font-size: 14px; color: #666; }
     .add { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
     .add input { margin-top: 10px; }
@@ -18,6 +19,7 @@
 <body>
   <div class="card">
     <div class="def" id="def">Loading...</div>
+    <div class="ex" id="ex"></div>
     <input type="text" id="ans" placeholder="Type the word..." autofocus>
     <div class="msg" id="msg"></div>
     <div class="msg">Press Escape to remove card</div>
@@ -26,6 +28,7 @@
     <h3>Add Card (Enter to save)</h3>
     <input type="text" id="word" placeholder="Word">
     <input type="text" id="defIn" placeholder="Definition">
+    <input type="text" id="exIn" placeholder="Example sentence">
   </div>
   <script type="module">
     import { FSRS, Rating, createEmptyCard } from 'https://unpkg.com/ts-fsrs/dist/index.mjs';
@@ -41,6 +44,7 @@
       if (!d.length) { def.textContent = 'Add cards below'; ans.style.display = 'none'; return; }
       cur = d[Math.floor(Math.random() * d.length)];
       def.textContent = cur.def;
+      ex.textContent = (cur.ex || '').replace(new RegExp(cur.word, 'gi'), '___');
       ans.value = ''; ans.style.display = ''; msg.textContent = '';
     }
 
@@ -60,10 +64,10 @@
       }
     };
 
-    defIn.onkeydown = e => {
+    exIn.onkeydown = e => {
       if (e.key !== 'Enter' || !word.value || !defIn.value) return;
-      cards.push({ word: word.value, def: defIn.value, card: createEmptyCard() });
-      save(); word.value = defIn.value = ''; next();
+      cards.push({ word: word.value, def: defIn.value, ex: exIn.value, card: createEmptyCard() });
+      save(); word.value = defIn.value = exIn.value = ''; word.focus(); next();
     };
 
     next();
