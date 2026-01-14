@@ -20,6 +20,7 @@
     <div class="def" id="def">Loading...</div>
     <input type="text" id="ans" placeholder="Type the word..." autofocus>
     <div class="msg" id="msg"></div>
+    <div class="msg">Press Escape to remove card</div>
   </div>
   <div class="add">
     <h3>Add Card (Enter to save)</h3>
@@ -35,8 +36,9 @@
     const due = () => cards.filter(c => new Date(c.card.due) <= new Date());
 
     function next() {
-      const d = due();
-      if (!d.length) { def.textContent = 'No cards due!'; ans.style.display = 'none'; return; }
+      let d = due();
+      if (!d.length) d = cards;
+      if (!d.length) { def.textContent = 'Add cards below'; ans.style.display = 'none'; return; }
       cur = d[Math.floor(Math.random() * d.length)];
       def.textContent = cur.def;
       ans.value = ''; ans.style.display = ''; msg.textContent = '';
@@ -49,6 +51,13 @@
       cur.card = correct ? res[Rating.Good].card : res[Rating.Again].card;
       msg.textContent = correct ? '✓ Correct!' : `✗ "${cur.word}"`;
       save(); setTimeout(next, correct ? 500 : 1500);
+    };
+
+    ans.onkeyup = e => {
+      if (e.key === 'Escape' && cur) {
+        cards.splice(cards.indexOf(cur), 1);
+        save(); next();
+      }
     };
 
     defIn.onkeydown = e => {
