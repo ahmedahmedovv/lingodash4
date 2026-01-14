@@ -3,7 +3,7 @@
 Minimal FSRS-based flashcard app for language learning.
 
 ## Stack
-- Single HTML file (~130 lines)
+- Single HTML file (~150 lines)
 - Vanilla JS with ES modules
 - FSRS algorithm via CDN (ts-fsrs)
 - LocalStorage for persistence
@@ -18,29 +18,43 @@ Minimal FSRS-based flashcard app for language learning.
 - Daily streak tracking
 - Session limit: 51 cards per session
 - JSON import/export
-- Keyboard-only navigation
-- Confirm before delete
+- No keyboard shortcuts - all via buttons/icons
+
+## Pages
+1. **Main** - Study cards
+2. **Options** - Add cards, Import/Export, Clear all
+3. **Edit** - Edit current card
 
 ## UI
-- 900px max-width card
-- Warm neutral color palette (#fafaf9, #1c1917, #78716c)
+- 900px max-width
+- Warm neutral palette (#fafaf9, #1c1917, #78716c)
 - Pill badges for example & definition
-- Stats bar with bottom border
-- Frosted glass card (backdrop blur)
-- Fade animation on card transitions (150ms)
-- Larger input field with rounded corners (20px)
-- Subtle placeholder text
+- Progress bar with session counter
+- Frosted glass cards (backdrop blur)
+- Fade animation on transitions
+- Shake animation on wrong answer
+- SVG icon buttons (top right)
 
-## Keyboard Shortcuts
-- `Enter` - Submit answer / Next card
-- `Escape` - Delete current card (with confirm)
-- `Tab` - Toggle options panel
-- `Ctrl+E` - Export JSON
+## Icons (Top Right)
+- **Trash** - Delete current card
+- **Pencil** - Edit current card
+- **Gear** - Options page
+
+## Buttons
+### Options Page
+- Add - add new card
+- Import - import JSON
+- Export - download JSON
+- Clear - delete all cards
+
+### Edit Page
+- Save - save changes
+- Cancel - discard changes
 
 ## Card Flow
 1. See example (word as `___`) + definition + first letter hint
 2. Type answer → Enter
-3. See result with word highlighted in color → Enter for next
+3. See result with word highlighted → Enter for next
 
 ## Data Structure
 ```js
