@@ -122,8 +122,8 @@
 
     
     
-    const toggleOpts = () => { opts.style.display = opts.style.display === 'none' ? 'block' : 'none'; if (opts.style.display === 'block') word.focus(); else ans.focus(); };
-    const toggleEdit = () => { editPage.style.display = editPage.style.display === 'none' ? 'block' : 'none'; if (editPage.style.display === 'block') editWord.focus(); else ans.focus(); };
+    const toggleOpts = () => { opts.style.display = opts.style.display === 'block' ? 'none' : 'block'; if (opts.style.display === 'block') word.focus(); else ans.focus(); };
+    const toggleEdit = () => { editPage.style.display = editPage.style.display === 'block' ? 'none' : 'block'; if (editPage.style.display === 'block') editWord.focus(); else ans.focus(); };
 
     icon.onclick = toggleOpts;
     iconEdit.onclick = () => { if(cur){ editWord.value=cur.word; editDef.value=cur.def; editEx.value=cur.ex||''; toggleEdit(); } };
