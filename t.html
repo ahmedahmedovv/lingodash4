@@ -1,0 +1,97 @@
+  <script type="module">
+    import { FSRS, Rating, createEmptyCard } from 'https://unpkg.com/ts-fsrs/dist/index.mjs';
+    const f = new FSRS(), cards = JSON.parse(localStorage.getItem('fc') || '[]');
+    let cur = null, idx = 0, answered = false, sessionCount = 0, streakData = JSON.parse(localStorage.getItem('streak') || '{"count":0,"date":""}');
+
+    const save = () => localStorage.setItem('fc', JSON.stringify(cards));
+    const due = () => cards.filter(c => new Date(c.card.due) <= new Date());
+    const today = () => new Date().toDateString();
+    const updateStreak = () => {
+      if (streakData.date !== today()) {
+        streakData = { count: streakData.date === new Date(Date.now()-86400000).toDateString() ? streakData.count + 1 : 1, date: today() };
+        localStorage.setItem('streak', JSON.stringify(streakData));
+      }
+    };
+
+    function next() {
+      if (sessionCount >= 51) { def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; return; }
+      let d = due();
+      dueCount.textContent = d.length + ' due';
+      streak.textContent = streakData.count + ' day streak';
+      if (!d.length) d = cards;
+      if (!d.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; return; }
+      sessionCount++;
+      idx = Math.floor(Math.random() * d.length);
+      cur = d[idx];
+      counter.textContent = sessionCount + ' / 51';
+      progressBar.style.width = (sessionCount / 51 * 100) + '%';
+      def.textContent = cur.def + (cur.word ? ' (' + cur.word[0].toLowerCase() + ')' : '');
+      const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      ex.textContent = (cur.ex || '').replace(esc ? new RegExp(esc, 'gi') : '', '___');
+      ans.value = ''; ans.style.display = '';
+      answered = false; ans.focus();
+    }
+
+    ans.onkeydown = e => {
+      if (e.key !== 'Enter' || !cur) return;
+      if (answered) { card.classList.add('fade'); setTimeout(() => { next(); card.classList.remove('fade'); }, 150); return; }
+      const correct = ans.value.trim().toLowerCase() === (cur.word || '').toLowerCase();
+      const res = f.repeat(cur.card, new Date());
+      cur.card = correct ? res[Rating.Good].card : res[Rating.Again].card;
+            if (!correct) { card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 400); }
+      const esc2 = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const color = correct ? '#22c55e' : '#ef4444';
+      ex.innerHTML = esc2 ? (cur.ex || '').replace(new RegExp(`(${esc2})`, 'gi'), `<span style="color:${color};font-weight:600">$1</span>`) : (cur.ex || '');
+      answered = true; updateStreak(); save();
+    };
+
+    
+    
+    const toggleOpts = () => { opts.style.display = opts.style.display === 'none' ? 'block' : 'none'; if (opts.style.display === 'block') word.focus(); else ans.focus(); };
+    const toggleEdit = () => { editPage.style.display = editPage.style.display === 'none' ? 'block' : 'none'; if (editPage.style.display === 'block') editWord.focus(); else ans.focus(); };
+
+    icon.onclick = toggleOpts;
+    iconEdit.onclick = () => { if(cur){ editWord.value=cur.word; editDef.value=cur.def; editEx.value=cur.ex||''; toggleEdit(); } };
+    iconDel.onclick = () => { const i = cards.indexOf(cur); if(cur && i >= 0 && confirm('Delete "'+cur.word+'"?')){ cards.splice(i,1); save(); next(); } };
+
+    btnAdd.onclick = () => {
+      if (!word.value || !defIn.value) return;
+      cards.push({ word: word.value, def: defIn.value, ex: exIn.value, card: createEmptyCard() });
+      save(); word.value = defIn.value = exIn.value = ''; toggleOpts(); next();
+    };
+
+    btnSave.onclick = () => {
+      if (!editWord.value || !editDef.value || !cur) return;
+      cur.word = editWord.value; cur.def = editDef.value; cur.ex = editEx.value;
+      save(); toggleEdit(); next();
+    };
+
+    btnCancel.onclick = toggleEdit;
+
+    btnImport.onclick = () => {
+      if (!csv.value.trim()) return;
+      try {
+        const imported = JSON.parse(csv.value);
+        if (!Array.isArray(imported)) { alert('Invalid format'); return; }
+        const valid = imported.filter(c => c && c.word && c.def && c.card);
+        if (!valid.length) { alert('No valid cards found'); return; }
+        valid.forEach(c => cards.push(c));
+        save(); csv.value = ''; toggleOpts(); next();
+        alert('Imported ' + valid.length + ' cards');
+      } catch { alert('Invalid JSON'); }
+    };
+
+    btnExport.onclick = () => {
+      const blob = new Blob([JSON.stringify(cards, null, 2)], {type: 'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'flashcards.json'; a.click();
+    };
+
+    btnClear.onclick = () => {
+      if (confirm('Delete all ' + cards.length + ' cards?')) {
+        cards.length = 0; save(); toggleOpts(); next();
+      }
+    };
+
+    
+    next();
+  </script>
