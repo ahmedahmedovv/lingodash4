@@ -31,7 +31,7 @@
     <input type="text" id="word" placeholder="Word">
     <input type="text" id="defIn" placeholder="Definition">
     <input type="text" id="exIn" placeholder="Example sentence">
-    <textarea id="csv" placeholder="Paste CSV here, press Enter" style="width:100%;height:60px;margin-top:10px;font-size:12px;"></textarea>
+    <textarea id="csv" placeholder="Paste JSON here, press Enter" style="width:100%;height:60px;margin-top:10px;font-size:12px;"></textarea>
   </div>
   <script type="module">
     import { FSRS, Rating, createEmptyCard } from 'https://unpkg.com/ts-fsrs/dist/index.mjs';
@@ -47,7 +47,8 @@
       if (!d.length) { def.textContent = 'Add cards below'; ans.style.display = 'none'; return; }
       cur = d[Math.floor(Math.random() * d.length)];
       def.textContent = cur.def;
-      ex.textContent = (cur.ex || '').replace(new RegExp(cur.word, 'gi'), '___');
+      const esc = cur.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      ex.textContent = (cur.ex || '').replace(new RegExp(esc, 'gi'), '___');
       ans.value = ''; ans.style.display = ''; msg.textContent = '';
     }
 
