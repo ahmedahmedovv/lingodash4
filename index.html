@@ -10,7 +10,7 @@
     input, textarea { width: 100%; padding: 22px 28px; font-size: 20px; border: 1px solid #e0e0e0; border-radius: 20px; margin-top: 28px; outline: none; transition: all 0.3s; }
     input::placeholder, textarea::placeholder { color: #c0c0c0; }
     input:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
-    .card { padding: 80px 60px; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-radius: 32px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.08); transition: opacity 0.3s; }
+    .card { padding: 80px 60px; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-radius: 32px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.08); transition: opacity 0.15s; }
     .card.fade { opacity: 0; }
     .stats { display: flex; justify-content: space-between; font-size: 13px; color: #9ca3af; margin-bottom: 32px; }
     .ex { font-size: 22px; color: #1a1a1a; line-height: 1.7; }
@@ -74,12 +74,15 @@
 
     ans.onkeydown = e => {
       if (e.key !== 'Enter' || !cur) return;
-      if (answered) { card.classList.add('fade'); setTimeout(() => { next(); card.classList.remove('fade'); }, 300); return; }
+      if (answered) { card.classList.add('fade'); setTimeout(() => { next(); card.classList.remove('fade'); }, 150); return; }
       const correct = ans.value.trim().toLowerCase() === cur.word.toLowerCase();
       const res = f.repeat(cur.card, new Date());
       cur.card = correct ? res[Rating.Good].card : res[Rating.Again].card;
       msg.textContent = correct ? '✓ Correct!' : `✗ "${cur.word}"`;
       msg.className = 'msg ' + (correct ? 'correct' : 'wrong');
+      const esc = cur.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const color = correct ? '#22c55e' : '#ef4444';
+      ex.innerHTML = (cur.ex || '').replace(new RegExp(`(${esc})`, 'gi'), `<span style="color:${color};font-weight:600">$1</span>`);
       answered = true; updateStreak(); save();
     };
 
