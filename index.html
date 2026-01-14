@@ -40,7 +40,7 @@
   <script type="module">
     import { FSRS, Rating, createEmptyCard } from 'https://unpkg.com/ts-fsrs/dist/index.mjs';
     const f = new FSRS(), cards = JSON.parse(localStorage.getItem('fc') || '[]');
-    let cur = null, idx = 0, answered = false, streakData = JSON.parse(localStorage.getItem('streak') || '{"count":0,"date":""}');
+    let cur = null, idx = 0, answered = false, sessionCount = 0, streakData = JSON.parse(localStorage.getItem('streak') || '{"count":0,"date":""}');
 
     const save = () => localStorage.setItem('fc', JSON.stringify(cards));
     const due = () => cards.filter(c => new Date(c.card.due) <= new Date());
@@ -53,14 +53,16 @@
     };
 
     function next() {
+      if (sessionCount >= 51) { def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; return; }
       let d = due();
       dueCount.textContent = d.length + ' due';
       streak.textContent = streakData.count + ' day streak';
       if (!d.length) d = cards;
       if (!d.length) { def.textContent = 'Add cards below'; ans.style.display = 'none'; counter.textContent = ''; return; }
+      sessionCount++;
       idx = Math.floor(Math.random() * d.length);
       cur = d[idx];
-      counter.textContent = (idx + 1) + ' / ' + cards.length;
+      counter.textContent = sessionCount + ' / 51';
       def.textContent = cur.def + ' (' + cur.word[0].toLowerCase() + ')';
       const esc = cur.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.textContent = (cur.ex || '').replace(new RegExp(esc, 'gi'), '___');
