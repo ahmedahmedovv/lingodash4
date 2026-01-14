@@ -101,8 +101,8 @@
       counter.textContent = sessionCount + ' / 51';
       progressBar.style.width = (sessionCount / 51 * 100) + '%';
       def.textContent = cur.def + (cur.word ? ' (' + cur.word[0].toLowerCase() + ')' : '');
-      const esc = cur.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      ex.textContent = (cur.ex || '').replace(new RegExp(esc, 'gi'), '___');
+      const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      ex.textContent = (cur.ex || '').replace(esc ? new RegExp(esc, 'gi') : '', '___');
       ans.value = ''; ans.style.display = '';
       answered = false; ans.focus();
     }
@@ -110,13 +110,13 @@
     ans.onkeydown = e => {
       if (e.key !== 'Enter' || !cur) return;
       if (answered) { card.classList.add('fade'); setTimeout(() => { next(); card.classList.remove('fade'); }, 150); return; }
-      const correct = ans.value.trim().toLowerCase() === cur.word.toLowerCase();
+      const correct = ans.value.trim().toLowerCase() === (cur.word || '').toLowerCase();
       const res = f.repeat(cur.card, new Date());
       cur.card = correct ? res[Rating.Good].card : res[Rating.Again].card;
             if (!correct) { card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 400); }
-      const esc = cur.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const esc2 = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const color = correct ? '#22c55e' : '#ef4444';
-      ex.innerHTML = (cur.ex || '').replace(new RegExp(`(${esc})`, 'gi'), `<span style="color:${color};font-weight:600">$1</span>`);
+      ex.innerHTML = esc2 ? (cur.ex || '').replace(new RegExp(`(${esc2})`, 'gi'), `<span style="color:${color};font-weight:600">$1</span>`) : (cur.ex || '');
       answered = true; updateStreak(); save();
     };
 
@@ -147,6 +147,7 @@
       if (!csv.value.trim()) return;
       try {
         const imported = JSON.parse(csv.value);
+        if (!Array.isArray(imported)) { alert('Invalid format'); return; }
         imported.forEach(c => cards.push(c));
         save(); csv.value = ''; toggleOpts(); next();
         alert('Imported ' + imported.length + ' cards');
