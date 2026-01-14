@@ -40,7 +40,7 @@
   <script type="module">
     import { FSRS, Rating, createEmptyCard } from 'https://unpkg.com/ts-fsrs/dist/index.mjs';
     const f = new FSRS(), cards = JSON.parse(localStorage.getItem('fc') || '[]');
-    let cur = null, idx = 0, streakData = JSON.parse(localStorage.getItem('streak') || '{"count":0,"date":""}');
+    let cur = null, idx = 0, answered = false, streakData = JSON.parse(localStorage.getItem('streak') || '{"count":0,"date":""}');
 
     const save = () => localStorage.setItem('fc', JSON.stringify(cards));
     const due = () => cards.filter(c => new Date(c.card.due) <= new Date());
@@ -61,21 +61,22 @@
       idx = Math.floor(Math.random() * d.length);
       cur = d[idx];
       counter.textContent = (idx + 1) + ' / ' + cards.length;
-      def.textContent = cur.def;
+      def.textContent = cur.def + ' (' + cur.word[0].toLowerCase() + ')';
       const esc = cur.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.textContent = (cur.ex || '').replace(new RegExp(esc, 'gi'), '___');
       ans.value = ''; ans.style.display = ''; msg.textContent = ''; msg.className = 'msg';
-      ans.focus();
+      answered = false; ans.focus();
     }
 
     ans.onkeydown = e => {
       if (e.key !== 'Enter' || !cur) return;
+      if (answered) { next(); return; }
       const correct = ans.value.trim().toLowerCase() === cur.word.toLowerCase();
       const res = f.repeat(cur.card, new Date());
       cur.card = correct ? res[Rating.Good].card : res[Rating.Again].card;
       msg.textContent = correct ? '✓ Correct!' : `✗ "${cur.word}"`;
       msg.className = 'msg ' + (correct ? 'correct' : 'wrong');
-      updateStreak(); save(); setTimeout(next, correct ? 500 : 1500);
+      answered = true; updateStreak(); save();
     };
 
     ans.onkeyup = e => {
