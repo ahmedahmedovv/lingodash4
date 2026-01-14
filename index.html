@@ -36,9 +36,9 @@
   </style>
 </head>
 <body>
-  <svg class="icon" id="iconDel" viewBox="0 0 24 24" fill="none" stroke="#78716c" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-  <svg class="icon" id="iconEdit" viewBox="0 0 24 24" fill="none" stroke="#78716c" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-  <svg class="icon" id="icon" viewBox="0 0 24 24" fill="none" stroke="#78716c" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg>
+  <svg class="icon" id="iconDel" viewBox="0 0 24 24" fill="none" stroke="#78716c" stroke-width="2" role="button" aria-label="Delete card"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+  <svg class="icon" id="iconEdit" viewBox="0 0 24 24" fill="none" stroke="#78716c" stroke-width="2" role="button" aria-label="Edit card"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  <svg class="icon" id="icon" viewBox="0 0 24 24" fill="none" stroke="#78716c" stroke-width="2" role="button" aria-label="Options"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg>
   <div class="card" id="card">
     <div class="stats"><span id="counter">-</span><span id="streak">-</span><span id="dueCount">-</span></div>
     <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
@@ -148,9 +148,11 @@
       try {
         const imported = JSON.parse(csv.value);
         if (!Array.isArray(imported)) { alert('Invalid format'); return; }
-        imported.forEach(c => cards.push(c));
+        const valid = imported.filter(c => c && c.word && c.def && c.card);
+        if (!valid.length) { alert('No valid cards found'); return; }
+        valid.forEach(c => cards.push(c));
         save(); csv.value = ''; toggleOpts(); next();
-        alert('Imported ' + imported.length + ' cards');
+        alert('Imported ' + valid.length + ' cards');
       } catch { alert('Invalid JSON'); }
     };
 

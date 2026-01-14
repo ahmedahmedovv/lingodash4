@@ -3,7 +3,7 @@
 Minimal FSRS-based flashcard app for language learning.
 
 ## Stack
-- Single HTML file (~150 lines)
+- Single HTML file (~170 lines)
 - Vanilla JS with ES modules
 - FSRS algorithm via CDN (ts-fsrs)
 - LocalStorage for persistence
@@ -17,7 +17,7 @@ Minimal FSRS-based flashcard app for language learning.
 - Word revealed with color after answer (green/red)
 - Daily streak tracking
 - Session limit: 51 cards per session
-- JSON import/export
+- JSON import/export with validation
 - No keyboard shortcuts - all via buttons/icons
 
 ## Pages
@@ -43,7 +43,7 @@ Minimal FSRS-based flashcard app for language learning.
 ## Buttons
 ### Options Page
 - Add - add new card
-- Import - import JSON
+- Import - import JSON (with validation)
 - Export - download JSON
 - Clear - delete all cards
 
@@ -59,12 +59,23 @@ Minimal FSRS-based flashcard app for language learning.
 ## Data Structure
 ```js
 {
-  word: "string",
-  def: "definition",
-  ex: "example sentence",
-  card: { /* FSRS card state */ }
+  word: "string",      // required
+  def: "definition",   // required
+  ex: "example",       // optional
+  card: { /* FSRS */ } // required
 }
 ```
+
+## Accessibility
+- SVG icons have `role="button"` and `aria-label`
+- Screen reader compatible
+
+## Bug Fixes Applied
+- Empty word handling (prevents crashes)
+- Import validates array format
+- Import validates card structure (word, def, card required)
+- Delete checks card exists before splice
+- Empty textarea check before import
 
 ## Files
 - `index.html` - Complete app
