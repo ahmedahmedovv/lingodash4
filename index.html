@@ -6,23 +6,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; font-family: 'Inter', sans-serif; }
-    body { max-width: 900px; margin: 0 auto; padding: 60px 30px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: #fafafa; }
-    input, textarea { width: 100%; padding: 18px 22px; font-size: 18px; border: 1px solid #e0e0e0; border-radius: 12px; margin-top: 20px; outline: none; transition: all 0.2s; }
-    input:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-    .card { padding: 60px 50px; background: #fff; border-radius: 20px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
-    .stats { display: flex; justify-content: space-between; font-size: 13px; color: #9ca3af; margin-bottom: 24px; }
-    .ex { font-size: 22px; color: #1a1a1a; line-height: 1.6; }
-    .def { font-size: 18px; color: #1a1a1a; line-height: 1.6; margin-top: 16px; font-style: italic; }
-    .msg { margin-top: 16px; font-size: 15px; color: #9ca3af; }
+    body { max-width: 900px; margin: 0 auto; padding: 80px 40px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%); }
+    input, textarea { width: 100%; padding: 22px 28px; font-size: 20px; border: 1px solid #e0e0e0; border-radius: 20px; margin-top: 28px; outline: none; transition: all 0.3s; }
+    input::placeholder, textarea::placeholder { color: #c0c0c0; }
+    input:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+    .card { padding: 80px 60px; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-radius: 32px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.08); transition: opacity 0.3s; }
+    .card.fade { opacity: 0; }
+    .stats { display: flex; justify-content: space-between; font-size: 13px; color: #9ca3af; margin-bottom: 32px; }
+    .ex { font-size: 22px; color: #1a1a1a; line-height: 1.7; }
+    .def { font-size: 18px; color: #1a1a1a; line-height: 1.7; margin-top: 24px; font-style: italic; }
+    .msg { margin-top: 24px; font-size: 15px; color: #9ca3af; }
     .msg.correct { color: #22c55e; }
     .msg.wrong { color: #ef4444; }
-    .add { margin-top: 40px; padding: 30px; background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-    .add input, .add textarea { margin-top: 14px; }
+    .add { margin-top: 48px; padding: 36px; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-radius: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
+    .add input, .add textarea { margin-top: 16px; }
     h3 { font-size: 14px; color: #9ca3af; font-weight: 500; letter-spacing: 0.02em; }
   </style>
 </head>
 <body>
-  <div class="card">
+  <div class="card" id="card">
     <div class="stats"><span id="counter">-</span><span id="streak">-</span><span id="dueCount">-</span></div>
     <div class="ex" id="ex"></div>
     <div class="def" id="def">Loading...</div>
@@ -72,7 +74,7 @@
 
     ans.onkeydown = e => {
       if (e.key !== 'Enter' || !cur) return;
-      if (answered) { next(); return; }
+      if (answered) { card.classList.add('fade'); setTimeout(() => { next(); card.classList.remove('fade'); }, 300); return; }
       const correct = ans.value.trim().toLowerCase() === cur.word.toLowerCase();
       const res = f.repeat(cur.card, new Date());
       cur.card = correct ? res[Rating.Good].card : res[Rating.Again].card;
