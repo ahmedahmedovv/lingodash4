@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <title>Flashcards</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; font-family: system-ui; }
-    body { max-width: 400px; margin: 50px auto; padding: 20px; }
-    input { width: 100%; padding: 12px; font-size: 18px; border: 1px solid #ccc; border-radius: 6px; margin-top: 20px; }
-    .card { padding: 30px; background: #f9f9f9; border-radius: 10px; text-align: center; }
-    .def { font-size: 20px; color: #333; }
-    .ex { font-size: 14px; color: #666; margin-top: 10px; font-style: italic; }
-    .msg { margin-top: 10px; font-size: 14px; color: #666; }
-    .add { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
-    .add input { margin-top: 10px; }
-    h3 { font-size: 14px; color: #999; }
+    * { box-sizing: border-box; margin: 0; font-family: 'Inter', sans-serif; }
+    body { max-width: 500px; margin: 0 auto; padding: 40px 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: #fafafa; }
+    input, textarea { width: 100%; padding: 14px 18px; font-size: 16px; border: 1px solid #e0e0e0; border-radius: 10px; margin-top: 16px; outline: none; transition: all 0.2s; }
+    input:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .card { padding: 48px 40px; background: #fff; border-radius: 16px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+    .def { font-size: 22px; color: #1a1a1a; font-weight: 500; line-height: 1.5; }
+    .ex { font-size: 15px; color: #6b7280; margin-top: 12px; font-style: italic; line-height: 1.6; }
+    .msg { margin-top: 12px; font-size: 13px; color: #9ca3af; }
+    .add { margin-top: 32px; padding: 24px; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+    .add input, .add textarea { margin-top: 12px; }
+    h3 { font-size: 13px; color: #9ca3af; font-weight: 500; letter-spacing: 0.02em; }
   </style>
 </head>
 <body>
