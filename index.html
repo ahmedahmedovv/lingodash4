@@ -22,10 +22,10 @@
     <div class="ex" id="ex"></div>
     <input type="text" id="ans" placeholder="Type the word..." autofocus>
     <div class="msg" id="msg"></div>
-    <div class="msg">Escape=delete | Ctrl+E=export</div>
+    <div class="msg">Escape=delete | Tab=options</div>
   </div>
-  <div class="add">
-    <h3>Add Card (Enter to save)</h3>
+  <div class="add" id="opts" style="display:none">
+    <h3>Add Card (Enter) | Export (Ctrl+E)</h3>
     <input type="text" id="word" placeholder="Word">
     <input type="text" id="defIn" placeholder="Definition">
     <input type="text" id="exIn" placeholder="Example sentence">
@@ -92,6 +92,11 @@
     };
 
     document.onkeydown = e => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        opts.style.display = opts.style.display === 'none' ? 'block' : 'none';
+        if (opts.style.display === 'block') word.focus(); else ans.focus();
+      }
       if (e.ctrlKey && e.key === 'e') {
         e.preventDefault();
         const header = 'word,definition,example,due,stability,difficulty,elapsed_days,scheduled_days,reps,lapses,last_review';
