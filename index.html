@@ -6,21 +6,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; font-family: 'Inter', sans-serif; }
-    body { max-width: 900px; margin: 0 auto; padding: 80px 40px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%); }
+    body { max-width: 900px; margin: 0 auto; padding: 80px 40px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: #fafaf9; }
     input, textarea { width: 100%; padding: 22px 28px; font-size: 20px; border: 1px solid #e0e0e0; border-radius: 20px; margin-top: 28px; outline: none; transition: all 0.3s; }
-    input::placeholder, textarea::placeholder { color: #c0c0c0; }
-    input:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+    input::placeholder, textarea::placeholder { color: #a8a29e; }
+    input:focus, textarea:focus { border-color: #78716c; box-shadow: 0 0 0 4px rgba(120,113,108,0.1); }
     .card { padding: 80px 60px; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-radius: 32px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.08); transition: opacity 0.15s; }
     .card.fade { opacity: 0; }
-    .stats { display: flex; justify-content: space-between; font-size: 13px; color: #9ca3af; margin-bottom: 32px; }
-    .ex { font-size: 22px; color: #1a1a1a; line-height: 1.7; }
-    .def { font-size: 18px; color: #1a1a1a; line-height: 1.7; margin-top: 24px; font-style: italic; }
-    .msg { margin-top: 24px; font-size: 15px; color: #9ca3af; }
+    .stats { display: flex; justify-content: space-between; font-size: 13px; color: #78716c; margin-bottom: 32px; }
+    .ex { font-size: 22px; color: #1c1917; line-height: 1.7; }
+    .def { font-size: 18px; color: #44403c; line-height: 1.7; margin-top: 24px; font-style: italic; }
+    .msg { margin-top: 24px; font-size: 15px; color: #78716c; }
     .msg.correct { color: #22c55e; }
     .msg.wrong { color: #ef4444; }
     .add { margin-top: 48px; padding: 36px; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-radius: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
     .add input, .add textarea { margin-top: 16px; }
-    h3 { font-size: 14px; color: #9ca3af; font-weight: 500; letter-spacing: 0.02em; }
+    h3 { font-size: 14px; color: #78716c; font-weight: 500; letter-spacing: 0.02em; }
   </style>
 </head>
 <body>
