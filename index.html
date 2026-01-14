@@ -6,13 +6,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; font-family: 'Inter', sans-serif; }
-    body { max-width: 700px; margin: 0 auto; padding: 60px 30px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: #fafafa; }
+    body { max-width: 900px; margin: 0 auto; padding: 60px 30px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: #fafafa; }
     input, textarea { width: 100%; padding: 18px 22px; font-size: 18px; border: 1px solid #e0e0e0; border-radius: 12px; margin-top: 20px; outline: none; transition: all 0.2s; }
     input:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
     .card { padding: 60px 50px; background: #fff; border-radius: 20px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
     .stats { display: flex; justify-content: space-between; font-size: 13px; color: #9ca3af; margin-bottom: 24px; }
-    .def { font-size: 26px; color: #1a1a1a; font-weight: 500; line-height: 1.5; }
-    .ex { font-size: 17px; color: #6b7280; margin-top: 16px; font-style: italic; line-height: 1.6; }
+    .ex { font-size: 22px; color: #1a1a1a; line-height: 1.6; }
+    .def { font-size: 18px; color: #1a1a1a; line-height: 1.6; margin-top: 16px; font-style: italic; }
     .msg { margin-top: 16px; font-size: 15px; color: #9ca3af; }
     .msg.correct { color: #22c55e; }
     .msg.wrong { color: #ef4444; }
@@ -24,8 +24,8 @@
 <body>
   <div class="card">
     <div class="stats"><span id="counter">-</span><span id="streak">-</span><span id="dueCount">-</span></div>
-    <div class="def" id="def">Loading...</div>
     <div class="ex" id="ex"></div>
+    <div class="def" id="def">Loading...</div>
     <input type="text" id="ans" placeholder="Type the word..." autofocus>
     <div class="msg" id="msg"></div>
     <div class="msg">Escape=delete | Tab=options</div>
