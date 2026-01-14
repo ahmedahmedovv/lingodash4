@@ -70,21 +70,12 @@
     csv.onkeydown = e => {
       if (e.key !== 'Enter' || !csv.value.trim()) return;
       e.preventDefault();
-      const lines = csv.value.trim().split('\n').slice(1);
-      lines.forEach(line => {
-        const c = line.split(',');
-        if (c.length < 19) return;
-        cards.push({
-          word: c[2], def: c[3], ex: c[4],
-          card: {
-            due: new Date(c[8]), stability: +c[13], difficulty: +c[14],
-            elapsed_days: +c[15], scheduled_days: +c[16], reps: +c[17],
-            lapses: +c[18], state: +c[17] > 0 ? 2 : 0, last_review: new Date(c[19])
-          }
-        });
-      });
-      save(); csv.value = ''; next();
-      alert('Imported ' + lines.length + ' cards');
+      try {
+        const imported = JSON.parse(csv.value);
+        imported.forEach(c => cards.push(c));
+        save(); csv.value = ''; next();
+        alert('Imported ' + imported.length + ' cards');
+      } catch { alert('Invalid JSON'); }
     };
 
     exIn.onkeydown = e => {
@@ -101,10 +92,8 @@
       }
       if (e.ctrlKey && e.key === 'e') {
         e.preventDefault();
-        const header = 'word,definition,example,due,stability,difficulty,elapsed_days,scheduled_days,reps,lapses,last_review';
-        const rows = cards.map(c => [c.word, c.def, c.ex, c.card.due, c.card.stability, c.card.difficulty, c.card.elapsed_days, c.card.scheduled_days, c.card.reps, c.card.lapses, c.card.last_review].join(','));
-        const blob = new Blob([header + '\n' + rows.join('\n')], {type: 'text/csv'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'flashcards.csv'; a.click();
+        const blob = new Blob([JSON.stringify(cards, null, 2)], {type: 'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'flashcards.json'; a.click();
       }
     };
 
