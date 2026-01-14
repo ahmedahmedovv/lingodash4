@@ -6,20 +6,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; font-family: 'Inter', sans-serif; }
-    body { max-width: 500px; margin: 0 auto; padding: 40px 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: #fafafa; }
-    input, textarea { width: 100%; padding: 14px 18px; font-size: 16px; border: 1px solid #e0e0e0; border-radius: 10px; margin-top: 16px; outline: none; transition: all 0.2s; }
+    body { max-width: 700px; margin: 0 auto; padding: 60px 30px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: #fafafa; }
+    input, textarea { width: 100%; padding: 18px 22px; font-size: 18px; border: 1px solid #e0e0e0; border-radius: 12px; margin-top: 20px; outline: none; transition: all 0.2s; }
     input:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-    .card { padding: 48px 40px; background: #fff; border-radius: 16px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
-    .def { font-size: 22px; color: #1a1a1a; font-weight: 500; line-height: 1.5; }
-    .ex { font-size: 15px; color: #6b7280; margin-top: 12px; font-style: italic; line-height: 1.6; }
-    .msg { margin-top: 12px; font-size: 13px; color: #9ca3af; }
-    .add { margin-top: 32px; padding: 24px; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-    .add input, .add textarea { margin-top: 12px; }
-    h3 { font-size: 13px; color: #9ca3af; font-weight: 500; letter-spacing: 0.02em; }
+    .card { padding: 60px 50px; background: #fff; border-radius: 20px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+    .stats { display: flex; justify-content: space-between; font-size: 13px; color: #9ca3af; margin-bottom: 24px; }
+    .def { font-size: 26px; color: #1a1a1a; font-weight: 500; line-height: 1.5; }
+    .ex { font-size: 17px; color: #6b7280; margin-top: 16px; font-style: italic; line-height: 1.6; }
+    .msg { margin-top: 16px; font-size: 15px; color: #9ca3af; }
+    .msg.correct { color: #22c55e; }
+    .msg.wrong { color: #ef4444; }
+    .add { margin-top: 40px; padding: 30px; background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+    .add input, .add textarea { margin-top: 14px; }
+    h3 { font-size: 14px; color: #9ca3af; font-weight: 500; letter-spacing: 0.02em; }
   </style>
 </head>
 <body>
   <div class="card">
+    <div class="stats"><span id="counter">-</span><span id="streak">-</span><span id="dueCount">-</span></div>
     <div class="def" id="def">Loading...</div>
     <div class="ex" id="ex"></div>
     <input type="text" id="ans" placeholder="Type the word..." autofocus>
@@ -36,20 +40,32 @@
   <script type="module">
     import { FSRS, Rating, createEmptyCard } from 'https://unpkg.com/ts-fsrs/dist/index.mjs';
     const f = new FSRS(), cards = JSON.parse(localStorage.getItem('fc') || '[]');
-    let cur = null;
+    let cur = null, idx = 0, streakData = JSON.parse(localStorage.getItem('streak') || '{"count":0,"date":""}');
 
     const save = () => localStorage.setItem('fc', JSON.stringify(cards));
     const due = () => cards.filter(c => new Date(c.card.due) <= new Date());
+    const today = () => new Date().toDateString();
+    const updateStreak = () => {
+      if (streakData.date !== today()) {
+        streakData = { count: streakData.date === new Date(Date.now()-86400000).toDateString() ? streakData.count + 1 : 1, date: today() };
+        localStorage.setItem('streak', JSON.stringify(streakData));
+      }
+    };
 
     function next() {
       let d = due();
+      dueCount.textContent = d.length + ' due';
+      streak.textContent = streakData.count + ' day streak';
       if (!d.length) d = cards;
-      if (!d.length) { def.textContent = 'Add cards below'; ans.style.display = 'none'; return; }
-      cur = d[Math.floor(Math.random() * d.length)];
+      if (!d.length) { def.textContent = 'Add cards below'; ans.style.display = 'none'; counter.textContent = ''; return; }
+      idx = Math.floor(Math.random() * d.length);
+      cur = d[idx];
+      counter.textContent = (idx + 1) + ' / ' + cards.length;
       def.textContent = cur.def;
       const esc = cur.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.textContent = (cur.ex || '').replace(new RegExp(esc, 'gi'), '___');
-      ans.value = ''; ans.style.display = ''; msg.textContent = '';
+      ans.value = ''; ans.style.display = ''; msg.textContent = ''; msg.className = 'msg';
+      ans.focus();
     }
 
     ans.onkeydown = e => {
@@ -58,11 +74,12 @@
       const res = f.repeat(cur.card, new Date());
       cur.card = correct ? res[Rating.Good].card : res[Rating.Again].card;
       msg.textContent = correct ? '✓ Correct!' : `✗ "${cur.word}"`;
-      save(); setTimeout(next, correct ? 500 : 1500);
+      msg.className = 'msg ' + (correct ? 'correct' : 'wrong');
+      updateStreak(); save(); setTimeout(next, correct ? 500 : 1500);
     };
 
     ans.onkeyup = e => {
-      if (e.key === 'Escape' && cur) {
+      if (e.key === 'Escape' && cur && confirm('Delete "' + cur.word + '"?')) {
         cards.splice(cards.indexOf(cur), 1);
         save(); next();
       }
