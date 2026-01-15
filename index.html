@@ -10,62 +10,126 @@
     input, textarea { width: 100%; padding: 16px 20px; font-size: 16px; background: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 8px; margin-top: 12px; outline: none; transition: border-color 0.2s; }
     input::placeholder, textarea::placeholder { color: #64748b; }
     input:focus, textarea:focus { border-color: #60a5fa; }
-    .card { padding: 48px 40px; background: #1e293b; border: 1px solid #334155; border-radius: 12px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.3); transition: opacity 0.15s; display: flex; flex-direction: column; align-items: center; }
+    input.error, textarea.error { border-color: #ef4444; }
+    .error-msg { font-size: 12px; color: #ef4444; margin-top: 6px; display: none; }
+    .error-msg.show { display: block; }
+    .card { position: relative; padding: 48px 40px; background: #1e293b; border: 1px solid #334155; border-radius: 12px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.3); transition: opacity 0.15s; display: flex; flex-direction: column; align-items: center; }
     .card.fade { opacity: 0; }
     .card.shake { animation: shake 0.4s; }
     @keyframes shake { 20%,60% { transform: translateX(-8px); } 40%,80% { transform: translateX(8px); } }
     .card input { text-align: center; background: #0f172a; }
+    .card-icons { position: absolute; top: 16px; right: 16px; display: flex; gap: 12px; }
+    .card-icon { width: 18px; height: 18px; cursor: pointer; opacity: 0.3; transition: opacity 0.2s; }
+    .card-icon:hover { opacity: 1; }
     .stats { width: 100%; display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #334155; text-transform: uppercase; letter-spacing: 0.5px; }
     .progress { width: 100%; height: 2px; background: #334155; border-radius: 2px; margin-bottom: 32px; }
     .progress-bar { height: 100%; background: #60a5fa; border-radius: 2px; transition: width 0.3s; }
     .ex { display: inline-block; font-size: 20px; color: #f8fafc; line-height: 1.8; background: #0f172a; padding: 20px 24px; border-radius: 8px; border: 1px solid #334155; }
     .def { font-size: 15px; color: #94a3b8; line-height: 1.6; margin-top: 16px; font-style: italic; padding: 12px 0; }
-    .opts { display: none; position: fixed; inset: 0; background: #0f172a; padding: 80px 40px; overflow: auto; }
-    .opts-inner { max-width: 480px; margin: 0 auto; position: relative; }
-    .opts input, .opts textarea { text-align: left; }
-    .opts textarea { height: 100px; resize: none; }
-    .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .modal { display: none; position: fixed; inset: 0; background: #0f172a; padding: 40px; overflow: auto; z-index: 100; }
+    .modal-inner { max-width: 480px; margin: 0 auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #334155; }
+    .modal-title { font-size: 18px; font-weight: 500; color: #f8fafc; }
+    .modal-close { width: 24px; height: 24px; cursor: pointer; opacity: 0.5; transition: opacity 0.2s; }
+    .modal-close:hover { opacity: 1; }
+    .modal input, .modal textarea { text-align: left; }
+    .modal textarea { height: 100px; resize: none; }
+    .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
     .btn { display: flex; align-items: center; gap: 8px; padding: 12px 20px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; cursor: pointer; font-size: 14px; color: #94a3b8; transition: all 0.2s; }
     .btn:hover { border-color: #60a5fa; color: #f8fafc; }
     .btn:hover svg { stroke: #60a5fa; }
     .btn svg { width: 16px; height: 16px; stroke: #64748b; transition: stroke 0.2s; }
-    .sep { width: 100%; height: 1px; background: #334155; margin: 28px 0; }
+    .btn-primary { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+    .btn-primary svg { stroke: #fff; }
+    .btn-primary:hover { background: #2563eb; border-color: #2563eb; color: #fff; }
+    .btn-primary:hover svg { stroke: #fff; }
+    .btn-danger { border-color: #dc2626; color: #dc2626; }
+    .btn-danger svg { stroke: #dc2626; }
+    .btn-danger:hover { background: #dc2626; border-color: #dc2626; color: #fff; }
+    .btn-danger:hover svg { stroke: #fff; }
+    .btn-danger:disabled { opacity: 0.4; cursor: not-allowed; background: transparent; color: #dc2626; }
+    .btn-danger:disabled svg { stroke: #dc2626; }
+    .section { margin-top: 48px; }
+    .section:first-of-type { margin-top: 0; }
+    .section-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .danger-zone { margin-top: 48px; padding: 24px; background: rgba(220, 38, 38, 0.1); border: 1px solid #dc2626; border-radius: 8px; }
+    .danger-zone .section-label { color: #dc2626; margin-bottom: 12px; }
+    .danger-zone p { font-size: 13px; color: #94a3b8; margin-bottom: 16px; line-height: 1.5; }
+    .danger-zone input { background: #0f172a; margin-top: 0; margin-bottom: 12px; }
     .icon { position: fixed; top: 24px; right: 24px; width: 20px; height: 20px; cursor: pointer; opacity: 0.4; transition: opacity 0.2s; z-index: 10; }
     .icon:hover { opacity: 1; }
-    .close-btn { position: absolute; top: -48px; right: 0; width: 24px; height: 24px; cursor: pointer; opacity: 0.4; transition: opacity 0.2s; }
-    .close-btn:hover { opacity: 1; }
-    .section-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; margin-top: 8px; }
-    .btn-danger:hover { border-color: #ef4444; color: #ef4444; }
-    .btn-danger:hover svg { stroke: #ef4444; }
   </style>
 </head>
 <body>
-  <svg class="icon" id="icon" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Options"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg>
+  <svg class="icon" id="icon" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Settings"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg>
   <div class="card" id="card">
+    <div class="card-icons">
+      <svg class="card-icon" id="addIcon" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Add card"><path d="M12 5v14M5 12h14"/></svg>
+      <svg class="card-icon" id="editIcon" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Edit card"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </div>
     <div class="stats"><span id="counter">-</span><span id="streak">-</span><span id="dueCount">-</span></div>
     <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
     <div class="ex" id="ex"></div>
     <div class="def" id="def">Loading...</div>
     <input type="text" id="ans" autofocus>
   </div>
-  <div class="opts" id="opts">
-    <div class="opts-inner">
-      <svg class="close-btn" id="closeOpts" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Close"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      <div class="section-label">Card Details</div>
-      <input type="text" id="word" placeholder="Word">
-      <input type="text" id="defIn" placeholder="Definition">
-      <input type="text" id="exIn" placeholder="Example (optional)">
+
+  <!-- Edit Modal -->
+  <div class="modal" id="editModal">
+    <div class="modal-inner">
+      <div class="modal-header">
+        <span class="modal-title" id="editModalTitle">Edit Card</span>
+        <svg class="modal-close" id="closeEdit" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Close"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+      <div class="section">
+        <div class="section-label">Word</div>
+        <input type="text" id="word" placeholder="Enter word">
+        <div class="error-msg" id="wordError">Word is required</div>
+      </div>
+      <div class="section">
+        <div class="section-label">Definition</div>
+        <input type="text" id="defIn" placeholder="Enter definition">
+        <div class="error-msg" id="defError">Definition is required</div>
+      </div>
+      <div class="section">
+        <div class="section-label">Example (optional)</div>
+        <input type="text" id="exIn" placeholder="Sentence using the word">
+      </div>
       <div class="btns">
-        <div class="btn" id="btnSave"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2zM17 21v-8H7v8M7 3v5h8"/></svg><span id="btnSaveText">Add</span></div>
+        <div class="btn btn-primary" id="btnSave"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2zM17 21v-8H7v8M7 3v5h8"/></svg><span id="btnSaveText">Save</span></div>
         <div class="btn btn-danger" id="btnDel" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>Delete</div>
       </div>
-      <div class="sep"></div>
-      <div class="section-label">Bulk Operations</div>
-      <textarea id="csv" placeholder="Paste JSON array to import..."></textarea>
-      <div class="btns">
-        <div class="btn" id="btnImport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Import</div>
-        <div class="btn" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export</div>
-        <div class="btn btn-danger" id="btnClear"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Clear All</div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-inner">
+      <div class="modal-header">
+        <span class="modal-title">Settings</span>
+        <svg class="modal-close" id="closeSettings" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Close"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+      <div class="section">
+        <div class="section-label">Import Cards</div>
+        <textarea id="csv" placeholder="Paste JSON array to import..."></textarea>
+        <div class="btns">
+          <div class="btn" id="btnImport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Import</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Export Cards</div>
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Download all cards as a JSON file.</p>
+        <div class="btns">
+          <div class="btn" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export</div>
+        </div>
+      </div>
+      <div class="danger-zone">
+        <div class="section-label">Danger Zone</div>
+        <p>This will permanently delete all your flashcards. Type <strong style="color:#f8fafc">DELETE</strong> to confirm.</p>
+        <input type="text" id="confirmDelete" placeholder="Type DELETE to confirm">
+        <div class="btns">
+          <div class="btn btn-danger" id="btnClear" disabled><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Clear All Cards</div>
+        </div>
       </div>
     </div>
   </div>
@@ -85,13 +149,36 @@
       }
     };
 
+    const clearValidation = () => {
+      word.classList.remove('error');
+      defIn.classList.remove('error');
+      wordError.classList.remove('show');
+      defError.classList.remove('show');
+    };
+
+    const validateForm = () => {
+      let valid = true;
+      clearValidation();
+      if (!word.value.trim()) {
+        word.classList.add('error');
+        wordError.classList.add('show');
+        valid = false;
+      }
+      if (!defIn.value.trim()) {
+        defIn.classList.add('error');
+        defError.classList.add('show');
+        valid = false;
+      }
+      return valid;
+    };
+
     function next() {
-      if (sessionCount >= 51) { def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; return; }
+      if (sessionCount >= 51) { def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none'; return; }
       let d = due();
       dueCount.textContent = d.length + ' due';
       streak.textContent = streakData.count + ' day streak';
       if (!d.length) d = cards;
-      if (!d.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; return; }
+      if (!d.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; editIcon.style.display = 'none'; cur = null; return; }
       sessionCount++;
       cur = d[Math.floor(Math.random() * d.length)];
       counter.textContent = sessionCount + ' / 51';
@@ -100,6 +187,7 @@
       const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.textContent = (cur.ex || '').replace(esc ? new RegExp(esc, 'gi') : '', '___');
       ans.value = ''; ans.style.display = ''; answered = false; ans.focus();
+      editIcon.style.display = 'block';
     }
 
     ans.onkeydown = e => {
@@ -113,31 +201,67 @@
       answered = true; updateStreak(); save();
     };
 
-    const toggle = (edit = false) => {
+    const openEditModal = (edit = false) => {
       editMode = edit;
-      opts.style.display = opts.style.display === 'block' ? 'none' : 'block';
+      editModal.style.display = 'block';
+      editModalTitle.textContent = edit ? 'Edit Card' : 'Add New Card';
       btnSaveText.textContent = edit ? 'Save' : 'Add';
       btnDel.style.display = edit && cur ? 'flex' : 'none';
-      if (opts.style.display === 'block') {
-        if (edit && cur) { word.value = cur.word; defIn.value = cur.def; exIn.value = cur.ex || ''; }
-        else { word.value = defIn.value = exIn.value = ''; }
-        word.focus();
-      } else ans.focus();
+      clearValidation();
+      if (edit && cur) {
+        word.value = cur.word;
+        defIn.value = cur.def;
+        exIn.value = cur.ex || '';
+      } else {
+        word.value = defIn.value = exIn.value = '';
+      }
+      word.focus();
     };
 
-    icon.onclick = () => toggle(!!cur);
-    closeOpts.onclick = () => toggle();
+    const closeEditModal = () => {
+      editModal.style.display = 'none';
+      clearValidation();
+      ans.focus();
+    };
+
+    const openSettingsModal = () => {
+      settingsModal.style.display = 'block';
+      confirmDelete.value = '';
+      btnClear.disabled = true;
+      csv.value = '';
+    };
+
+    const closeSettingsModal = () => {
+      settingsModal.style.display = 'none';
+      ans.focus();
+    };
+
+    // Event listeners
+    icon.onclick = openSettingsModal;
+    closeSettings.onclick = closeSettingsModal;
+    closeEdit.onclick = closeEditModal;
+    editIcon.onclick = () => openEditModal(true);
+    addIcon.onclick = () => openEditModal(false);
+
+    // Enable Clear All button only when "DELETE" is typed
+    confirmDelete.oninput = () => {
+      btnClear.disabled = confirmDelete.value !== 'DELETE';
+    };
+
+    // Clear validation on input
+    word.oninput = () => { word.classList.remove('error'); wordError.classList.remove('show'); };
+    defIn.oninput = () => { defIn.classList.remove('error'); defError.classList.remove('show'); };
 
     btnSave.onclick = () => {
-      if (!word.value || !defIn.value) return;
-      if (editMode && cur) { cur.word = word.value; cur.def = defIn.value; cur.ex = exIn.value; }
-      else cards.push({ word: word.value, def: defIn.value, ex: exIn.value, card: createEmptyCard() });
-      save(); toggle(); next();
+      if (!validateForm()) return;
+      if (editMode && cur) { cur.word = word.value.trim(); cur.def = defIn.value.trim(); cur.ex = exIn.value.trim(); }
+      else cards.push({ word: word.value.trim(), def: defIn.value.trim(), ex: exIn.value.trim(), card: createEmptyCard() });
+      save(); closeEditModal(); next();
     };
 
     btnDel.onclick = () => {
       const i = cards.indexOf(cur);
-      if (cur && i >= 0 && confirm('Delete "' + cur.word + '"?')) { cards.splice(i, 1); save(); toggle(); next(); }
+      if (cur && i >= 0 && confirm('Delete "' + cur.word + '"?')) { cards.splice(i, 1); save(); closeEditModal(); next(); }
     };
 
     btnImport.onclick = () => {
@@ -148,7 +272,7 @@
         const valid = imported.filter(c => c && c.word && c.def && c.card);
         if (!valid.length) { alert('No valid cards'); return; }
         valid.forEach(c => cards.push(c));
-        save(); csv.value = ''; toggle(); next();
+        save(); csv.value = ''; closeSettingsModal(); next();
         alert('Imported ' + valid.length + ' cards');
       } catch { alert('Invalid JSON'); }
     };
@@ -159,7 +283,15 @@
       a.download = 'flashcards.json'; a.click();
     };
 
-    btnClear.onclick = () => { if (confirm('Delete all ' + cards.length + ' cards?')) { cards.length = 0; save(); toggle(); next(); } };
+    btnClear.onclick = () => {
+      if (confirmDelete.value === 'DELETE') {
+        cards.length = 0;
+        save();
+        closeSettingsModal();
+        next();
+        alert('All cards have been deleted.');
+      }
+    };
 
     next();
   </script>
