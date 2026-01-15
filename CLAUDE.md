@@ -45,7 +45,8 @@ These rules are **MANDATORY** for all changes:
 
 ### Progress Tracking
 - Daily streak tracking (persisted in LocalStorage)
-- Daily session limit: 51 cards per day (persists across refresh)
+- Daily session limit: 51 + wrong count (extends on wrong answers)
+- Wrong cards appear again in same session
 - Visual progress bar showing session completion
 
 ### Card Management
@@ -209,7 +210,7 @@ The app has **1 page + 2 modals**:
 |-----|-------------|
 | `fc` | JSON array of all flashcard objects |
 | `streak` | Object with `count` and `date` |
-| `session` | Object with `count` (cards studied today) and `date` |
+| `session` | Object with `count`, `wrong`, and `date` |
 | `curWord` | Current card's word (persists across refresh) |
 
 ## Key Functions

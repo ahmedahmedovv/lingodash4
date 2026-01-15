@@ -133,8 +133,9 @@
     const f = new FSRS(), cards = JSON.parse(localStorage.getItem('fc') || '[]');
     let cur = null, answered = false, editMode = false;
     let streakData = JSON.parse(localStorage.getItem('streak') || '{"count":0,"date":""}');
-    let sessionData = JSON.parse(localStorage.getItem('session') || '{"count":0,"date":""}');
+    let sessionData = JSON.parse(localStorage.getItem('session') || '{"count":0,"wrong":0,"date":""}');
     let sessionCount = sessionData.date === new Date().toDateString() ? sessionData.count : 0;
+    let wrongCount = sessionData.date === new Date().toDateString() ? (sessionData.wrong || 0) : 0;
 
     const save = () => localStorage.setItem('fc', JSON.stringify(cards));
     const due = () => cards.filter(c => new Date(c.card.due) <= new Date());
@@ -146,8 +147,11 @@
       }
     };
 
+    const saveSession = () => localStorage.setItem('session', JSON.stringify({ count: sessionCount, wrong: wrongCount, date: new Date().toDateString() }));
+    const sessionLimit = () => 51 + wrongCount;
+
     function next(pickNew = true) {
-      if (sessionCount >= 51) { def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none'; return; }
+      if (sessionCount >= sessionLimit()) { def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none'; return; }
       let d = due();
       dueCount.textContent = d.length + ' due';
       streak.textContent = streakData.count + ' day streak';
@@ -155,12 +159,12 @@
       if (!d.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; editIcon.style.display = 'none'; cur = null; return; }
       if (pickNew) {
         sessionCount++;
-        localStorage.setItem('session', JSON.stringify({ count: sessionCount, date: new Date().toDateString() }));
+        saveSession();
         cur = d[Math.floor(Math.random() * d.length)];
         localStorage.setItem('curWord', cur.word);
       }
-      counter.textContent = sessionCount + ' / 51';
-      progressBar.style.width = (sessionCount / 51 * 100) + '%';
+      counter.textContent = sessionCount + ' / ' + sessionLimit();
+      progressBar.style.width = (sessionCount / sessionLimit() * 100) + '%';
       def.textContent = cur.def + (cur.word ? ' (' + cur.word[0].toLowerCase() + ')' : '');
       const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.textContent = (cur.ex || '').replace(esc ? new RegExp(esc, 'gi') : '', '___');
@@ -173,7 +177,7 @@
       if (answered) { card.classList.add('fade'); setTimeout(() => { next(); card.classList.remove('fade'); }, 150); return; }
       const correct = ans.value.trim().toLowerCase() === (cur.word || '').toLowerCase();
       cur.card = f.repeat(cur.card, new Date())[correct ? Rating.Good : Rating.Again].card;
-      if (!correct) { card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 400); }
+      if (!correct) { wrongCount++; saveSession(); card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 400); }
       const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.innerHTML = esc ? (cur.ex || '').replace(new RegExp(`(${esc})`, 'gi'), `<span style="color:${correct ? '#22c55e' : '#ef4444'};font-weight:600">$1</span>`) : (cur.ex || '');
       answered = true; updateStreak(); save();
