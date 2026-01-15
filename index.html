@@ -154,11 +154,11 @@
 
     function next(pickNew = true) {
       if (sessionCount >= sessionLimit()) {
-        if (confirm('Session complete! Start a new session?')) {
-          sessionCount = 0; wrongCount = 0; wrongWords = []; saveSession();
-        } else {
-          def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none'; return;
-        }
+        ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none';
+        def.innerHTML = 'Session complete!<div class="btns" style="justify-content:center;margin-top:24px"><div class="btn btn-primary" id="btnNewSession">New Session</div><div class="btn" id="btnDone">Done</div></div>';
+        document.getElementById('btnNewSession').onclick = () => { sessionCount = 0; wrongCount = 0; wrongWords = []; saveSession(); next(); };
+        document.getElementById('btnDone').onclick = () => { def.innerHTML = 'See you tomorrow!'; };
+        return;
       }
       let d = due();
       const wrongCards = cards.filter(c => wrongWords.includes(c.word) && !d.includes(c));

@@ -48,7 +48,7 @@ These rules are **MANDATORY** for all changes:
 - Session limit: 51 + wrong count (extends on wrong answers)
 - Wrong cards appear again in same session
 - Visual progress bar showing session completion
-- Option to start new session after completion
+- Styled completion screen with "New Session" / "Done" buttons
 
 ### Card Management
 - Add new cards via + icon on card
