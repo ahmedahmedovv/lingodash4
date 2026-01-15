@@ -6,11 +6,22 @@ Minimal FSRS-based flashcard app for language learning.
 
 These rules are **MANDATORY** for all changes:
 
+### Code Rules
 | # | Policy | Description |
 |---|--------|-------------|
 | 1 | **Keep it short** | Code must be concise. No complex logic. Simple solutions only. |
 | 2 | **Minimal style** | No fancy UI elements. Clean, minimal design. No unnecessary decorations. |
-| 3 | **Update docs** | CLAUDE.md must be updated after every change to reflect current state. |
+| 3 | **Single file only** | Everything in one HTML file. No separate CSS/JS files. |
+| 4 | **No build tools** | No npm, webpack, or compilation. Just open in browser. |
+| 5 | **Minimal dependencies** | Only essential CDN imports. Avoid adding new libraries. |
+
+### Development Rules
+| # | Policy | Description |
+|---|--------|-------------|
+| 6 | **Update docs** | CLAUDE.md must be updated after every change to reflect current state. |
+| 7 | **Test before commit** | Manually verify changes work before any git commit. |
+| 8 | **No feature creep** | Only add features explicitly requested by user. |
+| 9 | **Preserve behavior** | Changes must not break existing functionality. |
 
 ## Stack
 
