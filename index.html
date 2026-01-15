@@ -131,8 +131,10 @@
   <script type="module">
     import { FSRS, Rating, createEmptyCard } from 'https://unpkg.com/ts-fsrs/dist/index.mjs';
     const f = new FSRS(), cards = JSON.parse(localStorage.getItem('fc') || '[]');
-    let cur = null, answered = false, sessionCount = 0, editMode = false;
+    let cur = null, answered = false, editMode = false;
     let streakData = JSON.parse(localStorage.getItem('streak') || '{"count":0,"date":""}');
+    let sessionData = JSON.parse(localStorage.getItem('session') || '{"count":0,"date":""}');
+    let sessionCount = sessionData.date === new Date().toDateString() ? sessionData.count : 0;
 
     const save = () => localStorage.setItem('fc', JSON.stringify(cards));
     const due = () => cards.filter(c => new Date(c.card.due) <= new Date());
@@ -144,15 +146,19 @@
       }
     };
 
-    function next() {
+    function next(pickNew = true) {
       if (sessionCount >= 51) { def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none'; return; }
       let d = due();
       dueCount.textContent = d.length + ' due';
       streak.textContent = streakData.count + ' day streak';
       if (!d.length) d = cards;
       if (!d.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; editIcon.style.display = 'none'; cur = null; return; }
-      sessionCount++;
-      cur = d[Math.floor(Math.random() * d.length)];
+      if (pickNew) {
+        sessionCount++;
+        localStorage.setItem('session', JSON.stringify({ count: sessionCount, date: new Date().toDateString() }));
+        cur = d[Math.floor(Math.random() * d.length)];
+        localStorage.setItem('curWord', cur.word);
+      }
       counter.textContent = sessionCount + ' / 51';
       progressBar.style.width = (sessionCount / 51 * 100) + '%';
       def.textContent = cur.def + (cur.word ? ' (' + cur.word[0].toLowerCase() + ')' : '');
@@ -224,7 +230,7 @@
 
     btnDel.onclick = () => {
       const i = cards.indexOf(cur);
-      if (cur && i >= 0 && confirm('Delete "' + cur.word + '"?')) { cards.splice(i, 1); save(); closeEditModal(); next(); }
+      if (cur && i >= 0 && confirm('Delete "' + cur.word + '"?')) { cards.splice(i, 1); save(); localStorage.removeItem('curWord'); closeEditModal(); next(); }
     };
 
     btnImport.onclick = () => {
@@ -250,13 +256,17 @@
       if (confirmDelete.value === 'DELETE') {
         cards.length = 0;
         save();
+        localStorage.removeItem('curWord');
         closeSettingsModal();
         next();
         alert('All cards have been deleted.');
       }
     };
 
-    next();
+    // Restore current card on page load, or pick new
+    const savedWord = localStorage.getItem('curWord');
+    cur = savedWord ? cards.find(c => c.word === savedWord) : null;
+    if (cur) next(false); else next();
   </script>
 </body>
 </html>
