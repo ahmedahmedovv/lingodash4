@@ -153,7 +153,13 @@
     const sessionLimit = () => 51 + wrongCount;
 
     function next(pickNew = true) {
-      if (sessionCount >= sessionLimit()) { def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none'; return; }
+      if (sessionCount >= sessionLimit()) {
+        if (confirm('Session complete! Start a new session?')) {
+          sessionCount = 0; wrongCount = 0; wrongWords = []; saveSession();
+        } else {
+          def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none'; return;
+        }
+      }
       let d = due();
       const wrongCards = cards.filter(c => wrongWords.includes(c.word) && !d.includes(c));
       d = [...d, ...wrongCards];

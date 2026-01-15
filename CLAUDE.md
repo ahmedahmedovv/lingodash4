@@ -45,9 +45,10 @@ These rules are **MANDATORY** for all changes:
 
 ### Progress Tracking
 - Daily streak tracking (persisted in LocalStorage)
-- Daily session limit: 51 + wrong count (extends on wrong answers)
+- Session limit: 51 + wrong count (extends on wrong answers)
 - Wrong cards appear again in same session
 - Visual progress bar showing session completion
+- Option to start new session after completion
 
 ### Card Management
 - Add new cards via + icon on card
