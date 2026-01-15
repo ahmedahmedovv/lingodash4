@@ -64,7 +64,7 @@ The app has **1 page + 2 modals**:
 
 ### Main Page (Study)
 - Displays current flashcard
-- Shows stats: session counter, streak, due count
+- Shows stats: session counter, streak (flame icon + number)
 - Progress bar for session
 - Text input for typing answer
 - Card icons (top-right): + (add) and pencil (edit)
@@ -114,13 +114,16 @@ The app has **1 page + 2 modals**:
 
 ### Components
 - **Card**: Dark background, subtle border, 12px radius
-- **Inputs**: 8px radius, dark background, blue focus border
+- **Inputs**: 8px radius, dark background, green/red border on correct/wrong
+- **Stats**: Hidden by default (30% opacity), visible on card hover
+- **Example**: 24px font, fade animation on answer reveal
 - **Modals**: Full-screen overlay with centered content (max 480px)
 - **Card Icons**: 18px, 30% opacity, 100% on hover
 
 ### Animations
 - **Fade**: 150ms opacity transition between cards
 - **Shake**: 400ms horizontal shake on wrong answer
+- **Reveal**: 150ms fade when showing answer
 - **Transitions**: 200ms on hover states and focus
 
 ## Icons

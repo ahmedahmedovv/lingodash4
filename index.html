@@ -14,14 +14,17 @@
     .card.fade { opacity: 0; }
     .card.shake { animation: shake 0.4s; }
     @keyframes shake { 20%,60% { transform: translateX(-8px); } 40%,80% { transform: translateX(8px); } }
-    .card input { text-align: center; background: #0f172a; }
+    .card input { text-align: center; background: #0f172a; transition: border-color 0.3s; }
+    .card input.correct { border-color: #22c55e; }
+    .card input.wrong { border-color: #ef4444; }
     .card-icons { position: absolute; top: 16px; right: 16px; display: flex; gap: 12px; }
     .card-icon { width: 18px; height: 18px; cursor: pointer; opacity: 0.3; transition: opacity 0.2s; }
     .card-icon:hover { opacity: 1; }
-    .stats { width: 100%; display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #334155; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stats { width: 100%; display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.3; transition: opacity 0.2s; }
+    .card:hover .stats { opacity: 1; }
     .progress { width: 100%; height: 2px; background: #334155; border-radius: 2px; margin-bottom: 32px; }
     .progress-bar { height: 100%; background: #60a5fa; border-radius: 2px; transition: width 0.3s; }
-    .ex { display: inline-block; font-size: 20px; color: #f8fafc; line-height: 1.8; background: #0f172a; padding: 20px 24px; border-radius: 8px; border: 1px solid #334155; }
+    .ex { display: inline-block; font-size: 24px; color: #f8fafc; line-height: 1.8; background: #0f172a; padding: 20px 24px; border-radius: 8px; border: 1px solid #334155; transition: opacity 0.2s; }
     .def { font-size: 15px; color: #94a3b8; line-height: 1.6; margin-top: 16px; font-style: italic; padding: 12px 0; }
     .modal { display: none; position: fixed; inset: 0; background: #0f172a; padding: 40px; overflow: auto; z-index: 100; }
     .modal-inner { max-width: 480px; margin: 0 auto; }
@@ -64,7 +67,7 @@
       <svg class="card-icon" id="addIcon" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Add card"><path d="M12 5v14M5 12h14"/></svg>
       <svg class="card-icon" id="editIcon" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Edit card"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     </div>
-    <div class="stats"><span id="counter">-</span><span id="streak">-</span><span id="dueCount">-</span></div>
+    <div class="stats"><span id="counter">-</span><span id="streak"><svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;stroke:#f97316;fill:none" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2c.4 2.3.6 4.5 0 6.5C10.5 5 8 4 6 5c1 2.5 1.5 5 1 7.5C5 11 3 9.5 2 11c1 3 2 6 5 8 1.5 1 3 2 5 2s3.5-1 5-2c3-2 4-5 5-8-1-1.5-3 0-5 1.5.5-2.5 0-5-1-7.5-2-1-4.5 0-6 3.5.6-2 .4-4.2 0-6.5z"/></svg><span id="streakNum">0</span></span></div>
     <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
     <div class="ex" id="ex"></div>
     <div class="def" id="def">Loading...</div>
@@ -163,8 +166,7 @@
       let d = due();
       const wrongCards = cards.filter(c => wrongWords.includes(c.word) && !d.includes(c));
       d = [...d, ...wrongCards];
-      dueCount.textContent = d.length + ' due';
-      streak.textContent = streakData.count + ' day streak';
+      streakNum.textContent = streakData.count;
       if (!d.length) d = cards;
       if (!d.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; editIcon.style.display = 'none'; cur = null; return; }
       if (pickNew) {
@@ -178,7 +180,7 @@
       def.textContent = cur.def + (cur.word ? ' (' + cur.word[0].toLowerCase() + ')' : '');
       const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.textContent = (cur.ex || '').replace(esc ? new RegExp(esc, 'gi') : '', '___');
-      ans.value = ''; ans.style.display = ''; answered = false; ans.focus();
+      ans.value = ''; ans.style.display = ''; ans.classList.remove('correct', 'wrong'); answered = false; ans.focus();
       editIcon.style.display = 'block';
     }
 
@@ -190,9 +192,15 @@
       if (correct) { wrongWords = wrongWords.filter(w => w !== cur.word); }
       else { wrongCount++; if (!wrongWords.includes(cur.word)) wrongWords.push(cur.word); card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 400); }
       saveSession();
+      ans.classList.remove('correct', 'wrong');
+      ans.classList.add(correct ? 'correct' : 'wrong');
       const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      ex.innerHTML = esc ? (cur.ex || '').replace(new RegExp(`(${esc})`, 'gi'), `<span style="color:${correct ? '#22c55e' : '#ef4444'};font-weight:600">$1</span>`) : (cur.ex || '');
-      answered = true; updateStreak(); save();
+      ex.style.opacity = '0';
+      setTimeout(() => {
+        ex.innerHTML = esc ? (cur.ex || '').replace(new RegExp(`(${esc})`, 'gi'), `<span style="color:${correct ? '#22c55e' : '#ef4444'};font-weight:600">$1</span>`) : (cur.ex || '');
+        ex.style.opacity = '1';
+      }, 150);
+      answered = true; updateStreak(); save(); ans.focus();
     };
 
     const openEditModal = (edit = false) => {
