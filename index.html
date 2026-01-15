@@ -17,9 +17,6 @@
     .card input { text-align: center; background: #0f172a; transition: border-color 0.3s; }
     .card input.correct { border-color: #22c55e; }
     .card input.wrong { border-color: #ef4444; }
-    .card-icons { position: absolute; top: 16px; right: 16px; display: flex; gap: 12px; }
-    .card-icon { width: 18px; height: 18px; cursor: pointer; opacity: 0.3; transition: opacity 0.2s; }
-    .card-icon:hover { opacity: 1; }
     .stats { width: 100%; display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.3; transition: opacity 0.2s; }
     .card:hover .stats { opacity: 1; }
     .progress { width: 100%; height: 2px; background: #334155; border-radius: 2px; margin-bottom: 32px; }
@@ -58,15 +55,21 @@
     .danger-zone input { background: #0f172a; margin-top: 0; margin-bottom: 12px; }
     .icon { position: fixed; top: 24px; right: 24px; width: 20px; height: 20px; cursor: pointer; opacity: 0.4; transition: opacity 0.2s; z-index: 10; }
     .icon:hover { opacity: 1; }
+    .menu { display: none; position: fixed; top: 52px; right: 24px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px 0; z-index: 20; min-width: 140px; }
+    .menu.show { display: block; }
+    .menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #94a3b8; font-size: 14px; cursor: pointer; transition: background 0.15s; }
+    .menu-item:hover { background: #334155; color: #f8fafc; }
+    .menu-item svg { width: 16px; height: 16px; stroke: currentColor; }
   </style>
 </head>
 <body>
   <svg class="icon" id="icon" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Settings"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg>
+  <div class="menu" id="menu">
+    <div class="menu-item" id="menuAdd"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add</div>
+    <div class="menu-item" id="menuEdit"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</div>
+    <div class="menu-item" id="menuSettings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg>Settings</div>
+  </div>
   <div class="card" id="card">
-    <div class="card-icons">
-      <svg class="card-icon" id="addIcon" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Add card"><path d="M12 5v14M5 12h14"/></svg>
-      <svg class="card-icon" id="editIcon" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Edit card"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-    </div>
     <div class="stats"><span id="counter">-</span><span id="streak"><svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;stroke:#f97316;fill:none" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2c.4 2.3.6 4.5 0 6.5C10.5 5 8 4 6 5c1 2.5 1.5 5 1 7.5C5 11 3 9.5 2 11c1 3 2 6 5 8 1.5 1 3 2 5 2s3.5-1 5-2c3-2 4-5 5-8-1-1.5-3 0-5 1.5.5-2.5 0-5-1-7.5-2-1-4.5 0-6 3.5.6-2 .4-4.2 0-6.5z"/></svg><span id="streakNum">0</span></span></div>
     <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
     <div class="ex" id="ex"></div>
@@ -157,7 +160,7 @@
 
     function next(pickNew = true) {
       if (sessionCount >= sessionLimit()) {
-        ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none';
+        ex.textContent = ''; ans.style.display = 'none';
         def.innerHTML = 'Session complete!<div class="btns" style="justify-content:center;margin-top:24px"><div class="btn btn-primary" id="btnNewSession">New Session</div><div class="btn" id="btnDone">Done</div></div>';
         document.getElementById('btnNewSession').onclick = () => { sessionCount = 0; wrongCount = 0; wrongWords = []; saveSession(); next(); };
         document.getElementById('btnDone').onclick = () => { def.innerHTML = 'See you tomorrow!'; };
@@ -168,7 +171,7 @@
       d = [...d, ...wrongCards];
       streakNum.textContent = streakData.count;
       if (!d.length) d = cards;
-      if (!d.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; editIcon.style.display = 'none'; cur = null; return; }
+      if (!d.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; cur = null; return; }
       if (pickNew) {
         sessionCount++;
         saveSession();
@@ -181,7 +184,6 @@
       const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.textContent = (cur.ex || '').replace(esc ? new RegExp(esc, 'gi') : '', '___');
       ans.value = ''; ans.style.display = ''; ans.classList.remove('correct', 'wrong'); answered = false; ans.focus();
-      editIcon.style.display = 'block';
     }
 
     ans.onkeydown = e => {
@@ -236,12 +238,18 @@
       ans.focus();
     };
 
+    // Menu toggle
+    const toggleMenu = () => { menu.classList.toggle('show'); menuEdit.style.display = cur ? 'flex' : 'none'; };
+    const closeMenu = () => menu.classList.remove('show');
+    document.addEventListener('click', e => { if (!menu.contains(e.target) && e.target !== icon) closeMenu(); });
+
     // Event listeners
-    icon.onclick = openSettingsModal;
+    icon.onclick = toggleMenu;
+    menuAdd.onclick = () => { closeMenu(); openEditModal(false); };
+    menuEdit.onclick = () => { closeMenu(); openEditModal(true); };
+    menuSettings.onclick = () => { closeMenu(); openSettingsModal(); };
     closeSettings.onclick = closeSettingsModal;
     closeEdit.onclick = closeEditModal;
-    editIcon.onclick = () => openEditModal(true);
-    addIcon.onclick = () => openEditModal(false);
 
     confirmDelete.oninput = () => btnClear.disabled = confirmDelete.value !== 'DELETE';
 

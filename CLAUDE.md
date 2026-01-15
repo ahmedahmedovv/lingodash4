@@ -118,7 +118,7 @@ The app has **1 page + 2 modals**:
 - **Stats**: Hidden by default (30% opacity), visible on card hover
 - **Example**: 24px font, fade animation on answer reveal
 - **Modals**: Full-screen overlay with centered content (max 480px)
-- **Card Icons**: 18px, 30% opacity, 100% on hover
+- **Menu**: Dropdown from gear icon, dark background, hover highlight
 
 ### Animations
 - **Fade**: 150ms opacity transition between cards
@@ -128,12 +128,11 @@ The app has **1 page + 2 modals**:
 
 ## Icons
 
-### Card (top-right)
-- **Plus (+)**: Add new card
-- **Pencil**: Edit current card
-
 ### Page (top-right corner)
-- **Gear**: Opens settings modal
+- **Gear**: Opens dropdown menu with:
+  - **+ Add**: Add new card
+  - **✎ Edit**: Edit current card (only visible when card exists)
+  - **⚙ Settings**: Opens settings modal
 
 ### Edit Modal
 - **X**: Close modal
@@ -160,7 +159,7 @@ The app has **1 page + 2 modals**:
 
 ### Add Card Flow
 ```
-1. Click + icon on card
+1. Click gear icon → "Add" from menu
 2. Fill in Word (required), Definition (required), Example (optional)
 3. Click "Add" button
 4. Card saved, modal closes, returns to study
@@ -168,7 +167,7 @@ The app has **1 page + 2 modals**:
 
 ### Edit Card Flow
 ```
-1. Click pencil icon on card
+1. Click gear icon → "Edit" from menu
 2. Modify fields as needed
 3. Click "Save" to update, or "Delete" to remove
 4. Changes saved, modal closes, returns to study
