@@ -210,7 +210,7 @@ The app has **1 page + 2 modals**:
 |-----|-------------|
 | `fc` | JSON array of all flashcard objects |
 | `streak` | Object with `count` and `date` |
-| `session` | Object with `count`, `wrong`, and `date` |
+| `session` | Object with `count`, `wrong`, `words` (wrong words), and `date` |
 | `curWord` | Current card's word (persists across refresh) |
 
 ## Key Functions

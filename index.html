@@ -133,9 +133,11 @@
     const f = new FSRS(), cards = JSON.parse(localStorage.getItem('fc') || '[]');
     let cur = null, answered = false, editMode = false;
     let streakData = JSON.parse(localStorage.getItem('streak') || '{"count":0,"date":""}');
-    let sessionData = JSON.parse(localStorage.getItem('session') || '{"count":0,"wrong":0,"date":""}');
-    let sessionCount = sessionData.date === new Date().toDateString() ? sessionData.count : 0;
-    let wrongCount = sessionData.date === new Date().toDateString() ? (sessionData.wrong || 0) : 0;
+    let sessionData = JSON.parse(localStorage.getItem('session') || '{"count":0,"wrong":0,"words":[],"date":""}');
+    const isToday = sessionData.date === new Date().toDateString();
+    let sessionCount = isToday ? sessionData.count : 0;
+    let wrongCount = isToday ? (sessionData.wrong || 0) : 0;
+    let wrongWords = isToday ? (sessionData.words || []) : [];
 
     const save = () => localStorage.setItem('fc', JSON.stringify(cards));
     const due = () => cards.filter(c => new Date(c.card.due) <= new Date());
@@ -147,12 +149,14 @@
       }
     };
 
-    const saveSession = () => localStorage.setItem('session', JSON.stringify({ count: sessionCount, wrong: wrongCount, date: new Date().toDateString() }));
+    const saveSession = () => localStorage.setItem('session', JSON.stringify({ count: sessionCount, wrong: wrongCount, words: wrongWords, date: new Date().toDateString() }));
     const sessionLimit = () => 51 + wrongCount;
 
     function next(pickNew = true) {
       if (sessionCount >= sessionLimit()) { def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none'; return; }
       let d = due();
+      const wrongCards = cards.filter(c => wrongWords.includes(c.word) && !d.includes(c));
+      d = [...d, ...wrongCards];
       dueCount.textContent = d.length + ' due';
       streak.textContent = streakData.count + ' day streak';
       if (!d.length) d = cards;
@@ -177,7 +181,9 @@
       if (answered) { card.classList.add('fade'); setTimeout(() => { next(); card.classList.remove('fade'); }, 150); return; }
       const correct = ans.value.trim().toLowerCase() === (cur.word || '').toLowerCase();
       cur.card = f.repeat(cur.card, new Date())[correct ? Rating.Good : Rating.Again].card;
-      if (!correct) { wrongCount++; saveSession(); card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 400); }
+      if (correct) { wrongWords = wrongWords.filter(w => w !== cur.word); }
+      else { wrongCount++; if (!wrongWords.includes(cur.word)) wrongWords.push(cur.word); card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 400); }
+      saveSession();
       const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.innerHTML = esc ? (cur.ex || '').replace(new RegExp(`(${esc})`, 'gi'), `<span style="color:${correct ? '#22c55e' : '#ef4444'};font-weight:600">$1</span>`) : (cur.ex || '');
       answered = true; updateStreak(); save();
