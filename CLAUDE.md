@@ -217,15 +217,13 @@ The app has **1 page + 2 modals**:
 | `save()` | Persist cards to LocalStorage |
 | `due()` | Filter cards due for review |
 | `next()` | Load next card for study |
-| `validateForm()` | Check required fields, show errors |
 | `openEditModal(edit)` | Open modal in add/edit mode |
 | `openSettingsModal()` | Open settings modal |
 
 ## Validation
 
 ### Form Validation
-- Required fields show red border + error message on empty submit
-- Errors clear on input
+- Simple alert() if word or definition is empty
 
 ### Import Validation
 - Must be valid JSON array

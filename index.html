@@ -10,9 +10,6 @@
     input, textarea { width: 100%; padding: 16px 20px; font-size: 16px; background: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 8px; margin-top: 12px; outline: none; transition: border-color 0.2s; }
     input::placeholder, textarea::placeholder { color: #64748b; }
     input:focus, textarea:focus { border-color: #60a5fa; }
-    input.error, textarea.error { border-color: #ef4444; }
-    .error-msg { font-size: 12px; color: #ef4444; margin-top: 6px; display: none; }
-    .error-msg.show { display: block; }
     .card { position: relative; padding: 48px 40px; background: #1e293b; border: 1px solid #334155; border-radius: 12px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.3); transition: opacity 0.15s; display: flex; flex-direction: column; align-items: center; }
     .card.fade { opacity: 0; }
     .card.shake { animation: shake 0.4s; }
@@ -84,12 +81,10 @@
       <div class="section">
         <div class="section-label">Word</div>
         <input type="text" id="word" placeholder="Enter word">
-        <div class="error-msg" id="wordError">Word is required</div>
       </div>
       <div class="section">
         <div class="section-label">Definition</div>
         <input type="text" id="defIn" placeholder="Enter definition">
-        <div class="error-msg" id="defError">Definition is required</div>
       </div>
       <div class="section">
         <div class="section-label">Example (optional)</div>
@@ -149,29 +144,6 @@
       }
     };
 
-    const clearValidation = () => {
-      word.classList.remove('error');
-      defIn.classList.remove('error');
-      wordError.classList.remove('show');
-      defError.classList.remove('show');
-    };
-
-    const validateForm = () => {
-      let valid = true;
-      clearValidation();
-      if (!word.value.trim()) {
-        word.classList.add('error');
-        wordError.classList.add('show');
-        valid = false;
-      }
-      if (!defIn.value.trim()) {
-        defIn.classList.add('error');
-        defError.classList.add('show');
-        valid = false;
-      }
-      return valid;
-    };
-
     function next() {
       if (sessionCount >= 51) { def.textContent = 'Session complete!'; ex.textContent = ''; ans.style.display = 'none'; editIcon.style.display = 'none'; return; }
       let d = due();
@@ -207,7 +179,6 @@
       editModalTitle.textContent = edit ? 'Edit Card' : 'Add New Card';
       btnSaveText.textContent = edit ? 'Save' : 'Add';
       btnDel.style.display = edit && cur ? 'flex' : 'none';
-      clearValidation();
       if (edit && cur) {
         word.value = cur.word;
         defIn.value = cur.def;
@@ -220,7 +191,6 @@
 
     const closeEditModal = () => {
       editModal.style.display = 'none';
-      clearValidation();
       ans.focus();
     };
 
@@ -243,17 +213,10 @@
     editIcon.onclick = () => openEditModal(true);
     addIcon.onclick = () => openEditModal(false);
 
-    // Enable Clear All button only when "DELETE" is typed
-    confirmDelete.oninput = () => {
-      btnClear.disabled = confirmDelete.value !== 'DELETE';
-    };
-
-    // Clear validation on input
-    word.oninput = () => { word.classList.remove('error'); wordError.classList.remove('show'); };
-    defIn.oninput = () => { defIn.classList.remove('error'); defError.classList.remove('show'); };
+    confirmDelete.oninput = () => btnClear.disabled = confirmDelete.value !== 'DELETE';
 
     btnSave.onclick = () => {
-      if (!validateForm()) return;
+      if (!word.value.trim() || !defIn.value.trim()) { alert('Word and definition are required'); return; }
       if (editMode && cur) { cur.word = word.value.trim(); cur.def = defIn.value.trim(); cur.ex = exIn.value.trim(); }
       else cards.push({ word: word.value.trim(), def: defIn.value.trim(), ex: exIn.value.trim(), card: createEmptyCard() });
       save(); closeEditModal(); next();
