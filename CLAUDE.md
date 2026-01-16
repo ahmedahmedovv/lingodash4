@@ -19,9 +19,10 @@ These rules are **MANDATORY** for all changes:
 | # | Policy | Description |
 |---|--------|-------------|
 | 6 | **Update docs** | CLAUDE.md must be updated after every change to reflect current state. |
-| 7 | **Test before commit** | Manually verify changes work before any git commit. |
-| 8 | **No feature creep** | Only add features explicitly requested by user. |
-| 9 | **Preserve behavior** | Changes must not break existing functionality. |
+| 7 | **Log changes** | Add detailed change entry to Changelog section with date, description, and affected areas. |
+| 8 | **Test before commit** | Manually verify changes work before any git commit. |
+| 9 | **No feature creep** | Only add features explicitly requested by user. |
+| 10 | **Preserve behavior** | Changes must not break existing functionality. |
 
 ## Stack
 
@@ -91,6 +92,20 @@ Missed 2+ days       → Streak resets to 1
 - +1 freeze every 7-day streak milestone (7, 14, 21...)
 - Maximum 3 freezes stored
 - Displayed as snowflake icon with count
+
+### Session Goal
+Customize how many cards per session with preset buttons:
+
+| Preset | Cards | Time (~) |
+|--------|-------|----------|
+| 10 | 10 + wrong | ~2 min |
+| 25 | 25 + wrong | ~5 min |
+| 51 | 51 + wrong | ~10 min |
+| 100 | 100 + wrong | ~20 min |
+
+- Set in Settings modal
+- Persists in localStorage
+- Wrong answers still extend the session
 
 ### Card Management
 - Add new cards via gear menu → Add
@@ -164,6 +179,7 @@ Stats row (visible on hover):
 
 ### Settings Modal
 - Opens via gear menu → Settings
+- **Session Goal**: Preset buttons (10/25/51/100)
 - **Import section**: Textarea + Import button
 - **Export section**: Description + Export button
 - **Danger zone**: Type "DELETE" + Clear All button
@@ -372,6 +388,7 @@ Stats row (visible on hover):
 | `fc` | Array | All flashcard objects with FSRS state |
 | `streak` | Object | `{count, date, freezes}` |
 | `session` | Object | `{count, wrong, words[], date}` |
+| `sessionGoal` | Number | Cards per session (10/25/51/100) |
 | `curWord` | String | Current card's word for restore |
 
 ## Key Functions
@@ -456,3 +473,61 @@ Stats row (visible on hover):
 - Modern browsers with ES modules support
 - LocalStorage required
 - No IE support
+
+## Changelog
+
+### 2026-01-16
+
+#### Added: Full Data Export/Import
+- **What**: Export now includes all localStorage data (cards, streak, session, curWord)
+- **Why**: Allow full backup and restore across devices
+- **Files changed**: `index.html` (btnExport, btnImport handlers)
+- **Affected areas**: Settings modal, data persistence
+
+#### Added: Stats Page
+- **What**: New modal showing all cards with 8 sort criteria
+- **Why**: Users need to review and analyze their vocabulary
+- **Files changed**: `index.html` (HTML modal, CSS styles, JS functions)
+- **Affected areas**: Gear menu, new statsModal, renderWordList function
+- **Sort criteria**: Due date, Difficulty, Stability, Lapses, Reviews, Last reviewed, State, Alphabetical
+
+#### Added: Stability Display on Card
+- **What**: Show memory stability (days) on study card with layers icon
+- **Why**: Help users understand memory strength while studying
+- **Files changed**: `index.html` (stats row HTML, next() function)
+- **Affected areas**: Card stats row display
+
+#### Changed: Pool-Based Session System
+- **What**: Replaced random card selection with pool-based system
+- **Why**: Guarantee wrong cards repeat until answered correctly
+- **Files changed**: `index.html` (initPool, next, answer handler)
+- **Affected areas**: Session flow, progress tracking
+- **New behavior**:
+  - Pool created at session start (up to sessionGoal cards)
+  - Correct answers remove card from pool
+  - Wrong answers keep card in pool
+  - Session ends when pool empty
+
+#### Fixed: Session Counter
+- **What**: Show correct progress (completed/total) and 100% on completion
+- **Why**: Counter showed wrong values, didn't reach 5/5
+- **Files changed**: `index.html` (next function, progress display)
+- **Affected areas**: Stats row, progress bar
+
+#### Added: Streak Freeze System
+- **What**: Automatic streak protection when missing one day
+- **Why**: Prevent frustration from losing long streaks
+- **Files changed**: `index.html` (streakData, updateStreak function, freeze display)
+- **Affected areas**: Stats row, streak logic
+- **Details**:
+  - New users start with 1 free freeze
+  - Earn +1 freeze every 7-day milestone
+  - Maximum 3 freezes stored
+  - Auto-used when missing 1 day
+
+#### Added: Session Goal Presets
+- **What**: Customizable session size (10/25/51/100 cards)
+- **Why**: Different users need different session lengths
+- **Files changed**: `index.html` (Settings modal HTML, sessionGoal variable, goal buttons)
+- **Affected areas**: Settings modal, sessionLimit function
+- **Storage**: `sessionGoal` in localStorage
