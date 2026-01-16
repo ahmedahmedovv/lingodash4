@@ -176,16 +176,16 @@ The app has **1 page + 2 modals**:
 ### Import Flow
 ```
 1. Click gear icon
-2. Paste JSON array into textarea
+2. Paste JSON into textarea (full backup or cards-only array)
 3. Click "Import" button
-4. Validation runs, valid cards added
+4. Validation runs, data restored (full backup replaces all, array appends)
 ```
 
 ### Export Flow
 ```
 1. Click gear icon
 2. Click "Export" button
-3. Browser downloads flashcards.json file
+3. Browser downloads flashcards.json with all data (cards, streak, session, current card)
 ```
 
 ### Clear All Flow
@@ -232,8 +232,9 @@ The app has **1 page + 2 modals**:
 - Simple alert() if word or definition is empty
 
 ### Import Validation
-- Must be valid JSON array
-- Each card needs: word, def, card properties
+- Accepts full backup object `{fc, streak, session, curWord}` or legacy card array
+- Full backup: replaces all data, each card needs word, def, card properties
+- Legacy array: appends cards, each card needs word, def, card properties
 
 ### Destructive Action Safety
 - Delete card: confirm dialog

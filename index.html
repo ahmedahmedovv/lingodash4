@@ -269,18 +269,29 @@
       if (!csv.value.trim()) return;
       try {
         const imported = JSON.parse(csv.value);
-        if (!Array.isArray(imported)) { alert('Invalid format'); return; }
-        const valid = imported.filter(c => c && c.word && c.def && c.card);
-        if (!valid.length) { alert('No valid cards'); return; }
-        valid.forEach(c => cards.push(c));
-        save(); csv.value = ''; closeSettingsModal(); next();
-        alert('Imported ' + valid.length + ' cards');
+        if (imported.fc && Array.isArray(imported.fc)) {
+          const valid = imported.fc.filter(c => c && c.word && c.def && c.card);
+          if (!valid.length) { alert('No valid cards'); return; }
+          cards.length = 0; valid.forEach(c => cards.push(c)); save();
+          if (imported.streak) { streakData = imported.streak; localStorage.setItem('streak', JSON.stringify(streakData)); }
+          if (imported.session) { sessionData = imported.session; sessionCount = sessionData.count || 0; wrongCount = sessionData.wrong || 0; wrongWords = sessionData.words || []; localStorage.setItem('session', JSON.stringify(sessionData)); }
+          if (imported.curWord) { cur = cards.find(c => c.word === imported.curWord); localStorage.setItem('curWord', imported.curWord); }
+          csv.value = ''; closeSettingsModal(); next(false);
+          alert('Imported ' + valid.length + ' cards with all data');
+        } else if (Array.isArray(imported)) {
+          const valid = imported.filter(c => c && c.word && c.def && c.card);
+          if (!valid.length) { alert('No valid cards'); return; }
+          valid.forEach(c => cards.push(c));
+          save(); csv.value = ''; closeSettingsModal(); next();
+          alert('Imported ' + valid.length + ' cards');
+        } else { alert('Invalid format'); }
       } catch { alert('Invalid JSON'); }
     };
 
     btnExport.onclick = () => {
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([JSON.stringify(cards, null, 2)], {type: 'application/json'}));
+      const data = { fc: cards, streak: streakData, session: { count: sessionCount, wrong: wrongCount, words: wrongWords, date: new Date().toDateString() }, curWord: cur ? cur.word : null };
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}));
       a.download = 'flashcards.json'; a.click();
     };
 
