@@ -27,7 +27,7 @@ These rules are **MANDATORY** for all changes:
 
 | Component | Technology |
 |-----------|------------|
-| Structure | Single HTML file |
+| Structure | Single HTML file (~425 lines) |
 | JavaScript | Vanilla JS with ES modules |
 | Algorithm | FSRS via CDN (ts-fsrs) |
 | Storage | LocalStorage |
@@ -42,53 +42,113 @@ These rules are **MANDATORY** for all changes:
 - First letter hint shown in parentheses after definition
 - Example sentence with target word hidden as `___`
 - Word revealed with color after answer (green = correct, red = wrong)
+- Shake animation on wrong answer
+
+### Session System (Pool-Based)
+
+The app uses a **pool-based session system** that guarantees wrong cards repeat:
+
+```
+Session Start
+    ↓
+Create pool: shuffle due cards, take up to 51
+    ↓
+Pick random card from pool
+    ↓
+User answers:
+  ├─ Correct → Remove card from pool
+  └─ Wrong → Card stays in pool (will repeat)
+    ↓
+Pool empty? → Session complete!
+```
+
+**Key behaviors:**
+- Session size: up to 51 cards (or fewer if less due)
+- Wrong cards **guaranteed** to appear again until answered correctly
+- Progress shows: `completed / total` (e.g., "15 / 51")
+- Progress bar fills as cards leave the pool
+- Page refresh starts a fresh session
 
 ### Progress Tracking
-- Daily streak tracking (persisted in LocalStorage)
-- Session limit: 51 + wrong count (extends on wrong answers)
-- Wrong cards appear again in same session
-- Visual progress bar showing session completion
-- Styled completion screen with "New Session" / "Done" buttons
+- **Counter**: Shows `completed / total` cards in session
+- **Progress bar**: Visual indicator of session completion
+- **Stability**: Memory strength displayed on card (e.g., "7d" = 7 days)
+- **Streak**: Daily streak with flame icon, persists in LocalStorage
 
 ### Card Management
-- Add new cards via + icon on card
-- Edit current card via pencil icon on card
-- Delete current card with confirmation
-- JSON import with validation
-- JSON export to downloadable file
+- Add new cards via gear menu → Add
+- Edit current card via gear menu → Edit
+- Delete current card with confirmation dialog
+- JSON import (full backup or card array)
+- JSON export (downloads all data)
 - Clear all cards with type-to-confirm safety
+
+### Stats Page
+- **Summary bar**: Total cards, due count, cards by state (New/Learning/Review)
+- **8 sort criteria** with descriptions:
+  | Criteria | Description |
+  |----------|-------------|
+  | Due date | Next scheduled review date for each word |
+  | Difficulty | How hard the algorithm thinks this word is (0-10) |
+  | Stability | Days until you'd forget this word without review |
+  | Lapses | Times you got this word wrong after learning it |
+  | Reviews | Total number of times you've reviewed this word |
+  | Last reviewed | When you last practiced this word |
+  | State | Learning stage: New → Learning → Review → Relearning |
+  | Alphabetical | Simple A-Z sorting by word |
+- **Sort direction**: Ascending or Descending
+- **Word list**: Scrollable list with state badges and metadata
 
 ## Pages
 
 The app has **1 page + 3 modals**:
 
 ### Main Page (Study)
-- Displays current flashcard
-- Shows stats: session counter, stability (layers icon + days), streak (flame icon + number)
-- Progress bar for session
-- Text input for typing answer
-- Card icons (top-right): + (add) and pencil (edit)
-- Gear icon (top-right corner): Opens settings
+```
+┌─────────────────────────────────────────┐
+│                              [⚙ gear]   │
+│  15 / 51          🔷 7d          🔥 5   │
+│  ████████████░░░░░░░░░░░░░░░░░░░░░░░░   │
+│                                         │
+│  ┌─────────────────────────────────┐   │
+│  │  The cat ___ on the mat.        │   │
+│  └─────────────────────────────────┘   │
+│                                         │
+│        to rest in a seated position (s) │
+│                                         │
+│  ┌─────────────────────────────────┐   │
+│  │  [type answer here]             │   │
+│  └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+
+Stats row (visible on hover):
+- Left: Session progress (e.g., "15 / 51")
+- Center: Stability (e.g., "🔷 7d")
+- Right: Streak (e.g., "🔥 5")
+```
 
 ### Edit Modal
-- Opens via pencil icon (edit mode) or + icon (add mode)
-- Word input with validation
-- Definition input with validation
-- Example input (optional)
-- Primary "Save/Add" button
-- Danger "Delete" button (edit mode only)
+- Opens via gear menu → Add (add mode) or Edit (edit mode)
+- **Fields**:
+  - Word (required)
+  - Definition (required)
+  - Example (optional)
+- **Buttons**:
+  - Save/Add (primary blue)
+  - Delete (danger red, edit mode only)
 
 ### Stats Modal
 - Opens via gear menu → Stats
-- Summary: total cards, due count, cards by state
-- Sort dropdown with 8 criteria
-- Scrollable word list with state badges and sort-relevant metadata
+- **Summary**: Total | Due | New | Learning | Review
+- **Sort controls**: Dropdown for criteria + direction
+- **Hint text**: Explains current sort criteria
+- **Word list**: Each item shows word, state badge, and relevant metric
 
 ### Settings Modal
-- Opens via gear icon
-- Import section: JSON textarea + Import button
-- Export section: Export button
-- Danger Zone: Type "DELETE" to enable Clear All
+- Opens via gear menu → Settings
+- **Import section**: Textarea + Import button
+- **Export section**: Description + Export button
+- **Danger zone**: Type "DELETE" + Clear All button
 
 ## UI Design
 
@@ -98,175 +158,281 @@ The app has **1 page + 3 modals**:
 - Full viewport height with flexbox centering
 
 ### Color Palette (Dark Theme)
-| Element | Color |
-|---------|-------|
-| Background | #0f172a |
-| Card Background | #1e293b |
-| Text Primary | #f8fafc |
-| Text Secondary | #94a3b8 |
-| Text Muted | #64748b |
-| Border | #334155 |
-| Accent/Focus | #60a5fa |
-| Primary Button | #3b82f6 |
-| Success | #22c55e |
-| Error/Danger | #dc2626 |
+| Element | Color | Hex |
+|---------|-------|-----|
+| Background | Dark navy | #0f172a |
+| Card Background | Slate | #1e293b |
+| Text Primary | White | #f8fafc |
+| Text Secondary | Light gray | #94a3b8 |
+| Text Muted | Gray | #64748b |
+| Border | Dark gray | #334155 |
+| Accent/Focus | Blue | #60a5fa |
+| Primary Button | Blue | #3b82f6 |
+| Success | Green | #22c55e |
+| Error/Danger | Red | #dc2626 |
+| Streak Icon | Orange | #f97316 |
+| Stability Icon | Blue | #60a5fa |
 
 ### Button Hierarchy
-| Type | Style |
-|------|-------|
-| Primary | Blue filled (#3b82f6), white text |
-| Secondary | Outline, gray border |
-| Danger | Red border/text (#dc2626), always visible |
+| Type | Style | Use |
+|------|-------|-----|
+| Primary | Blue filled, white text | Main actions (Save, Add, New Session) |
+| Secondary | Outline, gray border | Secondary actions (Done, Export) |
+| Danger | Red border/text | Destructive actions (Delete, Clear) |
 
 ### Components
-- **Card**: Dark background, subtle border, 12px radius
+- **Card**: Dark background (#1e293b), subtle border, 12px radius, shadow
 - **Inputs**: 8px radius, dark background, green/red border on correct/wrong
-- **Stats**: Hidden by default (30% opacity), visible on card hover
-- **Example**: 24px font, fade animation on answer reveal
-- **Modals**: Full-screen overlay with centered content (max 480px)
-- **Menu**: Dropdown from gear icon, dark background, hover highlight
+- **Stats row**: 30% opacity by default, 100% on card hover
+- **Example box**: 24px font, dark background, subtle border
+- **Modals**: Full-screen overlay, centered content (max 480px)
+- **Menu**: Dropdown from gear icon, 140px min-width, hover highlight
+- **Word list**: 60vh max-height, scrollable, items with bottom border
 
 ### Animations
-- **Fade**: 150ms opacity transition between cards
-- **Shake**: 400ms horizontal shake on wrong answer
-- **Reveal**: 150ms fade when showing answer
-- **Transitions**: 200ms on hover states and focus
+| Animation | Duration | Use |
+|-----------|----------|-----|
+| Fade | 150ms | Transition between cards |
+| Shake | 400ms | Wrong answer feedback |
+| Reveal | 150ms | Show answer in example |
+| Hover | 200ms | Button and link states |
 
 ## Icons
 
-### Page (top-right corner)
-- **Gear**: Opens dropdown menu with:
-  - **+ Add**: Add new card
-  - **✎ Edit**: Edit current card (only visible when card exists)
-  - **📊 Stats**: Opens stats modal
-  - **⚙ Settings**: Opens settings modal
+### Gear Menu (top-right)
+| Icon | Action |
+|------|--------|
+| + | Add new card |
+| ✎ | Edit current card (hidden if no card) |
+| 📊 | Open stats modal |
+| ⚙ | Open settings modal |
 
-### Edit Modal
-- **X**: Close modal
-- **Floppy**: Save/Add card
-- **Trash**: Delete card
+### Card Stats Row
+| Icon | Meaning |
+|------|---------|
+| 🔷 (layers) | Memory stability in days |
+| 🔥 (flame) | Daily streak count |
 
-### Settings Modal
-- **X**: Close modal
-- **Upload arrow**: Import JSON
-- **Download arrow**: Export JSON
-- **Trash**: Clear all cards
+### Modal Icons
+| Icon | Action |
+|------|--------|
+| ✕ | Close modal |
+| 💾 (floppy) | Save/Add card |
+| 🗑 (trash) | Delete card / Clear all |
+| ↑ (upload) | Import JSON |
+| ↓ (download) | Export JSON |
 
-## User Flow
+## User Flows
 
 ### Study Flow
 ```
-1. View card: example (word as ___) + definition (first letter hint)
-2. Type answer in input field
-3. Press Enter to submit
-4. View result: word highlighted in green (correct) or red (wrong)
-5. Press Enter again to proceed to next card
-6. Repeat until session complete (51 cards) or no more due cards
+1. Session starts → Pool created (up to 51 due cards)
+2. Random card shown: example (word as ___) + definition (hint)
+3. Type answer in input field
+4. Press Enter to submit
+5. Result shown:
+   - Correct: Green border, word highlighted green in example
+   - Wrong: Red border, shake animation, word highlighted red
+6. Press Enter to continue
+7. Correct → Card removed from pool
+   Wrong → Card stays in pool
+8. Repeat until pool empty
+9. "Session complete!" with New Session / Done buttons
 ```
 
 ### Add Card Flow
 ```
-1. Click gear icon → "Add" from menu
-2. Fill in Word (required), Definition (required), Example (optional)
-3. Click "Add" button
-4. Card saved, modal closes, returns to study
+1. Click gear icon → "Add"
+2. Modal opens in add mode
+3. Enter Word (required)
+4. Enter Definition (required)
+5. Enter Example (optional)
+6. Click "Add" button
+7. Card created with empty FSRS state
+8. Modal closes, new session starts
 ```
 
 ### Edit Card Flow
 ```
-1. Click gear icon → "Edit" from menu
-2. Modify fields as needed
-3. Click "Save" to update, or "Delete" to remove
-4. Changes saved, modal closes, returns to study
+1. Click gear icon → "Edit"
+2. Modal opens with current card data
+3. Modify fields as needed
+4. Click "Save" to update, or "Delete" to remove
+5. If delete: Confirmation dialog appears
+6. Modal closes, returns to study
 ```
 
 ### Stats Flow
 ```
-1. Click gear icon → "Stats" from menu
-2. View summary (total, due, by state)
-3. Select sort criteria and direction
-4. Scroll word list to review cards
+1. Click gear icon → "Stats"
+2. View summary (Total, Due, New, Learning, Review)
+3. Select sort criteria from dropdown
+4. Select sort direction (Ascending/Descending)
+5. Read hint explaining the criteria
+6. Scroll word list to review all cards
+7. Click X to close
 ```
 
 ### Import Flow
 ```
-1. Click gear icon
-2. Paste JSON into textarea (full backup or cards-only array)
+1. Click gear icon → "Settings"
+2. Paste JSON into textarea
 3. Click "Import" button
-4. Validation runs, data restored (full backup replaces all, array appends)
+4. Validation:
+   - Full backup {fc, streak, session, curWord}: Replaces all data
+   - Card array [{word, def, card}...]: Appends to existing
+5. Alert shows number of imported cards
+6. Modal closes, session refreshes
 ```
 
 ### Export Flow
 ```
-1. Click gear icon
+1. Click gear icon → "Settings"
 2. Click "Export" button
-3. Browser downloads flashcards.json with all data (cards, streak, session, current card)
+3. Browser downloads flashcards.json containing:
+   - fc: All cards with FSRS state
+   - streak: {count, date}
+   - session: {count, wrong, words, date}
+   - curWord: Current card word
 ```
 
 ### Clear All Flow
 ```
-1. Click gear icon
-2. Type "DELETE" in confirmation field
-3. Click "Clear All Cards" button (now enabled)
-4. All cards deleted
+1. Click gear icon → "Settings"
+2. Scroll to Danger Zone
+3. Type "DELETE" in confirmation field
+4. Button becomes enabled
+5. Click "Clear All Cards"
+6. All cards deleted, modal closes
 ```
 
-## Data Structure
+## Data Structures
 
 ### Card Object
 ```javascript
 {
-  word: "string",      // required
-  def: "string",       // required
-  ex: "string",        // optional
-  card: { /* FSRS */ } // required
+  word: "string",      // The word to learn (required)
+  def: "string",       // Definition/meaning (required)
+  ex: "string",        // Example sentence (optional)
+  card: {              // FSRS card state (required)
+    due: Date,         // Next review date
+    stability: Number, // Memory stability in days
+    difficulty: Number,// Card difficulty (0-10)
+    elapsed_days: Number,
+    scheduled_days: Number,
+    reps: Number,      // Total reviews
+    lapses: Number,    // Times forgotten
+    state: Number,     // 0=New, 1=Learning, 2=Review, 3=Relearning
+    last_review: Date
+  }
+}
+```
+
+### Export Format (Full Backup)
+```javascript
+{
+  fc: [...],           // Array of all card objects
+  streak: {
+    count: Number,     // Current streak days
+    date: "string"     // Last activity date
+  },
+  session: {
+    count: Number,     // Cards reviewed this session
+    wrong: Number,     // Wrong answers this session
+    words: [...],      // Words answered wrong
+    date: "string"     // Session date
+  },
+  curWord: "string"    // Current card's word (or null)
 }
 ```
 
 ### LocalStorage Keys
-| Key | Description |
-|-----|-------------|
-| `fc` | JSON array of all flashcard objects |
-| `streak` | Object with `count` and `date` |
-| `session` | Object with `count`, `wrong`, `words` (wrong words), and `date` |
-| `curWord` | Current card's word (persists across refresh) |
+| Key | Type | Description |
+|-----|------|-------------|
+| `fc` | Array | All flashcard objects with FSRS state |
+| `streak` | Object | `{count: number, date: string}` |
+| `session` | Object | `{count, wrong, words[], date}` |
+| `curWord` | String | Current card's word for restore |
 
 ## Key Functions
 
 | Function | Purpose |
 |----------|---------|
-| `save()` | Persist cards to LocalStorage |
-| `due()` | Filter cards due for review |
-| `next()` | Load next card for study |
-| `openEditModal(edit)` | Open modal in add/edit mode |
-| `openStatsModal()` | Open stats modal with word list |
-| `renderWordList()` | Sort and display words in stats |
+| `save()` | Persist cards array to LocalStorage |
+| `due()` | Filter cards where due date ≤ now |
+| `initPool()` | Reset session, create shuffled pool of up to 51 cards |
+| `next(pickNew)` | Show next card or session complete screen |
+| `updateStreak()` | Increment streak if new day |
+| `saveSession()` | Persist session state to LocalStorage |
+| `openEditModal(edit)` | Open modal in add (false) or edit (true) mode |
+| `openStatsModal()` | Open stats modal, render summary and word list |
+| `renderWordList()` | Sort cards and render to word list |
 | `openSettingsModal()` | Open settings modal |
+
+## FSRS Integration
+
+### Rating System
+| Answer | FSRS Rating | Effect |
+|--------|-------------|--------|
+| Correct | Good (3) | Normal progression, stability increases |
+| Wrong/Empty | Again (1) | Reset to relearning, short interval |
+
+### Card States
+| State | Value | Meaning |
+|-------|-------|---------|
+| New | 0 | Never reviewed |
+| Learning | 1 | Initial learning phase |
+| Review | 2 | Graduated to review |
+| Relearning | 3 | Forgotten, relearning |
+
+### Stability Explained
+- Represents memory strength in days
+- Higher = stronger memory, longer until next review
+- Displayed on card during study (e.g., "7d")
+- New cards start with ~0.5-1 day
+- Grows with each successful review
+- Resets on lapse (wrong answer)
 
 ## Validation
 
 ### Form Validation
-- Simple alert() if word or definition is empty
+- Word: Required, alert if empty
+- Definition: Required, alert if empty
+- Example: Optional
 
 ### Import Validation
-- Accepts full backup object `{fc, streak, session, curWord}` or legacy card array
-- Full backup: replaces all data, each card needs word, def, card properties
-- Legacy array: appends cards, each card needs word, def, card properties
+- Must be valid JSON
+- Full backup: Must have `fc` array with valid cards
+- Card array: Each card needs `word`, `def`, `card` properties
+- Invalid cards silently skipped
+
+### Security
+- XSS protection: Word text escaped in stats list
+- No external data execution
+- All data stored locally
 
 ### Destructive Action Safety
-- Delete card: confirm dialog
-- Clear all: type "DELETE" to enable button
+| Action | Protection |
+|--------|------------|
+| Delete card | Confirmation dialog |
+| Clear all | Type "DELETE" to enable |
 
 ## Files
 
-| File | Description |
-|------|-------------|
-| `index.html` | Complete application |
-| `CLAUDE.md` | Documentation (this file) |
+| File | Lines | Description |
+|------|-------|-------------|
+| `index.html` | ~425 | Complete application (HTML + CSS + JS) |
+| `CLAUDE.md` | ~350 | Documentation (this file) |
 
 ## External Dependencies
 
 | Dependency | URL | Purpose |
 |------------|-----|---------|
-| ts-fsrs | unpkg.com/ts-fsrs/dist/index.mjs | Spaced repetition |
-| Inter font | fonts.googleapis.com | Typography |
+| ts-fsrs | `unpkg.com/ts-fsrs/dist/index.mjs` | FSRS spaced repetition algorithm |
+| Inter font | `fonts.googleapis.com` | Typography |
+
+## Browser Support
+
+- Modern browsers with ES modules support
+- LocalStorage required
+- No IE support
