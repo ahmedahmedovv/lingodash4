@@ -74,6 +74,23 @@ Pool empty? → Session complete!
 - **Progress bar**: Visual indicator of session completion
 - **Stability**: Memory strength displayed on card (e.g., "7d" = 7 days)
 - **Streak**: Daily streak with flame icon, persists in LocalStorage
+- **Streak Freeze**: Automatic protection if you miss one day
+
+### Streak Freeze System
+Automatic streak protection that saves your streak if you miss a day:
+
+```
+Studied yesterday    → Streak continues (+1)
+Missed 1 day + freeze → Freeze used, streak continues (+1)
+Missed 1 day, no freeze → Streak resets to 1
+Missed 2+ days       → Streak resets to 1
+```
+
+**Earning freezes:**
+- New users start with 1 free freeze
+- +1 freeze every 7-day streak milestone (7, 14, 21...)
+- Maximum 3 freezes stored
+- Displayed as snowflake icon with count
 
 ### Card Management
 - Add new cards via gear menu → Add
@@ -123,7 +140,8 @@ The app has **1 page + 3 modals**:
 
 Stats row (visible on hover):
 - Left: Session progress (e.g., "15 / 51")
-- Center: Stability (e.g., "🔷 7d")
+- Center-left: Stability (e.g., "🔷 7d")
+- Center-right: Freezes (e.g., "❄️ 2")
 - Right: Streak (e.g., "🔥 5")
 ```
 
@@ -211,6 +229,7 @@ Stats row (visible on hover):
 | Icon | Meaning |
 |------|---------|
 | 🔷 (layers) | Memory stability in days |
+| ❄️ (snowflake) | Streak freezes available (max 3) |
 | 🔥 (flame) | Daily streak count |
 
 ### Modal Icons
@@ -334,7 +353,8 @@ Stats row (visible on hover):
   fc: [...],           // Array of all card objects
   streak: {
     count: Number,     // Current streak days
-    date: "string"     // Last activity date
+    date: "string",    // Last activity date
+    freezes: Number    // Available streak freezes (0-3)
   },
   session: {
     count: Number,     // Cards reviewed this session
@@ -350,7 +370,7 @@ Stats row (visible on hover):
 | Key | Type | Description |
 |-----|------|-------------|
 | `fc` | Array | All flashcard objects with FSRS state |
-| `streak` | Object | `{count: number, date: string}` |
+| `streak` | Object | `{count, date, freezes}` |
 | `session` | Object | `{count, wrong, words[], date}` |
 | `curWord` | String | Current card's word for restore |
 
