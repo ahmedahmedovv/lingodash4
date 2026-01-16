@@ -562,6 +562,12 @@ Stats row (visible on hover):
 - **Affected areas**: Settings modal, sessionLimit function
 - **Storage**: `sessionGoal` in localStorage
 
+#### Improved: Import Placeholder
+- **What**: Added helpful placeholder text to import textarea
+- **Why**: Guide users on expected JSON format
+- **Files changed**: `index.html` (textarea placeholder)
+- **Affected areas**: Settings modal import section
+
 #### Added: Multi-Deck Support
 - **What**: Multiple decks for different languages/topics
 - **Why**: Users want to study different languages separately
