@@ -107,6 +107,33 @@ Customize how many cards per session with preset buttons:
 - Persists in localStorage
 - Wrong answers still extend the session
 
+### Deck Management
+Multiple decks for different languages or topics:
+
+```
+┌─────────────────────────────────────┐
+│ [Spanish ▼]              [⚙ gear]   │
+│  ├─ Spanish     (current)           │
+│  ├─ French                          │
+│  ├─ Japanese                        │
+│  ├─────────────                     │
+│  └─ + New Deck                      │
+└─────────────────────────────────────┘
+```
+
+**Features:**
+- Deck selector dropdown (top-left)
+- Each deck has separate cards, streak, session, freezes
+- Create new deck from dropdown or prompt
+- Rename/Delete deck in Settings modal
+- Export includes deck name
+- Import can create new deck or merge to current
+
+**Storage per deck:**
+- `fc_<deckname>` - cards
+- `streak_<deckname>` - streak data
+- `session_<deckname>` - session data
+
 ### Card Management
 - Add new cards via gear menu → Add
 - Edit current card via gear menu → Edit
@@ -179,6 +206,7 @@ Stats row (visible on hover):
 
 ### Settings Modal
 - Opens via gear menu → Settings
+- **Current Deck**: Shows deck name with Rename/Delete buttons
 - **Session Goal**: Preset buttons (10/25/51/100)
 - **Import section**: Textarea + Import button
 - **Export section**: Description + Export button
@@ -385,9 +413,11 @@ Stats row (visible on hover):
 ### LocalStorage Keys
 | Key | Type | Description |
 |-----|------|-------------|
-| `fc` | Array | All flashcard objects with FSRS state |
-| `streak` | Object | `{count, date, freezes}` |
-| `session` | Object | `{count, wrong, words[], date}` |
+| `decks` | Array | List of deck names `["Default", "Spanish", ...]` |
+| `currentDeck` | String | Active deck name |
+| `fc_<deck>` | Array | Flashcard objects for specific deck |
+| `streak_<deck>` | Object | `{count, date, freezes}` per deck |
+| `session_<deck>` | Object | `{count, wrong, words[], date}` per deck |
 | `sessionGoal` | Number | Cards per session (10/25/51/100) |
 | `curWord` | String | Current card's word for restore |
 
@@ -531,3 +561,21 @@ Stats row (visible on hover):
 - **Files changed**: `index.html` (Settings modal HTML, sessionGoal variable, goal buttons)
 - **Affected areas**: Settings modal, sessionLimit function
 - **Storage**: `sessionGoal` in localStorage
+
+#### Added: Multi-Deck Support
+- **What**: Multiple decks for different languages/topics
+- **Why**: Users want to study different languages separately
+- **Files changed**: `index.html` (deck selector HTML/CSS/JS, Settings modal deck section)
+- **Affected areas**: All data storage, import/export, UI header
+- **Features**:
+  - Deck selector dropdown (top-left)
+  - Each deck has separate cards, streak, session, freezes
+  - Create/Rename/Delete decks
+  - Export includes deck name
+  - Import can create new deck or merge
+- **Storage**:
+  - `decks` - array of deck names
+  - `currentDeck` - active deck name
+  - `fc_<deckname>` - cards per deck
+  - `streak_<deckname>` - streak per deck
+  - `session_<deckname>` - session per deck
