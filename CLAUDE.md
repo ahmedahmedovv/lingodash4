@@ -60,11 +60,11 @@ These rules are **MANDATORY** for all changes:
 
 ## Pages
 
-The app has **1 page + 2 modals**:
+The app has **1 page + 3 modals**:
 
 ### Main Page (Study)
 - Displays current flashcard
-- Shows stats: session counter, streak (flame icon + number)
+- Shows stats: session counter, stability (layers icon + days), streak (flame icon + number)
 - Progress bar for session
 - Text input for typing answer
 - Card icons (top-right): + (add) and pencil (edit)
@@ -77,6 +77,12 @@ The app has **1 page + 2 modals**:
 - Example input (optional)
 - Primary "Save/Add" button
 - Danger "Delete" button (edit mode only)
+
+### Stats Modal
+- Opens via gear menu → Stats
+- Summary: total cards, due count, cards by state
+- Sort dropdown with 8 criteria
+- Scrollable word list with state badges and sort-relevant metadata
 
 ### Settings Modal
 - Opens via gear icon
@@ -132,6 +138,7 @@ The app has **1 page + 2 modals**:
 - **Gear**: Opens dropdown menu with:
   - **+ Add**: Add new card
   - **✎ Edit**: Edit current card (only visible when card exists)
+  - **📊 Stats**: Opens stats modal
   - **⚙ Settings**: Opens settings modal
 
 ### Edit Modal
@@ -171,6 +178,14 @@ The app has **1 page + 2 modals**:
 2. Modify fields as needed
 3. Click "Save" to update, or "Delete" to remove
 4. Changes saved, modal closes, returns to study
+```
+
+### Stats Flow
+```
+1. Click gear icon → "Stats" from menu
+2. View summary (total, due, by state)
+3. Select sort criteria and direction
+4. Scroll word list to review cards
 ```
 
 ### Import Flow
@@ -224,6 +239,8 @@ The app has **1 page + 2 modals**:
 | `due()` | Filter cards due for review |
 | `next()` | Load next card for study |
 | `openEditModal(edit)` | Open modal in add/edit mode |
+| `openStatsModal()` | Open stats modal with word list |
+| `renderWordList()` | Sort and display words in stats |
 | `openSettingsModal()` | Open settings modal |
 
 ## Validation

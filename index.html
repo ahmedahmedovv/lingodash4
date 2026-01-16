@@ -60,6 +60,18 @@
     .menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #94a3b8; font-size: 14px; cursor: pointer; transition: background 0.15s; }
     .menu-item:hover { background: #334155; color: #f8fafc; }
     .menu-item svg { width: 16px; height: 16px; stroke: currentColor; }
+    .stats-summary { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stats-summary span { font-size: 13px; color: #64748b; }
+    .stats-summary strong { color: #f8fafc; }
+    .sort-row { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+    .sort-row select { padding: 8px 12px; background: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 6px; font-size: 13px; outline: none; }
+    .sort-row select:focus { border-color: #60a5fa; }
+    .word-list { max-height: 60vh; overflow-y: auto; }
+    .word-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #334155; }
+    .word-item:last-child { border-bottom: none; }
+    .word-name { font-size: 14px; color: #f8fafc; }
+    .word-meta { font-size: 12px; color: #64748b; text-align: right; }
+    .word-state { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #334155; color: #94a3b8; margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -67,10 +79,11 @@
   <div class="menu" id="menu">
     <div class="menu-item" id="menuAdd"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add</div>
     <div class="menu-item" id="menuEdit"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</div>
+    <div class="menu-item" id="menuStats"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Stats</div>
     <div class="menu-item" id="menuSettings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg>Settings</div>
   </div>
   <div class="card" id="card">
-    <div class="stats"><span id="counter">-</span><span id="streak"><svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;stroke:#f97316;fill:none" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2c.4 2.3.6 4.5 0 6.5C10.5 5 8 4 6 5c1 2.5 1.5 5 1 7.5C5 11 3 9.5 2 11c1 3 2 6 5 8 1.5 1 3 2 5 2s3.5-1 5-2c3-2 4-5 5-8-1-1.5-3 0-5 1.5.5-2.5 0-5-1-7.5-2-1-4.5 0-6 3.5.6-2 .4-4.2 0-6.5z"/></svg><span id="streakNum">0</span></span></div>
+    <div class="stats"><span id="counter">-</span><span id="stability" title="Memory stability in days"></span><span id="streak"><svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;stroke:#f97316;fill:none" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2c.4 2.3.6 4.5 0 6.5C10.5 5 8 4 6 5c1 2.5 1.5 5 1 7.5C5 11 3 9.5 2 11c1 3 2 6 5 8 1.5 1 3 2 5 2s3.5-1 5-2c3-2 4-5 5-8-1-1.5-3 0-5 1.5.5-2.5 0-5-1-7.5-2-1-4.5 0-6 3.5.6-2 .4-4.2 0-6.5z"/></svg><span id="streakNum">0</span></span></div>
     <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
     <div class="ex" id="ex"></div>
     <div class="def" id="def">Loading...</div>
@@ -100,6 +113,35 @@
         <div class="btn btn-primary" id="btnSave"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2zM17 21v-8H7v8M7 3v5h8"/></svg><span id="btnSaveText">Save</span></div>
         <div class="btn btn-danger" id="btnDel" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>Delete</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Stats Modal -->
+  <div class="modal" id="statsModal">
+    <div class="modal-inner">
+      <div class="modal-header">
+        <span class="modal-title">Stats</span>
+        <svg class="modal-close" id="closeStats" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Close"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+      <div class="stats-summary" id="statsSummary"></div>
+      <div class="sort-row">
+        <select id="sortBy">
+          <option value="due">Due date</option>
+          <option value="difficulty">Difficulty</option>
+          <option value="stability">Stability</option>
+          <option value="lapses">Lapses</option>
+          <option value="reps">Reviews</option>
+          <option value="last_review">Last reviewed</option>
+          <option value="state">State</option>
+          <option value="alpha">Alphabetical</option>
+        </select>
+        <select id="sortDir">
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
+      <p id="sortHint" style="font-size:12px;color:#64748b;margin-bottom:16px;font-style:italic;"></p>
+      <div class="word-list" id="wordList"></div>
     </div>
   </div>
 
@@ -160,7 +202,7 @@
 
     function next(pickNew = true) {
       if (sessionCount >= sessionLimit()) {
-        ex.textContent = ''; ans.style.display = 'none';
+        ex.textContent = ''; ans.style.display = 'none'; stability.textContent = '';
         def.innerHTML = 'Session complete!<div class="btns" style="justify-content:center;margin-top:24px"><div class="btn btn-primary" id="btnNewSession">New Session</div><div class="btn" id="btnDone">Done</div></div>';
         document.getElementById('btnNewSession').onclick = () => { sessionCount = 0; wrongCount = 0; wrongWords = []; saveSession(); next(); };
         document.getElementById('btnDone').onclick = () => { def.innerHTML = 'See you tomorrow!'; };
@@ -171,7 +213,7 @@
       d = [...d, ...wrongCards];
       streakNum.textContent = streakData.count;
       if (!d.length) d = cards;
-      if (!d.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; cur = null; return; }
+      if (!d.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; stability.textContent = ''; cur = null; return; }
       if (pickNew) {
         sessionCount++;
         saveSession();
@@ -180,6 +222,8 @@
       }
       counter.textContent = sessionCount + ' / ' + sessionLimit();
       progressBar.style.width = (sessionCount / sessionLimit() * 100) + '%';
+      const stab = cur.card.stability || 0;
+      stability.innerHTML = '<svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;stroke:#60a5fa;fill:none" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' + (stab < 1 ? stab.toFixed(1) : Math.round(stab)) + 'd';
       def.textContent = cur.def + (cur.word ? ' (' + cur.word[0].toLowerCase() + ')' : '');
       const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.textContent = (cur.ex || '').replace(esc ? new RegExp(esc, 'gi') : '', '___');
@@ -238,6 +282,54 @@
       ans.focus();
     };
 
+    const stateNames = ['New', 'Learning', 'Review', 'Relearning'];
+    const openStatsModal = () => {
+      statsModal.style.display = 'block';
+      const dueNow = cards.filter(c => new Date(c.card.due) <= new Date()).length;
+      const byState = [0, 0, 0, 0]; cards.forEach(c => byState[c.card.state]++);
+      statsSummary.innerHTML = `<span>Total: <strong>${cards.length}</strong></span><span>Due: <strong>${dueNow}</strong></span><span>New: <strong>${byState[0]}</strong></span><span>Learning: <strong>${byState[1]}</strong></span><span>Review: <strong>${byState[2]}</strong></span>`;
+      renderWordList();
+    };
+    const closeStatsModal = () => { statsModal.style.display = 'none'; ans.focus(); };
+
+    const sortHints = {
+      due: "Next scheduled review date for each word.",
+      difficulty: "How hard the algorithm thinks this word is (0-10).",
+      stability: "Days until you'd forget this word without review.",
+      lapses: "Times you got this word wrong after learning it.",
+      reps: "Total number of times you've reviewed this word.",
+      last_review: "When you last practiced this word.",
+      state: "Learning stage: New → Learning → Review → Relearning.",
+      alpha: "Simple A-Z sorting by word."
+    };
+
+    const renderWordList = () => {
+      const sortKey = sortBy.value, dir = sortDir.value === 'asc' ? 1 : -1;
+      sortHint.textContent = sortHints[sortKey] || '';
+      const sorted = [...cards].sort((a, b) => {
+        let av, bv;
+        if (sortKey === 'alpha') { av = a.word.toLowerCase(); bv = b.word.toLowerCase(); return av < bv ? -dir : av > bv ? dir : 0; }
+        if (sortKey === 'due') { av = new Date(a.card.due); bv = new Date(b.card.due); }
+        else if (sortKey === 'last_review') { av = a.card.last_review ? new Date(a.card.last_review) : new Date(0); bv = b.card.last_review ? new Date(b.card.last_review) : new Date(0); }
+        else { av = a.card[sortKey] || 0; bv = b.card[sortKey] || 0; }
+        return (av - bv) * dir;
+      });
+      const fmtDate = d => { if (!d) return '-'; const dt = new Date(d); return dt.getDate() + '/' + (dt.getMonth() + 1) + '/' + dt.getFullYear(); };
+      const fmtMeta = c => {
+        if (sortKey === 'due') return 'Due: ' + fmtDate(c.card.due);
+        if (sortKey === 'difficulty') return 'Diff: ' + (c.card.difficulty || 0).toFixed(2);
+        if (sortKey === 'stability') return 'Stab: ' + (c.card.stability || 0).toFixed(1) + 'd';
+        if (sortKey === 'lapses') return 'Lapses: ' + (c.card.lapses || 0);
+        if (sortKey === 'reps') return 'Reviews: ' + (c.card.reps || 0);
+        if (sortKey === 'last_review') return 'Last: ' + fmtDate(c.card.last_review);
+        if (sortKey === 'state') return stateNames[c.card.state] || 'New';
+        return '';
+      };
+      wordList.innerHTML = sorted.map(c => `<div class="word-item"><span class="word-name">${c.word}<span class="word-state">${stateNames[c.card.state]}</span></span><span class="word-meta">${fmtMeta(c)}</span></div>`).join('');
+    };
+    sortBy.onchange = renderWordList;
+    sortDir.onchange = renderWordList;
+
     // Menu toggle
     const toggleMenu = () => { menu.classList.toggle('show'); menuEdit.style.display = cur ? 'flex' : 'none'; };
     const closeMenu = () => menu.classList.remove('show');
@@ -247,7 +339,9 @@
     icon.onclick = toggleMenu;
     menuAdd.onclick = () => { closeMenu(); openEditModal(false); };
     menuEdit.onclick = () => { closeMenu(); openEditModal(true); };
+    menuStats.onclick = () => { closeMenu(); openStatsModal(); };
     menuSettings.onclick = () => { closeMenu(); openSettingsModal(); };
+    closeStats.onclick = closeStatsModal;
     closeSettings.onclick = closeSettingsModal;
     closeEdit.onclick = closeEditModal;
 
