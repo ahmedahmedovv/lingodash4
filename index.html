@@ -582,7 +582,18 @@ Tip: Export from another deck to see the format'></textarea>
               renderDeckMenu();
             }
           }
-          cards.length = 0; valid.forEach(c => cards.push(c)); save();
+          cards.length = 0;
+          valid.forEach(c => {
+            // Convert date strings back to Date objects for internal storage
+            if (c.card.due && typeof c.card.due === 'string') {
+              c.card.due = parseDateDDMMYYYY(c.card.due);
+            }
+            if (c.card.last_review && typeof c.card.last_review === 'string') {
+              c.card.last_review = parseDateDDMMYYYY(c.card.last_review);
+            }
+            cards.push(c);
+          });
+          save();
           if (imported.streak) {
             streakData = { ...imported.streak, date: parseDateDDMMYYYY(imported.streak.date) };
             localStorage.setItem(getDeckKey('streak'), JSON.stringify(streakData));
