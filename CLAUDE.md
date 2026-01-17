@@ -260,7 +260,7 @@ Stats row (visible on hover):
 ### Components
 - **Card**: Dark background (#1e293b), subtle border, 12px radius, shadow
 - **Inputs**: 8px radius, dark background, green/red border on correct/wrong
-- **Stats row**: 30% opacity by default, 100% on card hover
+- **Stats row**: 50% opacity by default, 100% on card hover
 - **Example box**: 24px font, dark background, subtle border
 - **Modals**: Full-screen overlay, centered content (max 480px)
 - **Menu**: Dropdown from gear icon, 140px min-width, hover highlight
@@ -357,7 +357,7 @@ Stats row (visible on hover):
 2. Paste JSON into textarea
 3. Click "Import" button
 4. Validation:
-   - Full backup {fc, streak, session, curWord}: Replaces all data
+   - Full backup {fc, streak, session}: Replaces all data
    - Card array [{word, def, card}...]: Appends to existing
 5. Alert shows number of imported cards
 6. Modal closes, session refreshes
@@ -369,9 +369,8 @@ Stats row (visible on hover):
 2. Click "Export" button
 3. Browser downloads flashcards.json containing:
    - fc: All cards with FSRS state
-   - streak: {count, date}
+   - streak: {count, date, freezes}
    - session: {count, wrong, words, date}
-   - curWord: Current card word
 ```
 
 ### Clear All Flow
@@ -420,8 +419,7 @@ Stats row (visible on hover):
     wrong: Number,     // Wrong answers this session
     words: [...],      // Words answered wrong
     date: "string"     // Session date
-  },
-  curWord: "string"    // Current card's word (or null)
+  }
 }
 ```
 
@@ -434,7 +432,6 @@ Stats row (visible on hover):
 | `streak_<deck>` | Object | `{count, date, freezes}` per deck |
 | `session_<deck>` | Object | `{count, wrong, words[], date}` per deck |
 | `sessionGoal` | Number | Cards per session (10/25/51/100) |
-| `curWord` | String | Current card's word for restore |
 
 ## Key Functions
 
@@ -539,6 +536,23 @@ Stats row (visible on hover):
 - No IE support
 
 ## Changelog
+
+### 2026-01-17
+
+#### Fixed: Multiple Bug Fixes and UX Improvements
+- **What**: Fixed 7 issues including session state, export dates, UI polish, and keyboard navigation
+- **Why**: Improve app reliability and user experience
+- **Files changed**: `index.html` (session logic, export, UI, event handlers)
+- **Affected areas**: Session management, export/import, modal navigation, stats display
+- **Changes**:
+  - **Session state simplified**: Removed broken `curWord` restoration logic - page reload now always starts fresh session (matches documented behavior)
+  - **Export date fixed**: Session date in export now uses actual session date instead of current date
+  - **RTL direction removed**: Removed unnecessary RTL styling from image display area
+  - **Escape key support**: Added keyboard shortcut (Escape) to close all modals and menus
+  - **Empty word guard**: Improved regex handling for edge case of empty/whitespace-only words
+  - **Stats visibility**: Increased stats row default opacity from 30% to 50% for better readability
+  - **No cards due message**: Added friendly "No cards due. Come back later!" when no cards are due or new
+  - **Code cleanup**: Removed all `curWord` localStorage operations (6 occurrences)
 
 ### 2026-01-17
 

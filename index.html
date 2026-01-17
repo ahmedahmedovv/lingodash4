@@ -17,7 +17,7 @@
     .card input { text-align: center; background: #0f172a; transition: border-color 0.3s; }
     .card input.correct { border-color: #22c55e; }
     .card input.wrong { border-color: #ef4444; }
-    .stats { width: 100%; display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.3; transition: opacity 0.2s; }
+    .stats { width: 100%; display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.5; transition: opacity 0.2s; }
     .card:hover .stats { opacity: 1; }
     .progress { width: 100%; height: 2px; background: #334155; border-radius: 2px; margin-bottom: 22px; }
     .progress-bar { height: 100%; background: #60a5fa; border-radius: 2px; transition: width 0.3s; }
@@ -107,10 +107,10 @@
 
   <!-- Image Display Area -->
   <div id="imageArea" style="display: none; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; margin-top: 20px; width: 100vw;">
-    <div style="max-width: 1400px; margin: 0 auto; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.3); direction: rtl;">
-      <div style="font-size: 14px; color: #94a3b8; margin-bottom: 12px; direction: ltr;">Images for: <strong id="imageWord" style="color: #f8fafc;"></strong></div>
+    <div style="max-width: 1400px; margin: 0 auto; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.3);">
+      <div style="font-size: 14px; color: #94a3b8; margin-bottom: 12px;">Images for: <strong id="imageWord" style="color: #f8fafc;"></strong></div>
       <div style="width: 100%; height: 500px; border: 1px solid #334155; border-radius: 8px; overflow: hidden;">
-        <iframe id="cardImagesFrame" src="" style="width: 100%; height: 100%; border: none; direction: rtl;" title="Word Images"></iframe>
+        <iframe id="cardImagesFrame" src="" style="width: 100%; height: 100%; border: none;" title="Word Images"></iframe>
       </div>
     </div>
   </div>
@@ -393,6 +393,10 @@ Tip: Export from another deck to see the format'></textarea>
       freezeNum.textContent = streakData.freezes || 0;
       if (!cards.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; stability.textContent = ''; cur = null; return; }
       if (pickNew && !pool.length && !poolSize) initPool();
+      // Handle case where pool is empty after init (no due or new cards)
+      if (!pool.length && !poolSize) {
+        def.textContent = 'No cards due. Come back later!'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = '0 / 0'; stability.textContent = ''; cur = null; return;
+      }
       if (!pool.length && poolSize) {
         counter.textContent = poolSize + ' / ' + poolSize;
         progressBar.style.width = '100%';
@@ -407,7 +411,6 @@ Tip: Export from another deck to see the format'></textarea>
         saveSession();
         const idx = Math.floor(Math.random() * pool.length);
         cur = pool[idx];
-        localStorage.setItem('curWord', cur.word);
       }
       const done = poolSize - pool.length;
       counter.textContent = done + ' / ' + poolSize;
@@ -415,8 +418,9 @@ Tip: Export from another deck to see the format'></textarea>
       const stab = cur.card.stability || 0;
       stability.innerHTML = '<svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;stroke:#60a5fa;fill:none" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' + (stab < 1 ? stab.toFixed(1) : Math.round(stab)) + 'd';
       def.textContent = cur.def + (cur.word ? ' (' + cur.word[0].toLowerCase() + ')' : '');
-      const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      ex.textContent = (cur.ex || '').replace(esc ? new RegExp(esc, 'gi') : '', '___');
+      const wordText = (cur.word || '').trim();
+      const esc = wordText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      ex.textContent = esc ? (cur.ex || '').replace(new RegExp(esc, 'gi'), '___') : (cur.ex || '');
       ans.value = ''; ans.style.display = ''; ans.classList.remove('correct', 'wrong'); answered = false; ans.focus();
     }
 
@@ -455,7 +459,8 @@ Tip: Export from another deck to see the format'></textarea>
       saveSession();
       ans.classList.remove('correct', 'wrong');
       ans.classList.add(correct ? 'correct' : 'wrong');
-      const esc = (cur.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const wordText = (cur.word || '').trim();
+      const esc = wordText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.style.opacity = '0';
       setTimeout(() => {
         ex.innerHTML = esc ? (cur.ex || '').replace(new RegExp(`(${esc})`, 'gi'), `<span style="color:${correct ? '#22c55e' : '#ef4444'};font-weight:600">$1</span>`) : (cur.ex || '');
@@ -598,6 +603,19 @@ Tip: Export from another deck to see the format'></textarea>
     closeStats.onclick = closeStatsModal;
     closeSettings.onclick = closeSettingsModal;
     closeEdit.onclick = closeEditModal;
+    closeImageSearch.onclick = closeImageSearchModal;
+
+    // Escape key closes modals and menus
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (editModal.style.display === 'block') closeEditModal();
+        else if (statsModal.style.display === 'block') closeStatsModal();
+        else if (settingsModal.style.display === 'block') closeSettingsModal();
+        else if (imageSearchModal.style.display === 'block') closeImageSearchModal();
+        closeMenu();
+        deckMenu.classList.remove('show');
+      }
+    });
 
     confirmDelete.oninput = () => btnClear.disabled = confirmDelete.value !== 'DELETE';
 
@@ -610,7 +628,7 @@ Tip: Export from another deck to see the format'></textarea>
 
     btnDel.onclick = () => {
       const i = cards.indexOf(cur);
-      if (cur && i >= 0 && confirm('Delete "' + cur.word + '"?')) { cards.splice(i, 1); save(); localStorage.removeItem('curWord'); closeEditModal(); next(); }
+      if (cur && i >= 0 && confirm('Delete "' + cur.word + '"?')) { cards.splice(i, 1); save(); closeEditModal(); next(); }
     };
 
     const parseDateDDMMYYYY = d => {
@@ -668,7 +686,6 @@ Tip: Export from another deck to see the format'></textarea>
             wrongWords = sessionData.words || [];
             localStorage.setItem(getDeckKey('session'), JSON.stringify(sessionData));
           }
-          if (imported.curWord) { cur = cards.find(c => c.word === imported.curWord); localStorage.setItem('curWord', imported.curWord); }
           pool = []; poolSize = 0;
           csv.value = ''; closeSettingsModal(); next();
           alert('Imported ' + valid.length + ' cards to "' + currentDeck + '"');
@@ -684,7 +701,7 @@ Tip: Export from another deck to see the format'></textarea>
 
     btnExport.onclick = () => {
       const a = document.createElement('a');
-      const data = { deck: currentDeck, fc: cards, streak: { count: streakData.count, date: formatDateDDMMYYYY(streakData.date), freezes: streakData.freezes || 0 }, session: { count: sessionCount, wrong: wrongCount, words: wrongWords, date: formatDateDDMMYYYY(new Date()) }, curWord: cur ? cur.word : null };
+      const data = { deck: currentDeck, fc: cards, streak: { count: streakData.count, date: formatDateDDMMYYYY(streakData.date), freezes: streakData.freezes || 0 }, session: { count: sessionCount, wrong: wrongCount, words: wrongWords, date: formatDateDDMMYYYY(sessionData.date || new Date().toDateString()) } };
       a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}));
       a.download = `${currentDeck.toLowerCase().replace(/\s+/g, '-')}.json`; a.click();
     };
@@ -693,17 +710,14 @@ Tip: Export from another deck to see the format'></textarea>
       if (confirmDelete.value === 'DELETE') {
         cards.length = 0;
         save();
-        localStorage.removeItem('curWord');
         closeSettingsModal();
         next();
         alert('All cards have been deleted.');
       }
     };
 
-    // Initialize deck menu and start
+    // Initialize deck menu and start fresh session
     renderDeckMenu();
-    const savedWord = localStorage.getItem('curWord');
-    cur = savedWord ? cards.find(c => c.word === savedWord) : null;
     next();
   </script>
 </body>
