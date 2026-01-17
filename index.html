@@ -340,7 +340,14 @@ Tip: Export from another deck to see the format'></textarea>
     function initPool() {
       sessionCount = 0; wrongCount = 0; wrongWords = [];
       let d = due();
-      if (!d.length) d = cards.slice();
+      // If we don't have enough due cards, fill remaining slots with new cards (state 0)
+      if (d.length < sessionLimit()) {
+        const remainingSlots = sessionLimit() - d.length;
+        const newCards = cards.filter(c => c.card.state === 0 && !d.includes(c))
+          .sort(() => Math.random() - 0.5)
+          .slice(0, remainingSlots);
+        d = d.concat(newCards);
+      }
       pool = d.sort(() => Math.random() - 0.5).slice(0, sessionLimit());
       poolSize = pool.length;
       saveSession();
