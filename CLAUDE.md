@@ -508,6 +508,19 @@ Stats row (visible on hover):
 
 ### 2026-01-17
 
+#### Added: Automatic Bing Image Display
+- **What**: Bing image search results automatically appear under flashcards after answering
+- **Why**: Visual learning aid for vocabulary with relevant images shown immediately during study
+- **Files changed**: `index.html` (added automatic image display area, modified answer submission flow)
+- **Affected areas**: Study interface, answer submission logic, UI layout
+- **Technical details**:
+  - Embedded Bing image search in iframe that appears below the card
+  - No API keys or external dependencies needed
+  - Images load automatically after answer is revealed (along with TTS)
+  - 300px height iframe with proper styling matching app theme
+  - Images hide when moving to next card
+- **New behavior**: After typing answer and pressing Enter, Bing image search results for the word appear automatically under the card
+
 #### Added: Text-to-Speech (TTS) Functionality
 - **What**: Automatic speech synthesis for example sentences after answering flashcards
 - **Why**: Enhance language learning with pronunciation practice

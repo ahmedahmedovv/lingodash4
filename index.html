@@ -105,6 +105,16 @@
     <input type="text" id="ans" autofocus>
   </div>
 
+  <!-- Image Display Area -->
+  <div id="imageArea" style="display: none; margin-top: 20px; max-width: 900px; text-align: center;">
+    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.3);">
+      <div style="font-size: 14px; color: #94a3b8; margin-bottom: 12px;">Images for: <strong id="imageWord" style="color: #f8fafc;"></strong></div>
+      <div style="width: 100%; height: 300px; border: 1px solid #334155; border-radius: 8px; overflow: hidden;">
+        <iframe id="cardImagesFrame" src="" style="width: 100%; height: 100%; border: none;" title="Word Images"></iframe>
+      </div>
+    </div>
+  </div>
+
   <!-- Edit Modal -->
   <div class="modal" id="editModal">
     <div class="modal-inner">
@@ -157,6 +167,19 @@
       </div>
       <p id="sortHint" style="font-size:12px;color:#64748b;margin-bottom:16px;font-style:italic;"></p>
       <div class="word-list" id="wordList"></div>
+    </div>
+  </div>
+
+  <!-- Image Search Modal -->
+  <div class="modal" id="imageSearchModal">
+    <div class="modal-inner" style="max-width: 95vw; max-height: 90vh;">
+      <div class="modal-header">
+        <span class="modal-title">Image Search: <span id="searchWord"></span></span>
+        <svg class="modal-close" id="closeImageSearch" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Close"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+      <div style="width: 100%; height: 80vh; border: 1px solid #334155; border-radius: 8px; overflow: hidden;">
+        <iframe id="bingImagesFrame" src="" style="width: 100%; height: 100%; border: none;" title="Bing Image Search"></iframe>
+      </div>
     </div>
   </div>
 
@@ -411,7 +434,14 @@ Tip: Export from another deck to see the format'></textarea>
 
     ans.onkeydown = e => {
       if (e.key !== 'Enter' || !cur) return;
-      if (answered) { card.classList.add('fade'); setTimeout(() => { next(); card.classList.remove('fade'); }, 150); return; }
+      if (answered) {
+        // Hide image area when moving to next card
+        imageArea.style.display = 'none';
+        cardImagesFrame.src = '';
+        card.classList.add('fade');
+        setTimeout(() => { next(); card.classList.remove('fade'); }, 150);
+        return;
+      }
       const correct = ans.value.trim().toLowerCase() === (cur.word || '').toLowerCase();
       cur.card = f.repeat(cur.card, new Date())[correct ? Rating.Good : Rating.Again].card;
       if (correct) {
@@ -432,6 +462,11 @@ Tip: Export from another deck to see the format'></textarea>
         ex.style.opacity = '1';
         // Speak the complete example sentence after it's revealed
         speakText(ex.textContent || ex.innerText);
+        // Show images for the current word
+        imageWord.textContent = cur.word;
+        const searchQuery = encodeURIComponent(cur.word);
+        cardImagesFrame.src = `https://www.bing.com/images/search?q=${searchQuery}`;
+        imageArea.style.display = 'block';
       }, 150);
       answered = true; updateStreak(); save(); ans.focus();
     };
@@ -491,6 +526,20 @@ Tip: Export from another deck to see the format'></textarea>
       renderWordList();
     };
     const closeStatsModal = () => { statsModal.style.display = 'none'; ans.focus(); };
+
+    const openImageSearchModal = () => {
+      if (!cur || !cur.word) { alert('No word to search for'); return; }
+      imageSearchModal.style.display = 'block';
+      searchWord.textContent = cur.word;
+      const searchQuery = encodeURIComponent(cur.word);
+      bingImagesFrame.src = `https://www.bing.com/images/search?q=${searchQuery}`;
+    };
+
+    const closeImageSearchModal = () => {
+      imageSearchModal.style.display = 'none';
+      bingImagesFrame.src = ''; // Clear the iframe src to stop loading
+      ans.focus();
+    };
 
     const sortHints = {
       due: "Next scheduled review date for each word.",
