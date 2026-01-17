@@ -281,6 +281,7 @@ Stats row (visible on hover):
 |------|--------|
 | + | Add new card |
 | ✎ | Edit current card (hidden if no card) |
+| 🖼 | Open fullscreen image search (hidden if no card) |
 | 📊 | Open stats modal |
 | ⚙ | Open settings modal |
 
@@ -536,6 +537,23 @@ Stats row (visible on hover):
 - No IE support
 
 ## Changelog
+
+### 2026-01-17
+
+#### Fixed: Security Fixes and Final Polish
+- **What**: Fixed XSS vulnerabilities, added missing features, improved mobile support
+- **Why**: Security hardening and feature completeness
+- **Files changed**: `index.html` (security, UI, error handling)
+- **Affected areas**: Security, deck menu, example display, mobile viewport, error handling
+- **Changes**:
+  - **XSS fix in deck menu**: Escape deck names before inserting into HTML
+  - **XSS fix in example reveal**: Escape example text before innerHTML insertion
+  - **Dead code removed**: Removed leftover `curWord` reference in switchDeck()
+  - **Images menu added**: New "Images" menu item for fullscreen image search (was missing)
+  - **Mobile viewport**: Added viewport meta tag for responsive design
+  - **Date format consistency**: Stats modal dates now use DD/MM/YYYY format consistently
+  - **CDN error handling**: Added timeout and error message if FSRS module fails to load
+  - **Global escape function**: Moved `esc()` to global scope for consistent XSS prevention
 
 ### 2026-01-17
 

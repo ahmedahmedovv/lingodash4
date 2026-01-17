@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flashcards</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -94,6 +95,7 @@
   <div class="menu" id="menu">
     <div class="menu-item" id="menuAdd"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add</div>
     <div class="menu-item" id="menuEdit"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</div>
+    <div class="menu-item" id="menuImages"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Images</div>
     <div class="menu-item" id="menuStats"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Stats</div>
     <div class="menu-item" id="menuSettings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg>Settings</div>
   </div>
@@ -236,8 +238,22 @@ Tip: Export from another deck to see the format'></textarea>
       </div>
     </div>
   </div>
+  <script>
+    // CDN error handling - show message if module fails to load
+    window.addEventListener('error', function(e) {
+      if (e.message && e.message.includes('Failed to fetch')) {
+        document.getElementById('def').textContent = 'Failed to load. Check your internet connection and refresh.';
+      }
+    });
+    setTimeout(function() {
+      if (!window.fsrsLoaded && document.getElementById('def').textContent === 'Loading...') {
+        document.getElementById('def').textContent = 'Loading taking too long. Check your connection and refresh.';
+      }
+    }, 10000);
+  </script>
   <script type="module">
     import { FSRS, Rating, createEmptyCard } from 'https://unpkg.com/ts-fsrs/dist/index.mjs';
+    window.fsrsLoaded = true;
     const f = new FSRS();
 
     // Deck management
@@ -260,6 +276,7 @@ Tip: Export from another deck to see the format'></textarea>
     const save = () => localStorage.setItem(getDeckKey('fc'), JSON.stringify(cards));
     const due = () => cards.filter(c => new Date(c.card.due) <= new Date());
     const today = () => new Date().toDateString();
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const formatDateDDMMYYYY = d => {
       if (!d) return '';
       const dt = new Date(d);
@@ -270,7 +287,7 @@ Tip: Export from another deck to see the format'></textarea>
     // Deck functions
     const renderDeckMenu = () => {
       currentDeckName.textContent = currentDeck;
-      deckMenu.innerHTML = decks.map(d => `<div class="deck-menu-item${d === currentDeck ? ' active' : ''}" data-deck="${d}">${d}</div>`).join('') +
+      deckMenu.innerHTML = decks.map(d => `<div class="deck-menu-item${d === currentDeck ? ' active' : ''}" data-deck="${esc(d)}">${esc(d)}</div>`).join('') +
         '<div class="deck-menu-divider"></div>' +
         '<div class="deck-menu-item" id="newDeckBtn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>New Deck</div>';
       document.querySelectorAll('.deck-menu-item[data-deck]').forEach(item => {
@@ -294,7 +311,6 @@ Tip: Export from another deck to see the format'></textarea>
       wrongCount = isToday ? (sessionData.wrong || 0) : 0;
       wrongWords = isToday ? (sessionData.words || []) : [];
       pool = []; poolSize = 0;
-      localStorage.removeItem('curWord');
       cur = null;
       renderDeckMenu();
       next();
@@ -419,8 +435,8 @@ Tip: Export from another deck to see the format'></textarea>
       stability.innerHTML = '<svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;stroke:#60a5fa;fill:none" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' + (stab < 1 ? stab.toFixed(1) : Math.round(stab)) + 'd';
       def.textContent = cur.def + (cur.word ? ' (' + cur.word[0].toLowerCase() + ')' : '');
       const wordText = (cur.word || '').trim();
-      const esc = wordText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      ex.textContent = esc ? (cur.ex || '').replace(new RegExp(esc, 'gi'), '___') : (cur.ex || '');
+      const wordPattern = wordText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      ex.textContent = wordPattern ? (cur.ex || '').replace(new RegExp(wordPattern, 'gi'), '___') : (cur.ex || '');
       ans.value = ''; ans.style.display = ''; ans.classList.remove('correct', 'wrong'); answered = false; ans.focus();
     }
 
@@ -460,10 +476,11 @@ Tip: Export from another deck to see the format'></textarea>
       ans.classList.remove('correct', 'wrong');
       ans.classList.add(correct ? 'correct' : 'wrong');
       const wordText = (cur.word || '').trim();
-      const esc = wordText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const wordPattern = wordText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.style.opacity = '0';
       setTimeout(() => {
-        ex.innerHTML = esc ? (cur.ex || '').replace(new RegExp(`(${esc})`, 'gi'), `<span style="color:${correct ? '#22c55e' : '#ef4444'};font-weight:600">$1</span>`) : (cur.ex || '');
+        const safeEx = esc(cur.ex || '');
+        ex.innerHTML = wordPattern ? safeEx.replace(new RegExp(`(${esc(wordText)})`, 'gi'), `<span style="color:${correct ? '#22c55e' : '#ef4444'};font-weight:600">$1</span>`) : safeEx;
         ex.style.opacity = '1';
         // Speak the complete example sentence after it's revealed
         speakText(ex.textContent || ex.innerText);
@@ -568,7 +585,7 @@ Tip: Export from another deck to see the format'></textarea>
         else { av = a.card[sortKey] || 0; bv = b.card[sortKey] || 0; }
         return (av - bv) * dir;
       });
-      const fmtDate = d => { if (!d) return '-'; const dt = new Date(d); return dt.getDate() + '/' + (dt.getMonth() + 1) + '/' + dt.getFullYear(); };
+      const fmtDate = d => { if (!d) return '-'; const dt = new Date(d); return ('0' + dt.getDate()).slice(-2) + '/' + ('0' + (dt.getMonth() + 1)).slice(-2) + '/' + dt.getFullYear(); };
       const fmtMeta = c => {
         if (sortKey === 'due') return 'Due: ' + fmtDate(c.card.due);
         if (sortKey === 'difficulty') return 'Diff: ' + (c.card.difficulty || 0).toFixed(2);
@@ -579,7 +596,6 @@ Tip: Export from another deck to see the format'></textarea>
         if (sortKey === 'state') return stateNames[c.card.state] || 'New';
         return '';
       };
-      const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       wordList.innerHTML = sorted.map(c => `<div class="word-item"><span class="word-name">${esc(c.word)}<span class="word-state">${stateNames[c.card.state]}</span></span><span class="word-meta">${fmtMeta(c)}</span></div>`).join('');
     };
     sortBy.onchange = renderWordList;
@@ -590,7 +606,7 @@ Tip: Export from another deck to see the format'></textarea>
     document.addEventListener('click', e => { if (!deckMenu.contains(e.target) && !deckSelector.contains(e.target)) deckMenu.classList.remove('show'); });
 
     // Menu toggle
-    const toggleMenu = () => { menu.classList.toggle('show'); menuEdit.style.display = cur ? 'flex' : 'none'; };
+    const toggleMenu = () => { menu.classList.toggle('show'); menuEdit.style.display = cur ? 'flex' : 'none'; menuImages.style.display = cur ? 'flex' : 'none'; };
     const closeMenu = () => menu.classList.remove('show');
     document.addEventListener('click', e => { if (!menu.contains(e.target) && e.target !== icon) closeMenu(); });
 
@@ -598,6 +614,7 @@ Tip: Export from another deck to see the format'></textarea>
     icon.onclick = toggleMenu;
     menuAdd.onclick = () => { closeMenu(); openEditModal(false); };
     menuEdit.onclick = () => { closeMenu(); openEditModal(true); };
+    menuImages.onclick = () => { closeMenu(); openImageSearchModal(); };
     menuStats.onclick = () => { closeMenu(); openStatsModal(); };
     menuSettings.onclick = () => { closeMenu(); openSettingsModal(); };
     closeStats.onclick = closeStatsModal;
