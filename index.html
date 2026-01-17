@@ -6,11 +6,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; font-family: 'Inter', sans-serif; }
-    body { max-width: 900px; margin: 0 auto; padding: 80px 40px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; background: #0f172a; }
+    body { max-width: 900px; margin: 0 auto; padding: 80px 40px; min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; background: #0f172a; }
     input, textarea { width: 100%; padding: 16px 20px; font-size: 16px; background: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 8px; margin-top: 12px; outline: none; transition: border-color 0.2s; }
     input::placeholder, textarea::placeholder { color: #64748b; }
     input:focus, textarea:focus { border-color: #60a5fa; }
-    .card { position: relative; padding: 48px 40px; background: #1e293b; border: 1px solid #334155; border-radius: 12px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.3); transition: opacity 0.15s; display: flex; flex-direction: column; align-items: center; }
+    .card { position: relative; padding: 32px 40px; background: #1e293b; border: 1px solid #334155; border-radius: 12px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.3); transition: opacity 0.15s; display: flex; flex-direction: column; align-items: center; }
     .card.fade { opacity: 0; }
     .card.shake { animation: shake 0.4s; }
     @keyframes shake { 20%,60% { transform: translateX(-8px); } 40%,80% { transform: translateX(8px); } }
@@ -106,11 +106,11 @@
   </div>
 
   <!-- Image Display Area -->
-  <div id="imageArea" style="display: none; margin-top: 20px; max-width: 900px; text-align: center;">
-    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.3);">
-      <div style="font-size: 14px; color: #94a3b8; margin-bottom: 12px;">Images for: <strong id="imageWord" style="color: #f8fafc;"></strong></div>
-      <div style="width: 100%; height: 300px; border: 1px solid #334155; border-radius: 8px; overflow: hidden;">
-        <iframe id="cardImagesFrame" src="" style="width: 100%; height: 100%; border: none;" title="Word Images"></iframe>
+  <div id="imageArea" style="display: none; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; margin-top: 20px; width: 100vw;">
+    <div style="max-width: 1400px; margin: 0 auto; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.3); direction: rtl;">
+      <div style="font-size: 14px; color: #94a3b8; margin-bottom: 12px; direction: ltr;">Images for: <strong id="imageWord" style="color: #f8fafc;"></strong></div>
+      <div style="width: 100%; height: 500px; border: 1px solid #334155; border-radius: 8px; overflow: hidden;">
+        <iframe id="cardImagesFrame" src="" style="width: 100%; height: 100%; border: none; direction: rtl;" title="Word Images"></iframe>
       </div>
     </div>
   </div>
