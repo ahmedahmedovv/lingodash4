@@ -215,9 +215,10 @@ Stats row (visible on hover):
 ## UI Design
 
 ### Layout
-- Max-width: 900px, centered
+- Max-width: 1200px (body), 1000px (card), centered
 - Padding: 80px vertical, 40px horizontal
 - Full viewport height with flexbox centering
+- Card: Compact vertical spacing (16px padding), full width utilization
 
 ### Color Palette (Dark Theme)
 | Element | Color | Hex |
