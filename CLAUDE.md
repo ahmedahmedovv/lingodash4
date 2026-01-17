@@ -73,9 +73,23 @@ Pool empty? → Session complete!
 ### Progress Tracking
 - **Counter**: Shows `completed / total` cards in session
 - **Progress bar**: Visual indicator of session completion
-- **Stability**: Memory strength displayed on card (e.g., "7d" = 7 days)
+- **Stability**: Memory strength displayed on card (e.g., "7d")
 - **Streak**: Daily streak with flame icon, persists in LocalStorage
 - **Streak Freeze**: Automatic protection if you miss one day
+
+### Automatic Image Display
+- **Visual Learning**: Bing image search results automatically appear after answering each card
+- **Contextual Images**: Shows relevant images for the vocabulary word being studied
+- **Seamless Integration**: Images load automatically alongside TTS and answer reveal
+- **No Extra Steps**: Images appear in embedded iframe below the flashcard
+- **Fullscreen Option**: Click gear menu → "Images" for dedicated fullscreen image search
+
+### Text-to-Speech (TTS)
+- **Pronunciation Practice**: Automatic speech synthesis for example sentences after answering
+- **Web Speech API**: Uses browser's built-in speech synthesis (no external dependencies)
+- **Complete Sentences**: Speaks the full example sentence with the target word revealed
+- **Graceful Fallback**: Silently disabled on unsupported browsers
+- **Timing**: Speaks after answer is revealed and images are loaded
 
 ### Streak Freeze System
 Automatic streak protection that saves your streak if you miss a day:
@@ -428,14 +442,28 @@ Stats row (visible on hover):
 |----------|---------|
 | `save()` | Persist cards array to LocalStorage |
 | `due()` | Filter cards where due date ≤ now |
+| `today()` | Return today's date string |
+| `formatDateDDMMYYYY(d)` | Format dates as DD/MM/YYYY |
+| `parseDateDDMMYYYY(d)` | Parse DD/MM/YYYY formatted dates |
 | `initPool()` | Reset session, create shuffled pool of up to 51 cards |
 | `next(pickNew)` | Show next card or session complete screen |
+| `speakText(text)` | TTS function using Web Speech API |
 | `updateStreak()` | Increment streak if new day |
 | `saveSession()` | Persist session state to LocalStorage |
 | `openEditModal(edit)` | Open modal in add (false) or edit (true) mode |
-| `openStatsModal()` | Open stats modal, render summary and word list |
-| `renderWordList()` | Sort cards and render to word list |
+| `closeEditModal()` | Close edit modal |
 | `openSettingsModal()` | Open settings modal |
+| `closeSettingsModal()` | Close settings modal |
+| `openStatsModal()` | Open stats modal, render summary and word list |
+| `closeStatsModal()` | Close stats modal |
+| `openImageSearchModal()` | Open manual image search modal |
+| `closeImageSearchModal()` | Close image search modal |
+| `renderWordList()` | Sort cards and render to word list |
+| `renderDeckMenu()` | Render deck selector dropdown |
+| `switchDeck(deckName)` | Switch to different deck |
+| `createNewDeck()` | Create new deck |
+| `deleteDeck(deckName)` | Delete deck |
+| `renameDeck(oldName)` | Rename deck |
 
 ## FSRS Integration
 
@@ -506,6 +534,19 @@ Stats row (visible on hover):
 - No IE support
 
 ## Changelog
+
+### 2026-01-17
+
+#### Updated: Documentation Corrections
+- **What**: Added missing features and functions to CLAUDE.md documentation
+- **Why**: Ensure documentation accurately reflects all implemented features
+- **Files changed**: `CLAUDE.md` (Features section, Key Functions section)
+- **Affected areas**: Documentation completeness and accuracy
+- **Changes**:
+  - Added "Automatic Image Display" feature section (was only in changelog)
+  - Added "Text-to-Speech (TTS)" feature section (was only in changelog)
+  - Added missing functions to Key Functions table: `speakText()`, `openImageSearchModal()`, `closeImageSearchModal()`, `formatDateDDMMYYYY()`, `parseDateDDMMYYYY()`, `renderDeckMenu()`, `switchDeck()`, `createNewDeck()`, `deleteDeck()`, `renameDeck()`, and close modal functions
+  - Verified all functions and features from index.html are properly documented
 
 ### 2026-01-17
 
