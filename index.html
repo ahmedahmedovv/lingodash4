@@ -397,6 +397,18 @@ Tip: Export from another deck to see the format'></textarea>
       ans.value = ''; ans.style.display = ''; ans.classList.remove('correct', 'wrong'); answered = false; ans.focus();
     }
 
+    // TTS function using Web Speech API
+    function speakText(text) {
+      if ('speechSynthesis' in window && text.trim()) {
+        // Cancel any ongoing speech
+        speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text.trim());
+        // Optional: Set language if needed (could be enhanced later)
+        // utterance.lang = 'en-US'; // or detect from content
+        speechSynthesis.speak(utterance);
+      }
+    }
+
     ans.onkeydown = e => {
       if (e.key !== 'Enter' || !cur) return;
       if (answered) { card.classList.add('fade'); setTimeout(() => { next(); card.classList.remove('fade'); }, 150); return; }
@@ -418,6 +430,8 @@ Tip: Export from another deck to see the format'></textarea>
       setTimeout(() => {
         ex.innerHTML = esc ? (cur.ex || '').replace(new RegExp(`(${esc})`, 'gi'), `<span style="color:${correct ? '#22c55e' : '#ef4444'};font-weight:600">$1</span>`) : (cur.ex || '');
         ex.style.opacity = '1';
+        // Speak the complete example sentence after it's revealed
+        speakText(ex.textContent || ex.innerText);
       }, 150);
       answered = true; updateStreak(); save(); ans.focus();
     };

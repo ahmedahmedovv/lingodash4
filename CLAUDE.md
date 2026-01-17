@@ -508,6 +508,20 @@ Stats row (visible on hover):
 
 ### 2026-01-17
 
+#### Added: Text-to-Speech (TTS) Functionality
+- **What**: Automatic speech synthesis for example sentences after answering flashcards
+- **Why**: Enhance language learning with pronunciation practice
+- **Files changed**: `index.html` (added speakText function, integrated into answer submission flow)
+- **Affected areas**: Answer submission logic, user study experience
+- **Technical details**:
+  - Uses browser's built-in Web Speech API
+  - Speaks complete example sentence after answer is revealed
+  - No external dependencies required
+  - Graceful fallback for unsupported browsers
+- **New behavior**: After typing answer and pressing Enter, the full example sentence is automatically spoken
+
+### 2026-01-17
+
 #### Changed: Date Format Standardization
 - **What**: Standardized all date formats throughout the app to use DD/MM/YYYY format
 - **Why**: Ensure consistent date formatting for display and export/import
