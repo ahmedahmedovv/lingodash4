@@ -348,7 +348,14 @@ Tip: Export from another deck to see the format'></textarea>
           .slice(0, remainingSlots);
         d = d.concat(newCards);
       }
-      pool = d.sort(() => Math.random() - 0.5).slice(0, sessionLimit());
+      // Sort to prioritize due cards first (cards with passed due dates), then new cards
+      pool = d.sort((a, b) => {
+        const aDue = new Date(a.card.due) <= new Date();
+        const bDue = new Date(b.card.due) <= new Date();
+        if (aDue && !bDue) return -1; // a is due, b is not -> a comes first
+        if (!aDue && bDue) return 1;  // b is due, a is not -> b comes first
+        return Math.random() - 0.5;   // both same type -> random order
+      }).slice(0, sessionLimit());
       poolSize = pool.length;
       saveSession();
     }

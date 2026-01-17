@@ -506,6 +506,15 @@ Stats row (visible on hover):
 
 ## Changelog
 
+### 2026-01-17
+
+#### Fixed: Session Pool Prioritizes Overdue Cards
+- **What**: Modified `initPool()` to sort due cards first, then new cards
+- **Why**: Users expect to see overdue cards before new cards when opening the app
+- **Files changed**: `index.html` (initPool function)
+- **Affected areas**: Session initialization, card ordering
+- **New behavior**: Due cards (past due date) appear first in session, followed by new cards
+
 ### 2026-01-16
 
 #### Added: Full Data Export/Import
