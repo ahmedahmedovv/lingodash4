@@ -256,6 +256,89 @@ Tip: Export from another deck to see the format'></textarea>
     window.fsrsLoaded = true;
     const f = new FSRS();
 
+    // Initialize audio cache
+    initAudioCache();
+
+    // IndexedDB setup for audio caching
+    let audioCacheDB = null;
+
+    function initAudioCache() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('LingodashAudioCache', 1);
+
+        request.onerror = () => {
+          console.warn('Audio cache unavailable:', request.error);
+          resolve(null); // Gracefully degrade without cache
+        };
+
+        request.onsuccess = () => {
+          audioCacheDB = request.result;
+          resolve(audioCacheDB);
+        };
+
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains('audio')) {
+            db.createObjectStore('audio', { keyPath: 'cacheKey' });
+          }
+        };
+      });
+    }
+
+    async function getCachedAudio(cacheKey) {
+      if (!audioCacheDB) return null;
+
+      return new Promise((resolve) => {
+        const transaction = audioCacheDB.transaction(['audio'], 'readonly');
+        const store = transaction.objectStore('audio');
+        const request = store.get(cacheKey);
+
+        request.onsuccess = () => {
+          const result = request.result;
+          if (result && result.audioBlob) {
+            resolve(result.audioBlob);
+          } else {
+            resolve(null);
+          }
+        };
+
+        request.onerror = () => resolve(null);
+      });
+    }
+
+    async function cacheAudio(cacheKey, audioBlob) {
+      if (!audioCacheDB) return;
+
+      try {
+        const transaction = audioCacheDB.transaction(['audio'], 'readwrite');
+        const store = transaction.objectStore('audio');
+        await new Promise((resolve, reject) => {
+          const request = store.put({
+            cacheKey,
+            audioBlob,
+            timestamp: Date.now()
+          });
+          request.onsuccess = resolve;
+          request.onerror = reject;
+        });
+      } catch (error) {
+        console.warn('Failed to cache audio:', error);
+      }
+    }
+
+    function generateCacheKey(text, voiceId, modelId) {
+      // Create a unique key based on content and settings
+      const content = `${text.trim()}_${voiceId}_${modelId}`;
+      // Simple hash for shorter keys
+      let hash = 0;
+      for (let i = 0; i < content.length; i++) {
+        const char = content.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+      }
+      return hash.toString();
+    }
+
     // Deck management
     let decks = JSON.parse(localStorage.getItem('decks') || '["Default"]');
     let currentDeck = localStorage.getItem('currentDeck') || 'Default';
@@ -440,12 +523,26 @@ Tip: Export from another deck to see the format'></textarea>
       ans.value = ''; ans.style.display = ''; ans.classList.remove('correct', 'wrong'); answered = false; ans.focus();
     }
 
-    // TTS function using ElevenLabs API with Web Speech API fallback
+    // TTS function using ElevenLabs API with IndexedDB caching and Web Speech API fallback
     async function speakText(text) {
       if (!text.trim()) return;
 
+      const cacheKey = generateCacheKey(text, 'JBFqnCBsd6RMkjVDRZzb', 'eleven_multilingual_v2');
+
       try {
-        // Try ElevenLabs first - direct API call
+        // Check cache first
+        const cachedAudioBlob = await getCachedAudio(cacheKey);
+        if (cachedAudioBlob) {
+          console.log('Playing cached audio for:', text.substring(0, 50) + '...');
+          const audioUrl = URL.createObjectURL(cachedAudioBlob);
+          const audio = new Audio(audioUrl);
+          await audio.play();
+          audio.onended = () => URL.revokeObjectURL(audioUrl);
+          return;
+        }
+
+        // Not cached, call ElevenLabs API
+        console.log('Fetching new audio for:', text.substring(0, 50) + '...');
         const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb', {
           method: 'POST',
           headers: {
@@ -468,6 +565,11 @@ Tip: Export from another deck to see the format'></textarea>
         }
 
         const audioBlob = await response.blob();
+
+        // Cache the audio blob
+        await cacheAudio(cacheKey, audioBlob);
+
+        // Play the audio
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         await audio.play();

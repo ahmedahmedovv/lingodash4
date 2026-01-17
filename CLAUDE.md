@@ -86,10 +86,14 @@ Pool empty? → Session complete!
 ### Text-to-Speech (TTS)
 - **Pronunciation Practice**: Automatic speech synthesis for example sentences after answering
 - **ElevenLabs Integration**: Uses ElevenLabs API for high-quality speech synthesis with API key authentication
+- **IndexedDB Audio Caching**: Locally caches generated audio to avoid repeated API calls
+- **Cost Optimization**: Only calls ElevenLabs API once per unique sentence
+- **Offline Support**: Works without internet for cached sentences
 - **Fallback System**: Falls back to browser's Web Speech API if ElevenLabs fails
 - **Complete Sentences**: Speaks the full example sentence with the target word revealed
 - **Graceful Fallback**: Silently falls back to Web Speech API on unsupported browsers or API failures
 - **Timing**: Speaks after answer is revealed and images are loaded
+- **Cache Management**: Automatic cleanup and storage of audio blobs in IndexedDB
 
 ### Streak Freeze System
 Automatic streak protection that saves your streak if you miss a day:
@@ -539,6 +543,24 @@ Stats row (visible on hover):
 ## Changelog
 
 ### 2026-01-18
+
+#### Added: IndexedDB Audio Caching for TTS
+- **What**: Implemented local audio caching using IndexedDB to avoid repeated ElevenLabs API calls
+- **Why**: Significant cost savings and performance improvement by caching generated audio locally
+- **Files changed**: `index.html` (IndexedDB setup, cache functions, speakText function update), `CLAUDE.md` (TTS feature documentation)
+- **Affected areas**: Text-to-speech functionality, local storage, API usage optimization
+- **Technical details**:
+  - IndexedDB database 'LingodashAudioCache' with 'audio' object store
+  - Cache keys generated from text content + voice ID + model (hashed for shorter keys)
+  - Check cache before API call, store successful responses
+  - Graceful degradation if IndexedDB unavailable
+  - Memory management with automatic object URL cleanup
+- **Benefits**:
+  - Only calls ElevenLabs API once per unique sentence
+  - Instant playback for cached audio (no network latency)
+  - Offline support for previously heard sentences
+  - Significant reduction in API costs
+  - Better user experience with faster response times
 
 #### Added: ElevenLabs Text-to-Speech Integration
 - **What**: Replaced Web Speech API with ElevenLabs TTS for higher quality speech synthesis
