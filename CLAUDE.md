@@ -445,11 +445,15 @@ Stats row (visible on hover):
 | `today()` | Return today's date string |
 | `formatDateDDMMYYYY(d)` | Format dates as DD/MM/YYYY |
 | `parseDateDDMMYYYY(d)` | Parse DD/MM/YYYY formatted dates |
+| `getDeckKey(base)` | Generate deck-specific localStorage keys |
 | `initPool()` | Reset session, create shuffled pool of up to 51 cards |
 | `next(pickNew)` | Show next card or session complete screen |
 | `speakText(text)` | TTS function using Web Speech API |
 | `updateStreak()` | Increment streak if new day |
 | `saveSession()` | Persist session state to LocalStorage |
+| `sessionLimit()` | Calculate total session size (goal + wrong answers) |
+| `toggleMenu()` | Toggle gear menu visibility and edit option |
+| `closeMenu()` | Close gear menu |
 | `openEditModal(edit)` | Open modal in add (false) or edit (true) mode |
 | `closeEditModal()` | Close edit modal |
 | `openSettingsModal()` | Open settings modal |
@@ -464,6 +468,7 @@ Stats row (visible on hover):
 | `createNewDeck()` | Create new deck |
 | `deleteDeck(deckName)` | Delete deck |
 | `renameDeck(oldName)` | Rename deck |
+| `esc(s)` | HTML escape function for XSS protection |
 
 ## FSRS Integration
 
@@ -534,6 +539,17 @@ Stats row (visible on hover):
 - No IE support
 
 ## Changelog
+
+### 2026-01-17
+
+#### Updated: Documentation Corrections
+- **What**: Added missing utility functions to CLAUDE.md documentation
+- **Why**: Ensure documentation accurately reflects all implemented functions
+- **Files changed**: `CLAUDE.md` (Key Functions section)
+- **Affected areas**: Documentation completeness and accuracy
+- **Changes**:
+  - Added missing functions to Key Functions table: `getDeckKey()`, `sessionLimit()`, `toggleMenu()`, `closeMenu()`, `esc()`
+  - Verified all functions from index.html are now properly documented in the Key Functions table
 
 ### 2026-01-17
 
