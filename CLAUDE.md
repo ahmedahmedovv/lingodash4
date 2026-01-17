@@ -508,6 +508,13 @@ Stats row (visible on hover):
 
 ### 2026-01-17
 
+#### Changed: Date Format Standardization
+- **What**: Standardized all date formats throughout the app to use DD/MM/YYYY format
+- **Why**: Ensure consistent date formatting for display and export/import
+- **Files changed**: `index.html` (added formatDateDDMMYYYY and parseDateDDMMYYYY functions, updated export/import)
+- **Affected areas**: Export functionality, import functionality, date formatting
+- **New behavior**: All exported dates use DD/MM/YYYY format, import can parse DD/MM/YYYY formatted dates
+
 #### Fixed: Session Pool Prioritizes Overdue Cards
 - **What**: Modified `initPool()` to sort due cards first, then new cards
 - **Why**: Users expect to see overdue cards before new cards when opening the app

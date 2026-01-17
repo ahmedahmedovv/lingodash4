@@ -237,6 +237,11 @@ Tip: Export from another deck to see the format'></textarea>
     const save = () => localStorage.setItem(getDeckKey('fc'), JSON.stringify(cards));
     const due = () => cards.filter(c => new Date(c.card.due) <= new Date());
     const today = () => new Date().toDateString();
+    const formatDateDDMMYYYY = d => {
+      if (!d) return '';
+      const dt = new Date(d);
+      return ('0' + dt.getDate()).slice(-2) + '/' + ('0' + (dt.getMonth() + 1)).slice(-2) + '/' + dt.getFullYear();
+    };
     let pool = [], poolSize = 0;
 
     // Deck functions
@@ -545,6 +550,20 @@ Tip: Export from another deck to see the format'></textarea>
       if (cur && i >= 0 && confirm('Delete "' + cur.word + '"?')) { cards.splice(i, 1); save(); localStorage.removeItem('curWord'); closeEditModal(); next(); }
     };
 
+    const parseDateDDMMYYYY = d => {
+      if (!d || typeof d !== 'string') return d;
+      const parts = d.split('/');
+      if (parts.length === 3) {
+        const day = parseInt(parts[0]);
+        const month = parseInt(parts[1]) - 1; // months are 0-indexed
+        const year = parseInt(parts[2]);
+        if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+          return new Date(year, month, day).toISOString();
+        }
+      }
+      return d; // return original if parsing fails
+    };
+
     btnImport.onclick = () => {
       if (!csv.value.trim()) return;
       try {
@@ -564,8 +583,17 @@ Tip: Export from another deck to see the format'></textarea>
             }
           }
           cards.length = 0; valid.forEach(c => cards.push(c)); save();
-          if (imported.streak) { streakData = imported.streak; localStorage.setItem(getDeckKey('streak'), JSON.stringify(streakData)); }
-          if (imported.session) { sessionData = imported.session; sessionCount = sessionData.count || 0; wrongCount = sessionData.wrong || 0; wrongWords = sessionData.words || []; localStorage.setItem(getDeckKey('session'), JSON.stringify(sessionData)); }
+          if (imported.streak) {
+            streakData = { ...imported.streak, date: parseDateDDMMYYYY(imported.streak.date) };
+            localStorage.setItem(getDeckKey('streak'), JSON.stringify(streakData));
+          }
+          if (imported.session) {
+            sessionData = { ...imported.session, date: parseDateDDMMYYYY(imported.session.date) };
+            sessionCount = sessionData.count || 0;
+            wrongCount = sessionData.wrong || 0;
+            wrongWords = sessionData.words || [];
+            localStorage.setItem(getDeckKey('session'), JSON.stringify(sessionData));
+          }
           if (imported.curWord) { cur = cards.find(c => c.word === imported.curWord); localStorage.setItem('curWord', imported.curWord); }
           pool = []; poolSize = 0;
           csv.value = ''; closeSettingsModal(); next();
@@ -582,7 +610,7 @@ Tip: Export from another deck to see the format'></textarea>
 
     btnExport.onclick = () => {
       const a = document.createElement('a');
-      const data = { deck: currentDeck, fc: cards, streak: { count: streakData.count, date: streakData.date, freezes: streakData.freezes || 0 }, session: { count: sessionCount, wrong: wrongCount, words: wrongWords, date: new Date().toDateString() }, curWord: cur ? cur.word : null };
+      const data = { deck: currentDeck, fc: cards, streak: { count: streakData.count, date: formatDateDDMMYYYY(streakData.date), freezes: streakData.freezes || 0 }, session: { count: sessionCount, wrong: wrongCount, words: wrongWords, date: formatDateDDMMYYYY(new Date()) }, curWord: cur ? cur.word : null };
       a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}));
       a.download = `${currentDeck.toLowerCase().replace(/\s+/g, '-')}.json`; a.click();
     };
