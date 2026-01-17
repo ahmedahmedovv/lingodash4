@@ -28,10 +28,10 @@ These rules are **MANDATORY** for all changes:
 
 | Component | Technology |
 |-----------|------------|
-| Structure | Single HTML file (~425 lines) |
+| Structure | Single HTML file (~600 lines) |
 | JavaScript | Vanilla JS with ES modules |
 | Algorithm | FSRS via CDN (ts-fsrs) |
-| Storage | LocalStorage |
+| Storage | LocalStorage + IndexedDB |
 | Typography | Inter font (Google Fonts) |
 
 ## Features
@@ -77,11 +77,11 @@ Pool empty? → Session complete!
 - **Streak**: Daily streak with flame icon, persists in LocalStorage
 - **Streak Freeze**: Automatic protection if you miss one day
 
-### Image Search (Manual)
-- **Visual Learning**: Manual Bing image search available via gear menu
-- **Contextual Images**: Search for relevant images for vocabulary words
-- **Fullscreen Option**: Click gear menu → "Images" for dedicated fullscreen image search
-- **Cross-Origin Compatible**: No automatic display to avoid browser security warnings
+### Image Search (Automatic + Manual)
+- **Visual Learning**: Automatic Bing image search appears after each answer
+- **Contextual Images**: Relevant images shown immediately for vocabulary words
+- **Manual Option**: Fullscreen dedicated image search via gear menu → Images
+- **Browser Warnings**: May show harmless cross-origin security messages in console
 
 ### Text-to-Speech (TTS)
 - **Pronunciation Practice**: Automatic speech synthesis for example sentences after answering
@@ -156,8 +156,9 @@ Multiple decks for different languages or topics:
 - Add new cards via gear menu → Add
 - Edit current card via gear menu → Edit
 - Delete current card with confirmation dialog
-- JSON import (full backup or card array)
-- JSON export (downloads all data)
+- Import cards from JSON files via file selector
+- Export cards to JSON files for backup/sharing
+- Automatic localStorage persistence (no manual import/export needed)
 - Clear all cards with type-to-confirm safety
 
 ### Stats Page
@@ -225,10 +226,11 @@ Stats row (visible on hover):
 ### Settings Modal
 - Opens via gear menu → Settings
 - **Current Deck**: Shows deck name with Rename/Delete buttons
+- **Import Cards**: File selector for JSON import with validation
+- **Export Cards**: Download all cards as JSON file
 - **Session Goal**: Preset buttons (10/25/51/100)
-- **Import section**: Textarea + Import button
-- **Export section**: Description + Export button
 - **Danger zone**: Type "DELETE" + Clear All button
+- **Data persistence**: Automatic localStorage saving with optional JSON backup
 
 ## UI Design
 
@@ -356,27 +358,7 @@ Stats row (visible on hover):
 7. Click X to close
 ```
 
-### Import Flow
-```
-1. Click gear icon → "Settings"
-2. Paste JSON into textarea
-3. Click "Import" button
-4. Validation:
-   - Full backup {fc, streak, session}: Replaces all data
-   - Card array [{word, def, card}...]: Appends to existing
-5. Alert shows number of imported cards
-6. Modal closes, session refreshes
-```
 
-### Export Flow
-```
-1. Click gear icon → "Settings"
-2. Click "Export" button
-3. Browser downloads flashcards.json containing:
-   - fc: All cards with FSRS state
-   - streak: {count, date, freezes}
-   - session: {count, wrong, words, date}
-```
 
 ### Clear All Flow
 ```
@@ -428,7 +410,9 @@ Stats row (visible on hover):
 }
 ```
 
-### LocalStorage Keys
+### Storage Systems
+
+#### LocalStorage Keys
 | Key | Type | Description |
 |-----|------|-------------|
 | `decks` | Array | List of deck names `["Default", "Spanish", ...]` |
@@ -437,6 +421,11 @@ Stats row (visible on hover):
 | `streak_<deck>` | Object | `{count, date, freezes}` per deck |
 | `session_<deck>` | Object | `{count, wrong, words[], date}` per deck |
 | `sessionGoal` | Number | Cards per session (10/25/51/100) |
+
+#### IndexedDB Database
+| Database | Store | Description |
+|----------|-------|-------------|
+| `LingodashAudioCache` | `audio` | Cached ElevenLabs audio blobs with cache keys and timestamps |
 
 ## Key Functions
 
@@ -450,7 +439,7 @@ Stats row (visible on hover):
 | `getDeckKey(base)` | Generate deck-specific localStorage keys |
 | `initPool()` | Reset session, create shuffled pool of up to 51 cards |
 | `next(pickNew)` | Show next card or session complete screen |
-| `speakText(text)` | TTS function using Web Speech API |
+| `speakText(text)` | TTS function using ElevenLabs API with IndexedDB caching |
 | `updateStreak()` | Increment streak if new day |
 | `saveSession()` | Persist session state to LocalStorage |
 | `sessionLimit()` | Calculate total session size (goal + wrong answers) |
@@ -470,6 +459,10 @@ Stats row (visible on hover):
 | `createNewDeck()` | Create new deck |
 | `deleteDeck(deckName)` | Delete deck |
 | `renameDeck(oldName)` | Rename deck |
+| `initAudioCache()` | Initialize IndexedDB for audio caching |
+| `getCachedAudio(key)` | Retrieve cached audio from IndexedDB |
+| `cacheAudio(key, blob)` | Store audio blob in IndexedDB |
+| `generateCacheKey(text, voice, model)` | Create hash key for audio caching |
 | `esc(s)` | HTML escape function for XSS protection |
 
 ## FSRS Integration
@@ -543,6 +536,30 @@ Stats row (visible on hover):
 ## Changelog
 
 ### 2026-01-18
+
+#### Improved: File-Based Import/Export
+- **What**: Changed import functionality from textarea paste to file selection for better UX
+- **Why**: File selection is more user-friendly than copying/pasting large JSON strings
+- **Files changed**: `index.html` (replaced textarea with file input, updated btnImport.onclick), `CLAUDE.md` (updated documentation)
+- **Affected areas**: Settings modal import section, import user experience
+- **Technical details**:
+  - Replaced textarea with `<input type="file" accept=".json">`
+  - Added async file reading with `file.text()`
+  - Maintained same validation and import logic
+  - Export functionality unchanged (still downloads JSON file)
+- **New behavior**: Users click "Import" → select JSON file → click Import (no manual copy/paste needed)
+
+#### Removed: Manual Import/Export Functionality
+- **What**: Removed manual JSON import/export UI since data persists automatically in localStorage
+- **Why**: Simplified user experience by eliminating manual backup/restore steps
+- **Files changed**: `index.html` (removed import/export UI sections and JavaScript handlers), `CLAUDE.md` (updated documentation)
+- **Affected areas**: Settings modal, data management UI
+- **Technical details**:
+  - Removed textarea for JSON import
+  - Removed export download button
+  - Kept automatic localStorage persistence
+  - Removed btnImport.onclick and btnExport.onclick functions
+- **New behavior**: Data saves automatically - no manual import/export needed
 
 #### Added: IndexedDB Audio Caching for TTS
 - **What**: Implemented local audio caching using IndexedDB to avoid repeated ElevenLabs API calls

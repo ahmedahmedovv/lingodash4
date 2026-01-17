@@ -201,6 +201,25 @@
         </div>
       </div>
       <div class="section">
+        <div class="section-label">Import/Export Cards</div>
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 16px;">Backup and restore your flashcards as JSON files.</p>
+
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Import from file:</div>
+          <input type="file" id="importFile" accept=".json" style="margin-bottom: 8px; padding: 8px 12px; background: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 14px;">
+          <div class="btns">
+            <div class="btn" id="btnImport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Import Selected File</div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #334155; padding-top: 16px;">
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Export to file:</div>
+          <div class="btns">
+            <div class="btn" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Download Backup</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
         <div class="section-label">Session Goal</div>
         <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Cards per session (wrong answers add more)</p>
         <div class="btns" id="goalBtns">
@@ -210,24 +229,7 @@
           <div class="btn goal-btn" data-goal="100">100</div>
         </div>
       </div>
-      <div class="section">
-        <div class="section-label">Import Cards</div>
-        <textarea id="csv" placeholder='Paste exported JSON or card array:
 
-[{"word":"hello","def":"a greeting","ex":"Hello world","card":{...}}]
-
-Tip: Export from another deck to see the format'></textarea>
-        <div class="btns">
-          <div class="btn" id="btnImport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Import</div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-label">Export Cards</div>
-        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">Download all cards as a JSON file.</p>
-        <div class="btns">
-          <div class="btn" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export</div>
-        </div>
-      </div>
       <div class="danger-zone">
         <div class="section-label">Danger Zone</div>
         <p>This will permanently delete all your flashcards. Type <strong style="color:#f8fafc">DELETE</strong> to confirm.</p>
@@ -655,7 +657,7 @@ Tip: Export from another deck to see the format'></textarea>
       settingsModal.style.display = 'block';
       confirmDelete.value = '';
       btnClear.disabled = true;
-      csv.value = '';
+      importFile.value = '';
       settingsDeckName.textContent = currentDeck;
       document.querySelectorAll('.goal-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.goal) === sessionGoal));
     };
@@ -798,13 +800,17 @@ Tip: Export from another deck to see the format'></textarea>
       return d; // return original if parsing fails
     };
 
-    btnImport.onclick = () => {
-      if (!csv.value.trim()) return;
+
+
+    btnImport.onclick = async () => {
+      if (!importFile.files.length) { alert('Please select a file to import'); return; }
+      const file = importFile.files[0];
       try {
-        const imported = JSON.parse(csv.value);
+        const text = await file.text();
+        const imported = JSON.parse(text);
         if (imported.fc && Array.isArray(imported.fc)) {
           const valid = imported.fc.filter(c => c && c.word && c.def && c.card);
-          if (!valid.length) { alert('No valid cards'); return; }
+          if (!valid.length) { alert('No valid cards found in file'); return; }
           if (imported.deck && imported.deck !== currentDeck) {
             const choice = confirm(`Import to new deck "${imported.deck}"?\n\nOK = Create new deck\nCancel = Import to current deck`);
             if (choice && !decks.includes(imported.deck)) {
@@ -840,16 +846,16 @@ Tip: Export from another deck to see the format'></textarea>
             localStorage.setItem(getDeckKey('session'), JSON.stringify(sessionData));
           }
           pool = []; poolSize = 0;
-          csv.value = ''; closeSettingsModal(); next();
+          importFile.value = ''; closeSettingsModal(); next();
           alert('Imported ' + valid.length + ' cards to "' + currentDeck + '"');
         } else if (Array.isArray(imported)) {
           const valid = imported.filter(c => c && c.word && c.def && c.card);
-          if (!valid.length) { alert('No valid cards'); return; }
+          if (!valid.length) { alert('No valid cards found in file'); return; }
           valid.forEach(c => cards.push(c));
-          save(); csv.value = ''; closeSettingsModal(); next();
+          save(); importFile.value = ''; closeSettingsModal(); next();
           alert('Imported ' + valid.length + ' cards');
-        } else { alert('Invalid format'); }
-      } catch { alert('Invalid JSON'); }
+        } else { alert('Invalid file format'); }
+      } catch { alert('Invalid JSON file'); }
     };
 
     btnExport.onclick = () => {
