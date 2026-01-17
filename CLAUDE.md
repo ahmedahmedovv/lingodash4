@@ -77,18 +77,18 @@ Pool empty? → Session complete!
 - **Streak**: Daily streak with flame icon, persists in LocalStorage
 - **Streak Freeze**: Automatic protection if you miss one day
 
-### Automatic Image Display
-- **Visual Learning**: Bing image search results automatically appear after answering each card
-- **Contextual Images**: Shows relevant images for the vocabulary word being studied
-- **Seamless Integration**: Images load automatically alongside TTS and answer reveal
-- **No Extra Steps**: Images appear in embedded iframe below the flashcard
+### Image Search (Manual)
+- **Visual Learning**: Manual Bing image search available via gear menu
+- **Contextual Images**: Search for relevant images for vocabulary words
 - **Fullscreen Option**: Click gear menu → "Images" for dedicated fullscreen image search
+- **Cross-Origin Compatible**: No automatic display to avoid browser security warnings
 
 ### Text-to-Speech (TTS)
 - **Pronunciation Practice**: Automatic speech synthesis for example sentences after answering
-- **Web Speech API**: Uses browser's built-in speech synthesis (no external dependencies)
+- **ElevenLabs Integration**: Uses ElevenLabs API for high-quality speech synthesis with API key authentication
+- **Fallback System**: Falls back to browser's Web Speech API if ElevenLabs fails
 - **Complete Sentences**: Speaks the full example sentence with the target word revealed
-- **Graceful Fallback**: Silently disabled on unsupported browsers
+- **Graceful Fallback**: Silently falls back to Web Speech API on unsupported browsers or API failures
 - **Timing**: Speaks after answer is revealed and images are loaded
 
 ### Streak Freeze System
@@ -537,6 +537,34 @@ Stats row (visible on hover):
 - No IE support
 
 ## Changelog
+
+### 2026-01-18
+
+#### Added: ElevenLabs Text-to-Speech Integration
+- **What**: Replaced Web Speech API with ElevenLabs TTS for higher quality speech synthesis
+- **Why**: Provide better pronunciation practice with professional voice synthesis
+- **Files changed**: `index.html` (ElevenLabs direct API integration, speakText function update), `CLAUDE.md` (TTS feature documentation)
+- **Affected areas**: Text-to-speech functionality, audio playback during study
+- **Technical details**:
+  - Direct REST API integration with ElevenLabs (no SDK dependency)
+  - Uses provided API key for authentication
+  - Voice ID: 'JBFqnCBsd6RMkjVDRZzb' (English voice)
+  - Model: 'eleven_multilingual_v2' for high quality
+  - Fallback to Web Speech API if ElevenLabs fails
+  - Async implementation with proper audio blob handling
+- **New behavior**: Example sentences are now spoken using ElevenLabs TTS with Web Speech API as backup
+
+#### Added: Automatic Image Display
+- **What**: Restored automatic Bing image display after answering cards
+- **Why**: User preferred the visual learning feature despite minor console warnings
+- **Files changed**: `index.html` (restored automatic image display code), `CLAUDE.md` (updated image search feature description)
+- **Affected areas**: Study interface, visual learning enhancement
+- **Technical details**:
+  - Automatic iframe loading after answer submission
+  - Bing image search results appear below flashcards
+  - Manual "Images" menu option still available for dedicated fullscreen search
+  - Note: May show browser security warnings in console (harmless)
+- **New behavior**: Images automatically appear after each answer for visual context
 
 ### 2026-01-17
 
