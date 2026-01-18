@@ -369,6 +369,13 @@
     };
     let pool = [], poolSize = 0;
 
+    // Restore pool from saved session if it's from today
+    if (isToday && sessionData.pool && sessionData.pool.length > 0 && sessionData.poolSize > 0) {
+      const savedPoolWords = sessionData.pool;
+      pool = savedPoolWords.map(word => cards.find(c => c.word === word)).filter(Boolean);
+      poolSize = sessionData.poolSize;
+    }
+
     // Deck functions
     const renderDeckMenu = () => {
       currentDeckName.textContent = currentDeck;
@@ -462,7 +469,14 @@
       localStorage.setItem(getDeckKey('streak'), JSON.stringify(streakData));
     };
 
-    const saveSession = () => localStorage.setItem(getDeckKey('session'), JSON.stringify({ count: sessionCount, wrong: wrongCount, words: wrongWords, date: new Date().toDateString() }));
+    const saveSession = () => localStorage.setItem(getDeckKey('session'), JSON.stringify({
+      count: sessionCount,
+      wrong: wrongCount,
+      words: wrongWords,
+      pool: pool.map(c => c.word),  // Save pool as word list for restoration
+      poolSize: poolSize,
+      date: new Date().toDateString()
+    }));
     let sessionGoal = parseInt(localStorage.getItem('sessionGoal') || '51');
     const sessionLimit = () => sessionGoal + wrongCount;
 

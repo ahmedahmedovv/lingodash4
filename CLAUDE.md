@@ -318,7 +318,8 @@ Pool empty? → Session complete!
 - Wrong cards **guaranteed** to appear again until answered correctly
 - Progress shows: `completed / total` (e.g., "15 / 51")
 - Progress bar fills as cards leave the pool
-- Page refresh starts a fresh session
+- Page refresh continues session (within same day)
+- New day or "New Session" button starts fresh
 
 ### Progress Tracking
 - **Counter**: Shows `completed / total` cards in session
@@ -939,16 +940,27 @@ A study session manages which cards are shown and tracks progress.
 ### Session State Machine
 
 ```
-                    ┌─────────────┐
-                    │   No Pool   │ ◄─── Page load / New Session
-                    │  poolSize=0 │
-                    └──────┬──────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │  initPool() │
-                    │ Create pool │
-                    └──────┬──────┘
+                         Page Load
+                             │
+                             ▼
+                    ┌────────────────┐
+                    │ Check saved    │
+                    │ session (today)│
+                    └───────┬────────┘
+                            │
+               ┌────────────┴────────────┐
+               ▼                         ▼
+      ┌─────────────────┐       ┌─────────────┐
+      │ Restore pool    │       │   No Pool   │ ◄─── New day / New Session
+      │ from localStorage│       │  poolSize=0 │
+      └────────┬────────┘       └──────┬──────┘
+               │                       │
+               │                       ▼
+               │               ┌─────────────┐
+               │               │  initPool() │
+               │               │ Create pool │
+               │               └──────┬──────┘
+               └───────────┬───────────┘
                            │
               ┌────────────┴────────────┐
               ▼                         ▼
@@ -1497,6 +1509,8 @@ A: Practically ~2000-5000 per deck before performance issues.
 | **No IndexedDB Cache Cleanup** | Cached audio blobs accumulate indefinitely. | Storage could grow large over time |
 | **Hardcoded Voice ID** | ElevenLabs voice ID hardcoded. If deprecated, TTS breaks silently. | `index.html:548` |
 | **Cross-Origin Iframe Warnings** | Bing image search iframes may encounter cross-origin restrictions in some browsers. | Console warnings, potential image display issues |
+| **Regex Escaping Bug in Word Highlight** | Line 614 uses `esc(wordText)` instead of regex-escaped `wordPattern`. Words with `?`, `+`, `*`, etc. may cause regex errors. | `index.html:614` |
+| **Duplicate Word Removal** | Pool filters by word string, not object reference. If two cards have same word, both are removed when one is answered correctly. | `index.html:600` |
 
 ### Why Not Fixed Yet
 
@@ -1504,10 +1518,24 @@ A: Practically ~2000-5000 per deck before performance issues.
 - **Images Menu**: Quick fix but not prioritized
 - **Race Conditions**: Edge cases that rarely occur in normal usage
 - **Cache Cleanup**: Low priority - IndexedDB storage is generous
+- **Regex Escaping**: Edge case - most vocabulary words don't contain regex special characters
+- **Duplicate Word Removal**: Edge case - users rarely add duplicate words with different definitions
 
 ## Changelog
 
 ### 2026-01-18
+
+#### Fixed: Session State Now Persists Across Page Refresh
+- **What**: Session pool and progress now properly saved and restored on page refresh
+- **Why**: Previously, session counters were restored but pool was always reinitialized, making restoration useless
+- **Files changed**: `index.html` (saveSession function, pool restoration logic)
+- **Affected areas**: Session persistence, page refresh behavior
+- **Technical details**:
+  - `saveSession()` now saves pool (as word list) and poolSize to localStorage
+  - On page load, if today's session exists with saved pool, it's restored
+  - Counters (sessionCount, wrongCount, wrongWords) now match the restored pool state
+- **Old behavior**: Page refresh always started fresh session (counters restored but pool reset)
+- **New behavior**: Page refresh continues where you left off within the same day
 
 #### Fixed: Due Cards Now Shown Before New Cards
 - **What**: Fixed bug where new cards appeared before due/overdue cards
