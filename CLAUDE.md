@@ -2,6 +2,80 @@
 
 Minimal FSRS-based flashcard app for language learning.
 
+---
+
+## Project Overview
+
+A lightweight, browser-based flashcard application designed for vocabulary learning. Uses the FSRS (Free Spaced Repetition Scheduler) algorithm to optimize review timing. Built as a single HTML file with no build process - just open in a browser and start learning.
+
+**Core value proposition**: Simple, fast, effective vocabulary learning without account creation, cloud sync, or complex setup.
+
+## Goals & Non-Goals
+
+### Goals
+| Goal | Description |
+|------|-------------|
+| **Simplicity** | Anyone can use it immediately without tutorials |
+| **Offline-first** | Works without internet (except TTS/images) |
+| **Zero setup** | No accounts, no installation, no configuration |
+| **Effective learning** | FSRS algorithm for optimal retention |
+| **Portable** | Single file, runs anywhere with a browser |
+
+### Non-Goals
+| Non-Goal | Why |
+|----------|-----|
+| **Cloud sync** | Adds complexity, requires accounts |
+| **Social features** | Out of scope, adds bloat |
+| **Gamification** | Beyond streaks, keeps it simple |
+| **Multiple question types** | Type-answer only, keeps UI simple |
+| **Spaced repetition customization** | FSRS defaults work well |
+| **Mobile app** | Browser works on mobile already |
+
+## Target Users
+
+| User Type | Use Case |
+|-----------|----------|
+| **Language learners** | Building vocabulary in a new language |
+| **Students** | Memorizing terms for exams |
+| **Self-learners** | Anyone wanting to memorize word-definition pairs |
+| **Privacy-conscious** | Users who prefer local-only data |
+
+**Skill level**: Beginner to intermediate. No technical knowledge required.
+
+**Assumptions**:
+- User has a modern web browser
+- User can create their own flashcards (no pre-made decks)
+- User understands basic flashcard concept
+
+## Design Philosophy
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    DESIGN PRINCIPLES                     │
+├─────────────────────────────────────────────────────────┤
+│  1. SIMPLICITY OVER FEATURES                            │
+│     If it can be removed, remove it.                    │
+│     Every feature must justify its existence.           │
+│                                                         │
+│  2. SINGLE FILE ARCHITECTURE                            │
+│     Everything in one HTML file.                        │
+│     No build tools, no dependencies beyond CDN.         │
+│                                                         │
+│  3. OFFLINE-FIRST                                       │
+│     Core functionality works without internet.          │
+│     External features (TTS, images) are enhancements.   │
+│                                                         │
+│  4. RESPECT USER DATA                                   │
+│     All data stays local in browser.                    │
+│     No tracking, no analytics, no cloud.                │
+│                                                         │
+│  5. DARK MODE ONLY                                      │
+│     One theme, done well. No theme switching bloat.     │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## STRICT POLICIES
 
 These rules are **MANDATORY** for all changes:
@@ -33,6 +107,182 @@ These rules are **MANDATORY** for all changes:
 | Algorithm | FSRS via CDN (ts-fsrs) |
 | Storage | LocalStorage + IndexedDB |
 | Typography | Inter font (Google Fonts) |
+
+---
+
+## Architecture
+
+### Component Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         index.html                               │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │   <style>   │  │   <body>    │  │       <script>          │  │
+│  │             │  │             │  │                         │  │
+│  │  - Colors   │  │  - Card     │  │  - FSRS integration     │  │
+│  │  - Layout   │  │  - Modals   │  │  - State management     │  │
+│  │  - Buttons  │  │  - Menus    │  │  - Event handlers       │  │
+│  │  - Inputs   │  │  - Stats    │  │  - Storage (LS + IDB)   │  │
+│  │  - Modals   │  │  - Images   │  │  - TTS (ElevenLabs)     │  │
+│  │             │  │             │  │  - Deck management      │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          ▼                   ▼                   ▼
+   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+   │ LocalStorage│     │  IndexedDB  │     │  External   │
+   │             │     │             │     │   APIs      │
+   │ - Cards     │     │ - Audio     │     │             │
+   │ - Streaks   │     │   cache     │     │ - ts-fsrs   │
+   │ - Sessions  │     │             │     │ - ElevenLabs│
+   │ - Settings  │     │             │     │ - Bing imgs │
+   └─────────────┘     └─────────────┘     └─────────────┘
+```
+
+### Data Flow
+
+```
+User Action → Event Handler → State Update → LocalStorage → UI Render
+                    │
+                    └──→ FSRS Algorithm (for card scheduling)
+```
+
+## State Management
+
+### Global Variables
+
+| Variable | Type | Purpose |
+|----------|------|---------|
+| `cards` | Array | All flashcards for current deck |
+| `cur` | Object | Currently displayed card |
+| `pool` | Array | Cards remaining in current session |
+| `poolSize` | Number | Initial session size |
+| `answered` | Boolean | Whether current card has been answered |
+| `editMode` | Boolean | Edit modal in add vs edit mode |
+| `sessionCount` | Number | Cards completed this session |
+| `wrongCount` | Number | Wrong answers this session |
+| `wrongWords` | Array | Words answered wrong (for pool) |
+| `streakData` | Object | {count, date, freezes} |
+| `sessionData` | Object | {count, wrong, words, date} |
+| `currentDeck` | String | Active deck name |
+| `decks` | Array | List of all deck names |
+| `sessionGoal` | Number | Target cards per session |
+| `audioCacheDB` | IDBDatabase | IndexedDB connection for audio |
+
+### State Transitions
+
+```
+App Load
+    │
+    ├─→ Load decks from localStorage
+    ├─→ Load cards for current deck
+    ├─→ Load streak data
+    ├─→ Initialize audio cache (IndexedDB)
+    └─→ Call next() to show first card
+
+Answer Submitted (Enter key)
+    │
+    ├─→ If not answered:
+    │   ├─→ Check answer correctness
+    │   ├─→ Update FSRS card state
+    │   ├─→ Update pool (remove if correct)
+    │   ├─→ Update streak (if new day)
+    │   ├─→ Save to localStorage
+    │   ├─→ Show TTS + images
+    │   └─→ Set answered = true
+    │
+    └─→ If already answered:
+        ├─→ Hide images
+        └─→ Call next() for new card
+```
+
+## Event Flow
+
+### Key User Interactions
+
+| Event | Trigger | Handler | Result |
+|-------|---------|---------|--------|
+| Answer submit | Enter key | `ans.onkeydown` | Check answer, update FSRS, show result |
+| Next card | Enter key (after answer) | `ans.onkeydown` | Load next card from pool |
+| Open menu | Click gear icon | `icon.onclick` | Toggle menu visibility |
+| Add card | Click "Add" menu | `menuAdd.onclick` | Open edit modal (add mode) |
+| Edit card | Click "Edit" menu | `menuEdit.onclick` | Open edit modal (edit mode) |
+| Save card | Click "Save" button | `btnSave.onclick` | Validate, save, close modal |
+| Delete card | Click "Delete" button | `btnDel.onclick` | Confirm, delete, refresh |
+| Switch deck | Click deck in dropdown | `deck-menu-item.onclick` | Load new deck data |
+| Import | Select file + click Import | `btnImport.onclick` | Parse JSON, merge cards |
+| Export | Click Export | `btnExport.onclick` | Download JSON file |
+| Close modal | Escape key or X button | Various | Hide modal, refocus input |
+
+## Z-Index Map
+
+| Element | Z-Index | Purpose |
+|---------|---------|---------|
+| Deck selector | 10 | Above card, below menus |
+| Gear icon | 10 | Above card, below menus |
+| Deck menu | 20 | Above selector |
+| Gear menu | 20 | Above icon |
+| Modals | 100 | Above everything |
+
+## LocalStorage Schema
+
+### Complete Key Reference
+
+```javascript
+// Global keys (not per-deck)
+localStorage.getItem('decks')        // '["Default","Spanish"]'
+localStorage.getItem('currentDeck')  // 'Spanish'
+localStorage.getItem('sessionGoal')  // '51'
+
+// Per-deck keys (where <deck> is deck name)
+localStorage.getItem('fc_<deck>')      // '[{word,def,ex,card}...]'
+localStorage.getItem('streak_<deck>')  // '{"count":5,"date":"Sat Jan 18 2026","freezes":2}'
+localStorage.getItem('session_<deck>') // '{"count":10,"wrong":2,"words":["hello"],"date":"Sat Jan 18 2026"}'
+```
+
+### Example Data
+
+```javascript
+// Cards array
+[
+  {
+    "word": "hello",
+    "def": "a greeting",
+    "ex": "Hello, how are you?",
+    "card": {
+      "due": "2026-01-19T10:00:00.000Z",
+      "stability": 4.5,
+      "difficulty": 5.2,
+      "elapsed_days": 1,
+      "scheduled_days": 2,
+      "reps": 3,
+      "lapses": 0,
+      "state": 2,
+      "last_review": "2026-01-18T10:00:00.000Z"
+    }
+  }
+]
+
+// Streak data
+{
+  "count": 7,
+  "date": "Sat Jan 18 2026",
+  "freezes": 2
+}
+
+// Session data
+{
+  "count": 15,
+  "wrong": 3,
+  "words": ["difficult", "complex", "hard"],
+  "date": "Sat Jan 18 2026"
+}
+```
+
+---
 
 ## Features
 
@@ -489,6 +739,304 @@ Stats row (visible on hover):
 - Grows with each successful review
 - Resets on lapse (wrong answer)
 
+### FSRS Deep Dive
+
+The FSRS (Free Spaced Repetition Scheduler) algorithm is a modern alternative to SM-2 (used by Anki). It uses a mathematical model of memory to predict optimal review times.
+
+#### How It Works
+
+```
+User answers card
+       │
+       ▼
+┌─────────────────┐
+│ FSRS calculates │
+│ new card state  │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    ▼         ▼
+ Correct    Wrong
+    │         │
+    ▼         ▼
+ Rating:   Rating:
+ Good(3)   Again(1)
+    │         │
+    ▼         ▼
+Stability  Stability
+increases  resets
+    │         │
+    ▼         ▼
+Next due   Next due
+in X days  soon (mins/hours)
+```
+
+#### Key FSRS Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **Stability** | How long you'd remember this without review (days) |
+| **Difficulty** | Inherent difficulty of this card (0-10) |
+| **Retrievability** | Probability you can recall right now (0-1) |
+| **State** | Learning phase (New→Learning→Review→Relearning) |
+
+#### Why Only Good/Again?
+
+This app simplifies FSRS by only using two ratings:
+- **Good (3)**: You knew it → schedule next review
+- **Again (1)**: You didn't know it → review soon
+
+Full FSRS supports: Again(1), Hard(2), Good(3), Easy(4). Simplifying to two options reduces decision fatigue and speeds up reviews.
+
+---
+
+## Deck Data Isolation
+
+Each deck maintains completely separate data to prevent cross-contamination.
+
+### Storage Separation
+
+```
+localStorage
+├── decks                    → ["Default", "Spanish", "Japanese"]
+├── currentDeck              → "Spanish"
+├── sessionGoal              → 51 (global)
+│
+├── fc_Default               → [{cards...}]
+├── streak_Default           → {count, date, freezes}
+├── session_Default          → {count, wrong, words, date}
+│
+├── fc_Spanish               → [{cards...}]
+├── streak_Spanish           → {count, date, freezes}
+├── session_Spanish          → {count, wrong, words, date}
+│
+└── fc_Japanese              → [{cards...}]
+    streak_Japanese          → ...
+    session_Japanese         → ...
+```
+
+### Deck Switching Flow
+
+```
+User clicks new deck
+       │
+       ▼
+Save nothing (already saved on each action)
+       │
+       ▼
+Update currentDeck in localStorage
+       │
+       ▼
+Clear in-memory arrays (cards, pool)
+       │
+       ▼
+Load new deck's cards from localStorage
+       │
+       ▼
+Load new deck's streak data
+       │
+       ▼
+Load new deck's session data
+       │
+       ▼
+Reset pool and poolSize
+       │
+       ▼
+Call next() to show first card
+```
+
+### Edge Cases
+
+| Scenario | Behavior |
+|----------|----------|
+| Delete current deck | Switch to first remaining deck |
+| Delete only deck | Prevent deletion (minimum 1 deck) |
+| Rename deck | Update all localStorage keys |
+| Import to new deck | Create deck, switch to it |
+| Import to current | Replace all cards in current deck |
+
+---
+
+## Audio System (TTS)
+
+The text-to-speech system provides pronunciation practice using ElevenLabs API with intelligent caching.
+
+### Audio Flow
+
+```
+Answer revealed
+       │
+       ▼
+speakText(example sentence)
+       │
+       ▼
+Generate cache key (hash of text + voice + model)
+       │
+       ▼
+Check IndexedDB cache
+       │
+    ┌──┴──┐
+    ▼     ▼
+ Found  Not found
+    │     │
+    ▼     ▼
+ Play   Call ElevenLabs API
+cached       │
+audio        ▼
+         Store in IndexedDB
+              │
+              ▼
+         Play audio
+              │
+              ▼
+         (On error: fallback to Web Speech API)
+```
+
+### Cache Key Generation
+
+```javascript
+// Input
+text: "Hello, how are you?"
+voice: "JBFqnCBsd6RMkjVDRZzb"
+model: "eleven_multilingual_v2"
+
+// Hash function produces
+cacheKey: "1234567890" (32-bit integer as string)
+```
+
+### IndexedDB Schema
+
+```javascript
+// Database: LingodashAudioCache
+// Object Store: audio
+{
+  cacheKey: "1234567890",      // Primary key
+  audioBlob: Blob,             // Audio data
+  timestamp: 1705574400000     // When cached
+}
+```
+
+### Fallback Chain
+
+```
+ElevenLabs API
+    │
+    ├─→ Success → Play audio
+    │
+    └─→ Failure → Web Speech API
+                      │
+                      ├─→ Success → Speak text
+                      │
+                      └─→ Failure → Silent (no error shown)
+```
+
+---
+
+## Session Lifecycle
+
+A study session manages which cards are shown and tracks progress.
+
+### Session State Machine
+
+```
+                    ┌─────────────┐
+                    │   No Pool   │ ◄─── Page load / New Session
+                    │  poolSize=0 │
+                    └──────┬──────┘
+                           │
+                           ▼
+                    ┌─────────────┐
+                    │  initPool() │
+                    │ Create pool │
+                    └──────┬──────┘
+                           │
+              ┌────────────┴────────────┐
+              ▼                         ▼
+       ┌─────────────┐          ┌─────────────┐
+       │  Pool has   │          │ Pool empty  │
+       │   cards     │          │ (no due)    │
+       └──────┬──────┘          └──────┬──────┘
+              │                        │
+              ▼                        ▼
+       ┌─────────────┐          "No cards due.
+       │ Show random │           Come back later!"
+       │ card from   │
+       │    pool     │
+       └──────┬──────┘
+              │
+              ▼
+       ┌─────────────┐
+       │   Answer    │
+       │  submitted  │
+       └──────┬──────┘
+              │
+       ┌──────┴──────┐
+       ▼             ▼
+   Correct        Wrong
+       │             │
+       ▼             ▼
+   Remove from   Stay in pool
+     pool        (will repeat)
+       │             │
+       └──────┬──────┘
+              │
+              ▼
+       ┌─────────────┐
+       │ Pool empty? │
+       └──────┬──────┘
+              │
+       ┌──────┴──────┐
+       ▼             ▼
+      No            Yes
+       │             │
+       ▼             ▼
+   Show next    "Session
+     card       complete!"
+```
+
+### Pool Initialization
+
+```javascript
+function initPool() {
+  // 1. Reset counters
+  sessionCount = 0;
+  wrongCount = 0;
+  wrongWords = [];
+
+  // 2. Get due cards
+  let d = due();  // cards where due <= now
+
+  // 3. Fill remaining slots with new cards
+  if (d.length < sessionGoal) {
+    const remaining = sessionGoal - d.length;
+    const newCards = cards.filter(c => c.card.state === 0);
+    d = d.concat(newCards.slice(0, remaining));
+  }
+
+  // 4. Sort: due cards first, then new cards
+  // 5. Shuffle within groups
+  // 6. Take up to sessionGoal cards
+
+  pool = sorted.slice(0, sessionGoal);
+  poolSize = pool.length;
+}
+```
+
+### Progress Calculation
+
+```javascript
+// During session
+const completed = poolSize - pool.length;  // Cards removed from pool
+const total = poolSize;                     // Initial pool size
+const progress = completed / total * 100;   // Percentage
+
+// Display
+counter.textContent = `${completed} / ${total}`;  // "15 / 51"
+progressBar.style.width = `${progress}%`;
+```
+
+---
+
 ## Validation
 
 ### Form Validation
@@ -513,12 +1061,161 @@ Stats row (visible on hover):
 | Delete card | Confirmation dialog |
 | Clear all | Type "DELETE" to enable |
 
+---
+
+## Development Guide
+
+### Quick Start
+
+```bash
+# Run the app (no installation needed)
+1. Open index.html in any modern browser
+2. That's it. No npm, no build, no server.
+
+# Or use a local server (optional, for development)
+python -m http.server 8000
+# Then open http://localhost:8000
+```
+
+### Testing Checklist
+
+Before committing any changes, manually verify:
+
+| Area | Test |
+|------|------|
+| **Cards** | Add a new card, edit it, delete it |
+| **Study** | Answer correctly, answer wrong, complete session |
+| **Session** | Verify wrong cards repeat, progress updates |
+| **Streak** | Check streak increments on new day |
+| **Decks** | Create deck, switch decks, rename, delete |
+| **Import** | Import a JSON file, verify cards load |
+| **Export** | Export cards, verify JSON is valid |
+| **TTS** | Verify audio plays after answer |
+| **Images** | Verify Bing images appear |
+| **Modals** | Open/close all modals, Escape key works |
+| **Mobile** | Test on phone or responsive mode |
+
+### Common Development Tasks
+
+#### Add a New Menu Item
+```javascript
+// 1. Add HTML in the menu div (index.html ~line 95)
+<div class="menu-item" id="menuNewThing">
+  <svg>...</svg>New Thing
+</div>
+
+// 2. Add click handler (in <script>)
+menuNewThing.onclick = () => { closeMenu(); doNewThing(); };
+
+// 3. Implement the function
+function doNewThing() { /* ... */ }
+```
+
+#### Add a New Modal
+```javascript
+// 1. Add HTML structure
+<div class="modal" id="newModal">
+  <div class="modal-inner">
+    <div class="modal-header">
+      <span class="modal-title">Title</span>
+      <svg class="modal-close" id="closeNew">...</svg>
+    </div>
+    <!-- content -->
+  </div>
+</div>
+
+// 2. Add open/close functions
+const openNewModal = () => { newModal.style.display = 'block'; };
+const closeNewModal = () => { newModal.style.display = 'none'; ans.focus(); };
+
+// 3. Wire up close button and Escape key
+closeNew.onclick = closeNewModal;
+// Add to Escape key handler
+```
+
+#### Add a New LocalStorage Key
+```javascript
+// 1. Define the key pattern
+const getDeckKey = (base) => `${base}_${currentDeck}`;
+
+// 2. Load on startup
+let newData = JSON.parse(localStorage.getItem(getDeckKey('newkey')) || '{}');
+
+// 3. Save when changed
+localStorage.setItem(getDeckKey('newkey'), JSON.stringify(newData));
+
+// 4. Clear on deck delete
+localStorage.removeItem(`newkey_${deckName}`);
+```
+
+### Code Patterns
+
+#### Pattern: HTML Escaping
+```javascript
+// ALWAYS escape user input before innerHTML
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+// Use it
+element.innerHTML = `<span>${esc(userInput)}</span>`;
+```
+
+#### Pattern: Modal Management
+```javascript
+// Open modal
+const openModal = () => {
+  modal.style.display = 'block';
+  // Focus first input if any
+};
+
+// Close modal
+const closeModal = () => {
+  modal.style.display = 'none';
+  ans.focus(); // Always refocus answer input
+};
+```
+
+#### Pattern: Deck-Specific Storage
+```javascript
+// Get key for current deck
+const getDeckKey = (base) => `${base}_${currentDeck}`;
+
+// Use it
+localStorage.getItem(getDeckKey('fc'));     // 'fc_Spanish'
+localStorage.getItem(getDeckKey('streak')); // 'streak_Spanish'
+```
+
+### Anti-Patterns
+
+| Don't Do This | Do This Instead |
+|---------------|-----------------|
+| `innerHTML = userInput` | `innerHTML = esc(userInput)` |
+| `element.textContent = '<b>text</b>'` | Use innerHTML for HTML, textContent for plain text |
+| Store sensitive data in localStorage | Keep API keys server-side (or accept the risk) |
+| Add console.log for production | Remove debug logs before committing |
+| Use `var` | Use `let` or `const` |
+| Create new files | Keep everything in index.html |
+| Add npm dependencies | Use CDN or inline code |
+
+### Naming Conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Variables | camelCase | `sessionCount`, `wrongWords` |
+| Functions | camelCase | `initPool()`, `updateStreak()` |
+| DOM IDs | camelCase | `editModal`, `btnSave` |
+| CSS classes | kebab-case | `.menu-item`, `.btn-primary` |
+| LocalStorage keys | snake_case with prefix | `fc_Spanish`, `streak_Default` |
+| Constants | UPPER_CASE | Not used currently |
+
+---
+
 ## Files
 
 | File | Lines | Description |
 |------|-------|-------------|
-| `index.html` | ~425 | Complete application (HTML + CSS + JS) |
-| `CLAUDE.md` | ~350 | Documentation (this file) |
+| `index.html` | ~900 | Complete application (HTML + CSS + JS) |
+| `CLAUDE.md` | ~1400 | Documentation (this file) |
 
 ## External Dependencies
 
@@ -533,9 +1230,309 @@ Stats row (visible on hover):
 - LocalStorage required
 - No IE support
 
+---
+
+## Technical Constraints
+
+### Why These Choices Were Made
+
+| Constraint | Reason |
+|------------|--------|
+| **Single HTML file** | Maximum portability, easy to share, no setup |
+| **No build tools** | Removes complexity, no node_modules, instant development |
+| **CDN dependencies only** | Avoids bundling, keeps file small, easy updates |
+| **LocalStorage primary** | Works offline, no server needed, instant saves |
+| **IndexedDB for audio** | LocalStorage has 5MB limit, audio blobs are large |
+| **Dark theme only** | Reduces complexity, consistent experience |
+| **ES modules** | Modern syntax, clean imports, no transpilation |
+
+### Technical Limits
+
+| Limit | Value | Impact |
+|-------|-------|--------|
+| LocalStorage size | ~5MB per origin | ~2000-5000 cards depending on content |
+| IndexedDB size | ~50MB+ (varies by browser) | Thousands of cached audio files |
+| Single file size | Currently ~900 lines | May need refactoring if >2000 lines |
+| Session goal max | 100 cards | UI designed for this range |
+| Deck name length | No enforced limit | Long names may break UI |
+
+## Decision Log
+
+Historical decisions and their reasoning (ADR-style).
+
+### ADR-001: Single File Architecture
+- **Date**: Project inception
+- **Decision**: Keep everything in one HTML file
+- **Context**: Need simple, portable flashcard app
+- **Consequences**:
+  - ✅ Easy to share (email, USB, etc.)
+  - ✅ No build process
+  - ✅ Works offline immediately
+  - ❌ File gets long
+  - ❌ No code splitting
+
+### ADR-002: FSRS Algorithm
+- **Date**: Project inception
+- **Decision**: Use FSRS instead of SM-2 or custom algorithm
+- **Context**: Need effective spaced repetition
+- **Consequences**:
+  - ✅ Modern, well-researched algorithm
+  - ✅ Available as ES module via CDN
+  - ✅ Better than SM-2 for retention
+  - ❌ External dependency
+
+### ADR-003: ElevenLabs TTS
+- **Date**: 2026-01-17
+- **Decision**: Use ElevenLabs API for text-to-speech
+- **Context**: Web Speech API quality is poor
+- **Consequences**:
+  - ✅ High-quality pronunciation
+  - ✅ Fallback to Web Speech API
+  - ❌ Requires API key (exposed in client)
+  - ❌ Costs money per character
+
+### ADR-004: IndexedDB Audio Caching
+- **Date**: 2026-01-18
+- **Decision**: Cache ElevenLabs audio in IndexedDB
+- **Context**: Reduce API costs and latency
+- **Consequences**:
+  - ✅ Only one API call per unique sentence
+  - ✅ Instant playback for cached audio
+  - ✅ Works offline for cached content
+  - ❌ Storage grows over time
+  - ❌ No cleanup mechanism yet
+
+### ADR-005: Pool-Based Sessions
+- **Date**: 2026-01-16
+- **Decision**: Use pool system instead of random selection
+- **Context**: Wrong cards weren't guaranteed to repeat
+- **Consequences**:
+  - ✅ Wrong cards definitely repeat
+  - ✅ Clear session progress
+  - ✅ Predictable session length
+  - ❌ Slightly more complex code
+
+## Trade-offs
+
+Known compromises and why they were accepted.
+
+| Trade-off | Choice Made | Alternative | Why |
+|-----------|-------------|-------------|-----|
+| **API key exposure** | Accept risk | Backend proxy | No server = no proxy. Users accept risk. |
+| **No cloud sync** | Local only | Firebase/Supabase | Keeps app simple, respects privacy |
+| **Dark mode only** | One theme | Theme toggle | Reduces code, consistent experience |
+| **Type-answer only** | No multiple choice | Multiple question types | Simpler, typing is better for recall |
+| **Manual card creation** | No imports from Anki | Import parsers | Keeps scope focused |
+| **English TTS voice** | Single voice | Language detection | Simplicity, most users study English vocab |
+
+## Performance Considerations
+
+### What to Watch For
+
+| Issue | Threshold | Mitigation |
+|-------|-----------|------------|
+| **Too many cards** | >2000 cards | May slow localStorage reads |
+| **Large audio cache** | >100MB | No auto-cleanup, manual clear needed |
+| **Long word lists** | >500 in stats | Virtual scrolling not implemented |
+| **Deck switching** | Instant expected | All data reloaded from localStorage |
+
+### Performance Tips
+
+- Keep decks under 1000 cards each
+- Export/backup regularly to avoid data loss
+- Clear browser cache if audio cache grows too large
+- Close other tabs if experiencing lag
+
+---
+
+## Future Planning
+
+### Roadmap
+
+> **Note**: This app follows a "no feature creep" policy. Features are only added when explicitly requested.
+
+| Priority | Feature | Status |
+|----------|---------|--------|
+| - | No planned features | Stable |
+
+### Ideas Backlog
+
+Features that could be added if requested:
+
+| Idea | Complexity | Notes |
+|------|------------|-------|
+| **Keyboard shortcuts** | Low | Speed up navigation |
+| **Card tags/categories** | Medium | Filter cards by topic |
+| **Study statistics graph** | Medium | Visual progress over time |
+| **Reverse mode** | Low | Show word, type definition |
+| **Audio recording** | High | Record pronunciation for comparison |
+| **Anki import** | Medium | Parse .apkg files |
+| **PWA support** | Low | Add manifest for install prompt |
+| **Multiple voices** | Low | Select TTS voice per deck |
+
+### Rejected Ideas
+
+Features explicitly NOT wanted:
+
+| Idea | Reason for Rejection |
+|------|---------------------|
+| **Cloud sync** | Requires accounts, servers, complexity |
+| **User accounts** | Privacy concerns, unnecessary |
+| **Gamification (XP, levels)** | Beyond streaks, adds bloat |
+| **Leaderboards** | Social features out of scope |
+| **AI-generated cards** | External dependency, cost |
+| **Multiple choice mode** | Type-answer is more effective |
+| **Themes/customization** | Dark mode only, keeps it simple |
+| **Browser extension** | Separate project, different scope |
+| **Mobile app** | Browser version works on mobile |
+
+---
+
+## Troubleshooting
+
+### Common Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| "Loading..." stuck | FSRS CDN failed | Check internet, refresh page |
+| "No cards yet" | Empty deck | Add cards via gear menu → Add |
+| "No cards due" | All caught up | Come back tomorrow, or add new cards |
+| Cards not saving | LocalStorage full/disabled | Clear storage or enable cookies |
+| TTS not playing | ElevenLabs API issue | Falls back to Web Speech API |
+| Images not loading | Cross-origin restriction | Browser security, mostly harmless |
+| Import failed | Invalid JSON | Check file format matches export |
+
+### Browser Quirks
+
+| Browser | Issue | Workaround |
+|---------|-------|------------|
+| **Safari** | IndexedDB in private mode | Use normal mode for audio caching |
+| **Firefox** | Strict cross-origin for iframes | Images may not display |
+| **Mobile Safari** | Audio autoplay restrictions | May need tap to hear TTS |
+| **Brave** | Shields may block CDN | Whitelist site or disable shields |
+
+### Debug Tips
+
+```javascript
+// Check localStorage data in browser console
+JSON.parse(localStorage.getItem('fc_Default'))  // Cards
+JSON.parse(localStorage.getItem('streak_Default'))  // Streak
+JSON.parse(localStorage.getItem('decks'))  // All deck names
+
+// Check IndexedDB (audio cache)
+// Open DevTools → Application → IndexedDB → LingodashAudioCache
+
+// Force reset session
+pool = []; poolSize = 0; next();
+
+// Clear all data for current deck (danger!)
+localStorage.removeItem('fc_Default');
+localStorage.removeItem('streak_Default');
+localStorage.removeItem('session_Default');
+location.reload();
+```
+
+### FAQ
+
+**Q: How do I backup my cards?**
+A: Gear menu → Settings → Export. Downloads a JSON file.
+
+**Q: How do I restore from backup?**
+A: Gear menu → Settings → Select file → Import.
+
+**Q: Can I use this offline?**
+A: Yes, except TTS and images need internet. Core study works offline.
+
+**Q: Why does the streak reset?**
+A: Missing 2+ days resets it. Missing 1 day uses a freeze if available.
+
+**Q: How do I get more freezes?**
+A: Earn +1 freeze every 7-day streak milestone (max 3).
+
+**Q: Can I study multiple languages?**
+A: Yes, create separate decks for each language.
+
+**Q: Is my data private?**
+A: Yes, everything stays in your browser's localStorage.
+
+**Q: Why is TTS quality sometimes bad?**
+A: ElevenLabs failed, fell back to browser's Web Speech API.
+
+**Q: Can I change the TTS voice?**
+A: Not currently. The voice is hardcoded.
+
+**Q: How many cards can I have?**
+A: Practically ~2000-5000 per deck before performance issues.
+
+---
+
+## Known Issues
+
+> **Note**: These issues are documented for awareness. They are not critical blockers and can be fixed later if requested.
+
+### Critical
+
+| Issue | Description | Location |
+|-------|-------------|----------|
+| **Exposed API Key** | ElevenLabs API key is hardcoded in client-side JS. Anyone can view source and use it. | `index.html:553` |
+
+### Missing Feature
+
+| Issue | Description | Location |
+|-------|-------------|----------|
+| **Missing Images Menu Item** | Documentation lists "Images" menu option but it's not in HTML. `openImageSearchModal()` exists but has no trigger. | `index.html:95-101` |
+
+### Logic Bugs
+
+| Issue | Description | Location |
+|-------|-------------|----------|
+| **IndexedDB Init Race Condition** | `initAudioCache()` not awaited. If `speakText()` called immediately after page load, `audioCacheDB` may be null. | `index.html:262` |
+| **Multiple Audio Playback** | Rapid Enter presses can cause multiple audio clips to overlap/play simultaneously. No cancellation of previous audio. | `index.html:529-592` |
+| **Memory Leak Potential** | If audio playback fails or is interrupted, `URL.revokeObjectURL()` in `onended` callback never runs. | `index.html:539-542, 575-580` |
+
+### Minor Issues
+
+| Issue | Description | Impact |
+|-------|-------------|--------|
+| **No IndexedDB Cache Cleanup** | Cached audio blobs accumulate indefinitely. | Storage could grow large over time |
+| **Hardcoded Voice ID** | ElevenLabs voice ID hardcoded. If deprecated, TTS breaks silently. | `index.html:548` |
+| **Cross-Origin Iframe Warnings** | Bing image search iframes may encounter cross-origin restrictions in some browsers. | Console warnings, potential image display issues |
+
+### Why Not Fixed Yet
+
+- **API Key**: Fixing requires either removing TTS, adding a backend proxy, or using environment variables (conflicts with "no build tools" policy)
+- **Images Menu**: Quick fix but not prioritized
+- **Race Conditions**: Edge cases that rarely occur in normal usage
+- **Cache Cleanup**: Low priority - IndexedDB storage is generous
+
 ## Changelog
 
 ### 2026-01-18
+
+#### Major: Comprehensive Documentation Expansion
+- **What**: Expanded CLAUDE.md from ~350 to ~1400 lines with 20+ new sections
+- **Why**: Provide complete project documentation for maintainability and onboarding
+- **Files changed**: `CLAUDE.md`
+- **Affected areas**: Documentation only
+- **New sections added**:
+  - **Project Context**: Overview, Goals & Non-Goals, Target Users, Design Philosophy
+  - **Technical Reference**: Architecture diagram, State Management, Event Flow, Z-Index Map, LocalStorage Schema
+  - **Development Guide**: Quick Start, Testing Checklist, Common Tasks, Code Patterns, Anti-Patterns, Naming Conventions
+  - **Constraints & Decisions**: Technical Constraints, Decision Log (ADRs), Trade-offs, Performance Considerations
+  - **Future Planning**: Roadmap, Ideas Backlog, Rejected Ideas
+  - **Troubleshooting**: Common Errors, Browser Quirks, Debug Tips, FAQ
+  - **App-Specific Deep Dives**: FSRS Deep Dive, Deck Data Isolation, Audio System (TTS), Session Lifecycle
+
+#### Added: Known Issues Documentation
+- **What**: Added "Known Issues" section documenting 8 identified issues
+- **Why**: Track awareness of issues without immediately fixing them
+- **Files changed**: `CLAUDE.md` (new Known Issues section)
+- **Affected areas**: Documentation only
+- **Issues documented**:
+  - Critical: Exposed ElevenLabs API key in client-side code
+  - Missing: Images menu item (function exists but no UI trigger)
+  - Logic: IndexedDB init race condition, multiple audio playback overlap, memory leak potential
+  - Minor: No cache cleanup, hardcoded voice ID, cross-origin iframe warnings
 
 #### Improved: File-Based Import/Export
 - **What**: Changed import functionality from textarea paste to file selection for better UX
