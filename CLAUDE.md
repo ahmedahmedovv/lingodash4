@@ -562,8 +562,9 @@ Stats row (visible on hover):
 
 ### Study Flow
 ```
-1. Session starts → Pool created (up to 51 due cards)
-2. Random card shown: example (word as ___) + definition (hint)
+1. Session starts → Pool created (up to sessionGoal cards: due first, then new)
+2. First card from pool shown: example (word as ___) + definition (hint)
+   (Pool is pre-shuffled within groups: due cards shuffled, new cards shuffled)
 3. Type answer in input field
 4. Press Enter to submit
 5. Result shown:
