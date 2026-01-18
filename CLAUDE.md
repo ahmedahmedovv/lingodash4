@@ -1003,23 +1003,23 @@ function initPool() {
   wrongCount = 0;
   wrongWords = [];
 
-  // 2. Get due cards
-  let d = due();  // cards where due <= now
+  // 2. Get due cards and shuffle them
+  let dueCards = due().sort(() => Math.random() - 0.5);
 
-  // 3. Fill remaining slots with new cards
-  if (d.length < sessionGoal) {
-    const remaining = sessionGoal - d.length;
-    const newCards = cards.filter(c => c.card.state === 0);
-    d = d.concat(newCards.slice(0, remaining));
-  }
+  // 3. Get new cards (state 0) and shuffle them
+  let newCards = cards.filter(c => c.card.state === 0)
+    .sort(() => Math.random() - 0.5);
 
-  // 4. Sort: due cards first, then new cards
-  // 5. Shuffle within groups
-  // 6. Take up to sessionGoal cards
+  // 4. Combine: due cards FIRST, then new cards
+  // This ensures spaced repetition priority is respected
+  let combined = [...dueCards, ...newCards];
 
-  pool = sorted.slice(0, sessionGoal);
+  // 5. Take up to sessionLimit cards
+  pool = combined.slice(0, sessionLimit());
   poolSize = pool.length;
 }
+
+// next() picks pool[0], so due cards always shown before new cards
 ```
 
 ### Progress Calculation
@@ -1508,6 +1508,18 @@ A: Practically ~2000-5000 per deck before performance issues.
 ## Changelog
 
 ### 2026-01-18
+
+#### Fixed: Due Cards Now Shown Before New Cards
+- **What**: Fixed bug where new cards appeared before due/overdue cards
+- **Why**: Spaced repetition requires reviewing due cards first to prevent memory decay
+- **Files changed**: `index.html` (initPool and next functions), `CLAUDE.md` (Session Lifecycle section)
+- **Affected areas**: Card selection order, session flow
+- **Technical details**:
+  - `initPool()` now builds pool as: shuffled due cards + shuffled new cards
+  - `next()` now picks `pool[0]` instead of random index
+  - Due cards always appear before new cards within a session
+- **Old behavior**: Random selection from entire pool (new cards could appear before due cards)
+- **New behavior**: Due cards shown first (shuffled), then new cards (shuffled)
 
 #### Major: Comprehensive Documentation Expansion
 - **What**: Expanded CLAUDE.md from ~350 to ~1400 lines with 20+ new sections

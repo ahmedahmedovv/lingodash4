@@ -468,23 +468,15 @@
 
     function initPool() {
       sessionCount = 0; wrongCount = 0; wrongWords = [];
-      let d = due();
-      // If we don't have enough due cards, fill remaining slots with new cards (state 0)
-      if (d.length < sessionLimit()) {
-        const remainingSlots = sessionLimit() - d.length;
-        const newCards = cards.filter(c => c.card.state === 0 && !d.includes(c))
-          .sort(() => Math.random() - 0.5)
-          .slice(0, remainingSlots);
-        d = d.concat(newCards);
-      }
-      // Sort to prioritize due cards first (cards with passed due dates), then new cards
-      pool = d.sort((a, b) => {
-        const aDue = new Date(a.card.due) <= new Date();
-        const bDue = new Date(b.card.due) <= new Date();
-        if (aDue && !bDue) return -1; // a is due, b is not -> a comes first
-        if (!aDue && bDue) return 1;  // b is due, a is not -> b comes first
-        return Math.random() - 0.5;   // both same type -> random order
-      }).slice(0, sessionLimit());
+      // Get due cards (overdue or due now) and shuffle them
+      let dueCards = due().sort(() => Math.random() - 0.5);
+      // Get new cards (state 0) and shuffle them
+      let newCards = cards.filter(c => c.card.state === 0 && !dueCards.includes(c))
+        .sort(() => Math.random() - 0.5);
+      // Combine: due cards first, then new cards (respects spaced repetition priority)
+      let combined = [...dueCards, ...newCards];
+      // Take up to sessionLimit cards
+      pool = combined.slice(0, sessionLimit());
       poolSize = pool.length;
       saveSession();
     }
@@ -510,8 +502,8 @@
       if (pickNew) {
         sessionCount++;
         saveSession();
-        const idx = Math.floor(Math.random() * pool.length);
-        cur = pool[idx];
+        // Pick first card from pool (pool is sorted: due cards first, then new cards)
+        cur = pool[0];
       }
       const done = poolSize - pool.length;
       counter.textContent = done + ' / ' + poolSize;
