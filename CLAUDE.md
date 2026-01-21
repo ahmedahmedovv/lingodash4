@@ -213,8 +213,8 @@ Answer Submitted (Enter key)
 | Save card | Click "Save" button | `btnSave.onclick` | Validate, save, close modal |
 | Delete card | Click "Delete" button | `btnDel.onclick` | Confirm, delete, refresh |
 | Switch deck | Click deck in dropdown | `deck-menu-item.onclick` | Load new deck data |
-| Import | Select file + click Import | `btnImport.onclick` | Parse JSON, merge cards |
-| Export | Click Export | `btnExport.onclick` | Download JSON file |
+| Import | Select file + click Import | `btnImport.onclick` | Parse CSV, add cards |
+| Export | Click Export | `btnExport.onclick` | Download CSV file |
 | Close modal | Escape key or X button | Various | Hide modal, refocus input |
 
 ## Z-Index Map
@@ -395,8 +395,8 @@ Multiple decks for different languages or topics:
 - Each deck has separate cards, streak, session, freezes
 - Create new deck from dropdown or prompt
 - Rename/Delete deck in Settings modal
-- Export includes deck name
-- Import can create new deck or merge to current
+- Export downloads CSV file
+- Import adds cards from CSV to current deck
 
 **Storage per deck:**
 - `fc_<deckname>` - cards
@@ -407,8 +407,8 @@ Multiple decks for different languages or topics:
 - Add new cards via gear menu → Add
 - Edit current card via gear menu → Edit
 - Delete current card with confirmation dialog
-- Import cards from JSON files via file selector
-- Export cards to JSON files for backup/sharing
+- Import cards from CSV files via file selector
+- Export cards to CSV files for backup/sharing
 - Automatic localStorage persistence (no manual import/export needed)
 - Clear all cards with type-to-confirm safety
 
@@ -477,11 +477,11 @@ Stats row (visible on hover):
 ### Settings Modal
 - Opens via gear menu → Settings
 - **Current Deck**: Shows deck name with Rename/Delete buttons
-- **Import Cards**: File selector for JSON import with validation
-- **Export Cards**: Download all cards as JSON file
+- **Import Cards**: File selector for CSV import with validation
+- **Export Cards**: Download all cards as CSV file
 - **Session Goal**: Preset buttons (10/25/51/100)
 - **Danger zone**: Type "DELETE" + Clear All button
-- **Data persistence**: Automatic localStorage saving with optional JSON backup
+- **Data persistence**: Automatic localStorage saving with optional CSV backup
 
 ## UI Design
 
@@ -555,8 +555,8 @@ Stats row (visible on hover):
 | ✕ | Close modal |
 | 💾 (floppy) | Save/Add card |
 | 🗑 (trash) | Delete card / Clear all |
-| ↑ (upload) | Import JSON |
-| ↓ (download) | Export JSON |
+| ↑ (upload) | Import CSV |
+| ↓ (download) | Export CSV |
 
 ## User Flows
 
@@ -644,23 +644,18 @@ Stats row (visible on hover):
 }
 ```
 
-### Export Format (Full Backup)
-```javascript
-{
-  fc: [...],           // Array of all card objects
-  streak: {
-    count: Number,     // Current streak days
-    date: "string",    // Last activity date
-    freezes: Number    // Available streak freezes (0-3)
-  },
-  session: {
-    count: Number,     // Cards reviewed this session
-    wrong: Number,     // Wrong answers this session
-    words: [...],      // Words answered wrong
-    date: "string"     // Session date
-  }
-}
+### Export Format (CSV)
+```csv
+Word,Definition,Example
+hello,a greeting,"Hello, how are you?"
+"complex word","definition with, comma","Example sentence here."
 ```
+
+**CSV Format Rules:**
+- Header row: `Word,Definition,Example`
+- Fields containing commas, quotes, or newlines are wrapped in double quotes
+- Double quotes within fields are escaped as `""`
+- Example column is optional (can be empty)
 
 ### Storage Systems
 
@@ -710,6 +705,8 @@ Stats row (visible on hover):
 | `switchDeck(deckName)` | Switch to different deck |
 | `createNewDeck()` | Create new deck |
 | `deleteDeck(deckName)` | Delete deck |
+| `parseCSV(text)` | Parse CSV text into 2D array with quote handling |
+| `escapeCSV(s)` | Escape string for CSV output (quote if needed) |
 | `renameDeck(oldName)` | Rename deck |
 | `initAudioCache()` | Initialize IndexedDB for audio caching |
 | `getCachedAudio(key)` | Retrieve cached audio from IndexedDB |
@@ -1058,10 +1055,11 @@ progressBar.style.width = `${progress}%`;
 - Example: Optional
 
 ### Import Validation
-- Must be valid JSON
-- Full backup: Must have `fc` array with valid cards
-- Card array: Each card needs `word`, `def`, `card` properties
-- Invalid cards silently skipped
+- Must be valid CSV format
+- Must have header row with `Word` and `Definition` columns
+- `Example` column is optional
+- Rows missing word or definition are skipped
+- New cards created with fresh FSRS state
 
 ### Security
 - XSS protection: Word text escaped in stats list
@@ -1101,8 +1099,8 @@ Before committing any changes, manually verify:
 | **Session** | Verify wrong cards repeat, progress updates |
 | **Streak** | Check streak increments on new day |
 | **Decks** | Create deck, switch decks, rename, delete |
-| **Import** | Import a JSON file, verify cards load |
-| **Export** | Export cards, verify JSON is valid |
+| **Import** | Import a CSV file, verify cards load |
+| **Export** | Export cards, verify CSV is valid |
 | **TTS** | Verify audio plays after answer |
 | **Images** | Verify Bing images appear |
 | **Modals** | Open/close all modals, Escape key works |
@@ -1413,7 +1411,7 @@ Features explicitly NOT wanted:
 | Cards not saving | LocalStorage full/disabled | Clear storage or enable cookies |
 | TTS not playing | ElevenLabs API issue | Falls back to Web Speech API |
 | Images not loading | Cross-origin restriction | Browser security, mostly harmless |
-| Import failed | Invalid JSON | Check file format matches export |
+| Import failed | Invalid CSV | Check file has Word,Definition columns |
 
 ### Browser Quirks
 
@@ -1448,10 +1446,10 @@ location.reload();
 ### FAQ
 
 **Q: How do I backup my cards?**
-A: Gear menu → Settings → Export. Downloads a JSON file.
+A: Gear menu → Settings → Export. Downloads a CSV file.
 
 **Q: How do I restore from backup?**
-A: Gear menu → Settings → Select file → Import.
+A: Gear menu → Settings → Select CSV file → Import.
 
 **Q: Can I use this offline?**
 A: Yes, except TTS and images need internet. Core study works offline.
@@ -1523,6 +1521,22 @@ A: Practically ~2000-5000 per deck before performance issues.
 - **Duplicate Word Removal**: Edge case - users rarely add duplicate words with different definitions
 
 ## Changelog
+
+### 2026-01-21
+
+#### Changed: Import/Export Now Uses CSV Format
+- **What**: Replaced JSON import/export with CSV format (Word, Definition, Example)
+- **Why**: CSV is simpler and more universal for vocabulary data exchange
+- **Files changed**: `index.html` (import/export handlers, added CSV parsing functions), `CLAUDE.md` (documentation updates)
+- **Affected areas**: Settings modal import/export section, file format
+- **Technical details**:
+  - Added `parseCSV()` function to handle quoted fields and escaped quotes
+  - Added `escapeCSV()` function to properly quote fields when exporting
+  - Import creates new cards with fresh FSRS state using `createEmptyCard()`
+  - Export format: `Word,Definition,Example` header with data rows
+  - File extension changed from `.json` to `.csv`
+- **Old behavior**: Import/export used JSON with full FSRS card state and session data
+- **New behavior**: Import/export uses simple CSV with just word, definition, and example
 
 ### 2026-01-18
 

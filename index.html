@@ -202,20 +202,20 @@
       </div>
       <div class="section">
         <div class="section-label">Import/Export Cards</div>
-        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 16px;">Backup and restore your flashcards as JSON files.</p>
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 16px;">Backup and restore your flashcards as CSV files (Word, Definition, Example).</p>
 
         <div style="margin-bottom: 16px;">
-          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Import from file:</div>
-          <input type="file" id="importFile" accept=".json" style="margin-bottom: 8px; padding: 8px 12px; background: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 14px;">
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Import from CSV:</div>
+          <input type="file" id="importFile" accept=".csv" style="margin-bottom: 8px; padding: 8px 12px; background: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 14px;">
           <div class="btns">
-            <div class="btn" id="btnImport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Import Selected File</div>
+            <div class="btn" id="btnImport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Import CSV</div>
           </div>
         </div>
 
         <div style="border-top: 1px solid #334155; padding-top: 16px;">
-          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Export to file:</div>
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Export to CSV:</div>
           <div class="btns">
-            <div class="btn" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Download Backup</div>
+            <div class="btn" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Download CSV</div>
           </div>
         </div>
       </div>
@@ -808,67 +808,70 @@
 
 
 
+    // CSV parsing helper - handles quoted fields and escaped quotes
+    const parseCSV = (text) => {
+      const rows = [];
+      let row = [], field = '', inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i], next = text[i + 1];
+        if (inQuotes) {
+          if (c === '"' && next === '"') { field += '"'; i++; }
+          else if (c === '"') inQuotes = false;
+          else field += c;
+        } else {
+          if (c === '"') inQuotes = true;
+          else if (c === ',') { row.push(field); field = ''; }
+          else if (c === '\n' || (c === '\r' && next === '\n')) {
+            row.push(field); field = ''; rows.push(row); row = [];
+            if (c === '\r') i++;
+          } else if (c !== '\r') field += c;
+        }
+      }
+      if (field || row.length) { row.push(field); rows.push(row); }
+      return rows;
+    };
+
+    // CSV escape helper - quotes field if needed
+    const escapeCSV = (s) => {
+      if (!s) return '';
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    };
+
     btnImport.onclick = async () => {
-      if (!importFile.files.length) { alert('Please select a file to import'); return; }
+      if (!importFile.files.length) { alert('Please select a CSV file to import'); return; }
       const file = importFile.files[0];
       try {
         const text = await file.text();
-        const imported = JSON.parse(text);
-        if (imported.fc && Array.isArray(imported.fc)) {
-          const valid = imported.fc.filter(c => c && c.word && c.def && c.card);
-          if (!valid.length) { alert('No valid cards found in file'); return; }
-          if (imported.deck && imported.deck !== currentDeck) {
-            const choice = confirm(`Import to new deck "${imported.deck}"?\n\nOK = Create new deck\nCancel = Import to current deck`);
-            if (choice && !decks.includes(imported.deck)) {
-              decks.push(imported.deck);
-              localStorage.setItem('decks', JSON.stringify(decks));
-              currentDeck = imported.deck;
-              localStorage.setItem('currentDeck', currentDeck);
-              cards.length = 0;
-              renderDeckMenu();
-            }
-          }
-          cards.length = 0;
-          valid.forEach(c => {
-            // Convert date strings back to Date objects for internal storage
-            if (c.card.due && typeof c.card.due === 'string') {
-              c.card.due = parseDateDDMMYYYY(c.card.due);
-            }
-            if (c.card.last_review && typeof c.card.last_review === 'string') {
-              c.card.last_review = parseDateDDMMYYYY(c.card.last_review);
-            }
-            cards.push(c);
-          });
-          save();
-          if (imported.streak) {
-            streakData = { ...imported.streak, date: parseDateDDMMYYYY(imported.streak.date) };
-            localStorage.setItem(getDeckKey('streak'), JSON.stringify(streakData));
-          }
-          if (imported.session) {
-            sessionData = { ...imported.session, date: parseDateDDMMYYYY(imported.session.date) };
-            sessionCount = sessionData.count || 0;
-            wrongCount = sessionData.wrong || 0;
-            wrongWords = sessionData.words || [];
-            localStorage.setItem(getDeckKey('session'), JSON.stringify(sessionData));
-          }
-          pool = []; poolSize = 0;
-          importFile.value = ''; closeSettingsModal(); next();
-          alert('Imported ' + valid.length + ' cards to "' + currentDeck + '"');
-        } else if (Array.isArray(imported)) {
-          const valid = imported.filter(c => c && c.word && c.def && c.card);
-          if (!valid.length) { alert('No valid cards found in file'); return; }
-          valid.forEach(c => cards.push(c));
-          save(); importFile.value = ''; closeSettingsModal(); next();
-          alert('Imported ' + valid.length + ' cards');
-        } else { alert('Invalid file format'); }
-      } catch { alert('Invalid JSON file'); }
+        const rows = parseCSV(text);
+        if (rows.length < 2) { alert('CSV file must have header row and at least one data row'); return; }
+        const header = rows[0].map(h => h.toLowerCase().trim());
+        const wordIdx = header.indexOf('word');
+        const defIdx = header.indexOf('definition');
+        const exIdx = header.indexOf('example');
+        if (wordIdx === -1 || defIdx === -1) { alert('CSV must have "Word" and "Definition" columns'); return; }
+        const imported = [];
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          const word = (r[wordIdx] || '').trim();
+          const def = (r[defIdx] || '').trim();
+          const ex = exIdx !== -1 ? (r[exIdx] || '').trim() : '';
+          if (word && def) imported.push({ word, def, ex, card: createEmptyCard() });
+        }
+        if (!imported.length) { alert('No valid cards found in CSV'); return; }
+        imported.forEach(c => cards.push(c));
+        save(); pool = []; poolSize = 0;
+        importFile.value = ''; closeSettingsModal(); next();
+        alert('Imported ' + imported.length + ' cards to "' + currentDeck + '"');
+      } catch (e) { alert('Error reading CSV file: ' + e.message); }
     };
 
     btnExport.onclick = () => {
       const a = document.createElement('a');
-      const data = { deck: currentDeck, fc: cards, streak: { count: streakData.count, date: formatDateDDMMYYYY(streakData.date), freezes: streakData.freezes || 0 }, session: { count: sessionCount, wrong: wrongCount, words: wrongWords, date: formatDateDDMMYYYY(sessionData.date || new Date().toDateString()) } };
-      a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}));
-      a.download = `${currentDeck.toLowerCase().replace(/\s+/g, '-')}.json`; a.click();
+      let csv = 'Word,Definition,Example\n';
+      cards.forEach(c => { csv += escapeCSV(c.word) + ',' + escapeCSV(c.def) + ',' + escapeCSV(c.ex || '') + '\n'; });
+      a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
+      a.download = `${currentDeck.toLowerCase().replace(/\s+/g, '-')}.csv`; a.click();
     };
 
     btnClear.onclick = () => {
