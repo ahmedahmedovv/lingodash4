@@ -56,6 +56,14 @@
     .danger-zone input { background: #0f172a; margin-top: 0; margin-bottom: 12px; }
     .icon { position: fixed; top: 24px; right: 24px; width: 20px; height: 20px; cursor: pointer; opacity: 0.4; transition: opacity 0.2s; z-index: 10; }
     .icon:hover { opacity: 1; }
+    .card-actions { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; opacity: 0; transition: opacity 0.2s; }
+    .card:hover .card-actions { opacity: 1; }
+    .card-action { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: #0f172a; border: 1px solid #334155; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+    .card-action:hover { border-color: #60a5fa; }
+    .card-action svg { width: 14px; height: 14px; stroke: #64748b; transition: stroke 0.2s; }
+    .card-action:hover svg { stroke: #60a5fa; }
+    .card-action.delete:hover { border-color: #dc2626; }
+    .card-action.delete:hover svg { stroke: #dc2626; }
     .menu { display: none; position: fixed; top: 52px; right: 24px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px 0; z-index: 20; min-width: 140px; }
     .menu.show { display: block; }
     .menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #94a3b8; font-size: 14px; cursor: pointer; transition: background 0.15s; }
@@ -100,6 +108,10 @@
     <div class="menu-item" id="menuSettings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg>Settings</div>
   </div>
   <div class="card" id="card">
+    <div class="card-actions" id="cardActions">
+      <div class="card-action" id="cardEdit" title="Edit card"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+      <div class="card-action delete" id="cardDelete" title="Delete card"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
+    </div>
     <div class="stats"><span id="counter">-</span><span id="stability" title="Memory stability in days"></span><span id="freeze" title="Streak freezes available"><svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;stroke:#38bdf8;fill:none" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2v20M8 6l4-4 4 4M8 18l4 4 4-4M2 12h4M18 12h4M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/></svg><span id="freezeNum">0</span></span><span id="streak"><svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;stroke:#f97316;fill:none" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2c.4 2.3.6 4.5 0 6.5C10.5 5 8 4 6 5c1 2.5 1.5 5 1 7.5C5 11 3 9.5 2 11c1 3 2 6 5 8 1.5 1 3 2 5 2s3.5-1 5-2c3-2 4-5 5-8-1-1.5-3 0-5 1.5.5-2.5 0-5-1-7.5-2-1-4.5 0-6 3.5.6-2 .4-4.2 0-6.5z"/></svg><span id="streakNum">0</span></span></div>
     <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
     <div class="ex" id="ex"></div>
@@ -498,16 +510,16 @@
     function next(pickNew = true) {
       streakNum.textContent = streakData.count;
       freezeNum.textContent = streakData.freezes || 0;
-      if (!cards.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; stability.textContent = ''; cur = null; return; }
+      if (!cards.length) { def.textContent = 'No cards yet'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = ''; stability.textContent = ''; cur = null; cardActions.style.display = 'none'; return; }
       if (pickNew && !pool.length && !poolSize) initPool();
       // Handle case where pool is empty after init (no due or new cards)
       if (!pool.length && !poolSize) {
-        def.textContent = 'No cards due. Come back later!'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = '0 / 0'; stability.textContent = ''; cur = null; return;
+        def.textContent = 'No cards due. Come back later!'; ex.textContent = ''; ans.style.display = 'none'; counter.textContent = '0 / 0'; stability.textContent = ''; cur = null; cardActions.style.display = 'none'; return;
       }
       if (!pool.length && poolSize) {
         counter.textContent = poolSize + ' / ' + poolSize;
         progressBar.style.width = '100%';
-        ex.textContent = ''; ans.style.display = 'none'; stability.textContent = '';
+        ex.textContent = ''; ans.style.display = 'none'; stability.textContent = ''; cardActions.style.display = 'none';
         def.innerHTML = 'Session complete!<div class="btns" style="justify-content:center;margin-top:24px"><div class="btn btn-primary" id="btnNewSession">New Session</div><div class="btn" id="btnDone">Done</div></div>';
         document.getElementById('btnNewSession').onclick = () => { sessionCount = 0; wrongCount = 0; wrongWords = []; pool = []; poolSize = 0; saveSession(); next(); };
         document.getElementById('btnDone').onclick = () => { def.innerHTML = 'See you tomorrow!'; };
@@ -528,7 +540,7 @@
       const wordText = (cur.word || '').trim();
       const wordPattern = wordText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       ex.textContent = wordPattern ? (cur.ex || '').replace(new RegExp(wordPattern, 'gi'), '___') : (cur.ex || '');
-      ans.value = ''; ans.style.display = ''; ans.classList.remove('correct', 'wrong'); answered = false; ans.focus();
+      ans.value = ''; ans.style.display = ''; ans.classList.remove('correct', 'wrong'); answered = false; cardActions.style.display = 'flex'; ans.focus();
     }
 
     // TTS function using ElevenLabs API with IndexedDB caching and Web Speech API fallback
@@ -765,6 +777,18 @@
     closeSettings.onclick = closeSettingsModal;
     closeEdit.onclick = closeEditModal;
     closeImageSearch.onclick = closeImageSearchModal;
+
+    // Card action buttons (edit/delete on card)
+    cardEdit.onclick = () => { if (cur) openEditModal(true); };
+    cardDelete.onclick = () => {
+      const i = cards.indexOf(cur);
+      if (cur && i >= 0 && confirm('Delete "' + cur.word + '"?')) {
+        cards.splice(i, 1);
+        pool = pool.filter(c => c !== cur);
+        save();
+        next();
+      }
+    };
 
     // Escape key closes modals and menus
     document.addEventListener('keydown', e => {

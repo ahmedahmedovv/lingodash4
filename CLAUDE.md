@@ -404,9 +404,10 @@ Multiple decks for different languages or topics:
 - `session_<deckname>` - session data
 
 ### Card Management
+- **Quick actions on card**: Edit and delete buttons appear below card on hover
 - Add new cards via gear menu → Add
-- Edit current card via gear menu → Edit
-- Delete current card with confirmation dialog
+- Edit current card via gear menu → Edit, or click edit button on card
+- Delete current card via delete button on card (with confirmation)
 - Import cards from CSV files via file selector
 - Export cards to CSV files for backup/sharing
 - Automatic localStorage persistence (no manual import/export needed)
@@ -449,6 +450,11 @@ The app has **1 page + 3 modals**:
 │  │  [type answer here]             │   │
 │  └─────────────────────────────────┘   │
 └─────────────────────────────────────────┘
+              [✎] [🗑]  ← visible on hover
+
+Card action buttons (centered below card, visible on hover):
+- [✎] Edit current card
+- [🗑] Delete current card
 
 Stats row (visible on hover):
 - Left: Session progress (e.g., "15 / 51")
@@ -557,6 +563,12 @@ Stats row (visible on hover):
 | 🗑 (trash) | Delete card / Clear all |
 | ↑ (upload) | Import CSV |
 | ↓ (download) | Export CSV |
+
+### Card Action Buttons (centered below card, visible on hover)
+| Icon | Action |
+|------|--------|
+| ✎ (pencil) | Edit current card |
+| 🗑 (trash) | Delete current card (with confirmation) |
 
 ## User Flows
 
@@ -1521,6 +1533,22 @@ A: Practically ~2000-5000 per deck before performance issues.
 - **Duplicate Word Removal**: Edge case - users rarely add duplicate words with different definitions
 
 ## Changelog
+
+### 2026-01-23
+
+#### Added: Quick Edit/Delete Buttons on Card
+- **What**: Added edit and delete icon buttons directly on the flashcard for quick access
+- **Why**: Previously required 2-3 clicks through gear menu; now just 1 click on card
+- **Files changed**: `index.html` (CSS for card-actions, HTML buttons, JS handlers), `CLAUDE.md` (documentation)
+- **Affected areas**: Card UI, edit/delete workflow
+- **Technical details**:
+  - Two small icon buttons centered below the card
+  - Buttons appear on card hover (subtle, non-intrusive)
+  - Edit button opens edit modal with current card data
+  - Delete button confirms and deletes directly (no modal needed)
+  - Buttons hidden when no card is displayed (empty deck, session complete, no cards due)
+- **Old behavior**: Edit/delete required gear menu → Edit → (Delete button in modal)
+- **New behavior**: Hover card → click edit or delete directly
 
 ### 2026-01-21
 
