@@ -759,8 +759,20 @@
         else { av = a.card[sortKey] || 0; bv = b.card[sortKey] || 0; }
         return (av - bv) * dir;
       });
+      const fmtDate = d => { if (!d) return '-'; const dt = new Date(d); return ('0' + dt.getDate()).slice(-2) + '/' + ('0' + (dt.getMonth() + 1)).slice(-2) + '/' + dt.getFullYear(); };
+      const fmtMeta = c => {
+        if (sortKey === 'due') return 'Due: ' + fmtDate(c.card.due);
+        if (sortKey === 'difficulty') return 'Diff: ' + (c.card.difficulty || 0).toFixed(2);
+        if (sortKey === 'stability') return 'Stab: ' + (c.card.stability || 0).toFixed(1) + 'd';
+        if (sortKey === 'lapses') return 'Lapses: ' + (c.card.lapses || 0);
+        if (sortKey === 'reps') return 'Reviews: ' + (c.card.reps || 0);
+        if (sortKey === 'last_review') return 'Last: ' + fmtDate(c.card.last_review);
+        if (sortKey === 'state') return stateNames[c.card.state] || 'New';
+        return '';
+      };
       wordsWordList.innerHTML = sorted.map((c, i) => `<div class="words-row" data-word="${esc(c.word)}">
         <div class="words-info"><span class="word-name">${esc(c.word)}</span><span class="word-state">${stateNames[c.card.state]}</span></div>
+        <span class="word-meta">${fmtMeta(c)}</span>
         <div class="words-actions">
           <div class="words-action edit" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
           <div class="words-action delete" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
