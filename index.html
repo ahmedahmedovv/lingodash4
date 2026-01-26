@@ -91,6 +91,17 @@
     .deck-menu-item.active { color: #60a5fa; }
     .deck-menu-item svg { width: 16px; height: 16px; stroke: currentColor; }
     .deck-menu-divider { height: 1px; background: #334155; margin: 8px 0; }
+    .words-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #334155; }
+    .words-row:last-child { border-bottom: none; }
+    .words-info { display: flex; align-items: center; gap: 8px; }
+    .words-actions { display: flex; gap: 8px; }
+    .words-action { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid #334155; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+    .words-action svg { width: 14px; height: 14px; stroke: #64748b; transition: stroke 0.2s; }
+    .words-action:hover { border-color: #60a5fa; }
+    .words-action:hover svg { stroke: #60a5fa; }
+    .words-action.delete:hover { border-color: #dc2626; }
+    .words-action.delete:hover svg { stroke: #dc2626; }
+    .words-empty { text-align: center; color: #64748b; padding: 40px 0; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -99,6 +110,7 @@
     <svg style="width:12px;height:12px;margin-left:6px;stroke:currentColor" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
   </div>
   <div class="deck-menu" id="deckMenu"></div>
+  <svg class="icon" id="wordsIcon" style="right: 56px" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Words"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
   <svg class="icon" id="icon" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Settings"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg>
   <div class="menu" id="menu">
     <div class="menu-item" id="menuAdd"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add</div>
@@ -250,6 +262,33 @@
           <div class="btn btn-danger" id="btnClear" disabled><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Clear All Cards</div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Words Modal -->
+  <div class="modal" id="wordsModal">
+    <div class="modal-inner">
+      <div class="modal-header">
+        <span class="modal-title">Words</span>
+        <svg class="modal-close" id="closeWords" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" role="button" aria-label="Close"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+      <div class="sort-row">
+        <select id="wordsSortBy">
+          <option value="due">Due date</option>
+          <option value="difficulty">Difficulty</option>
+          <option value="stability">Stability</option>
+          <option value="lapses">Lapses</option>
+          <option value="reps">Reviews</option>
+          <option value="last_review">Last reviewed</option>
+          <option value="state">State</option>
+          <option value="alpha">Alphabetical</option>
+        </select>
+        <select id="wordsSortDir">
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
+      <div class="word-list" id="wordsWordList"></div>
     </div>
   </div>
   <script>
@@ -758,6 +797,62 @@
     sortBy.onchange = renderWordList;
     sortDir.onchange = renderWordList;
 
+    // Words modal (with edit/delete)
+    const openWordsModal = () => {
+      wordsModal.style.display = 'block';
+      renderWordsWordList();
+    };
+    const closeWordsModal = () => { wordsModal.style.display = 'none'; ans.focus(); };
+
+    const renderWordsWordList = () => {
+      if (!cards.length) {
+        wordsWordList.innerHTML = '<div class="words-empty">No cards yet. Add one with the + button.</div>';
+        return;
+      }
+      const sortKey = wordsSortBy.value, dir = wordsSortDir.value === 'asc' ? 1 : -1;
+      const sorted = [...cards].sort((a, b) => {
+        let av, bv;
+        if (sortKey === 'alpha') { av = a.word.toLowerCase(); bv = b.word.toLowerCase(); return av < bv ? -dir : av > bv ? dir : 0; }
+        if (sortKey === 'due') { av = new Date(a.card.due); bv = new Date(b.card.due); }
+        else if (sortKey === 'last_review') { av = a.card.last_review ? new Date(a.card.last_review) : new Date(0); bv = b.card.last_review ? new Date(b.card.last_review) : new Date(0); }
+        else { av = a.card[sortKey] || 0; bv = b.card[sortKey] || 0; }
+        return (av - bv) * dir;
+      });
+      wordsWordList.innerHTML = sorted.map((c, i) => `<div class="words-row" data-word="${esc(c.word)}">
+        <div class="words-info"><span class="word-name">${esc(c.word)}</span><span class="word-state">${stateNames[c.card.state]}</span></div>
+        <div class="words-actions">
+          <div class="words-action edit" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+          <div class="words-action delete" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
+        </div>
+      </div>`).join('');
+
+      // Attach event listeners
+      wordsWordList.querySelectorAll('.words-action.edit').forEach(btn => {
+        btn.onclick = () => {
+          const word = btn.closest('.words-row').dataset.word;
+          const card = cards.find(c => c.word === word);
+          if (card) { cur = card; closeWordsModal(); openEditModal(true); }
+        };
+      });
+      wordsWordList.querySelectorAll('.words-action.delete').forEach(btn => {
+        btn.onclick = () => {
+          const word = btn.closest('.words-row').dataset.word;
+          if (confirm(`Delete "${word}"?`)) {
+            const idx = cards.findIndex(c => c.word === word);
+            if (idx >= 0) {
+              cards.splice(idx, 1);
+              pool = pool.filter(c => c.word !== word);
+              save();
+              renderWordsWordList();
+              if (cur && cur.word === word) next();
+            }
+          }
+        };
+      });
+    };
+    wordsSortBy.onchange = renderWordsWordList;
+    wordsSortDir.onchange = renderWordsWordList;
+
     // Deck menu toggle
     deckSelector.onclick = () => deckMenu.classList.toggle('show');
     document.addEventListener('click', e => { if (!deckMenu.contains(e.target) && !deckSelector.contains(e.target)) deckMenu.classList.remove('show'); });
@@ -777,6 +872,8 @@
     closeSettings.onclick = closeSettingsModal;
     closeEdit.onclick = closeEditModal;
     closeImageSearch.onclick = closeImageSearchModal;
+    wordsIcon.onclick = openWordsModal;
+    closeWords.onclick = closeWordsModal;
 
     // Card action buttons (edit/delete on card)
     cardEdit.onclick = () => { if (cur) openEditModal(true); };
@@ -797,6 +894,7 @@
         else if (statsModal.style.display === 'block') closeStatsModal();
         else if (settingsModal.style.display === 'block') closeSettingsModal();
         else if (imageSearchModal.style.display === 'block') closeImageSearchModal();
+        else if (wordsModal.style.display === 'block') closeWordsModal();
         closeMenu();
         deckMenu.classList.remove('show');
       }
