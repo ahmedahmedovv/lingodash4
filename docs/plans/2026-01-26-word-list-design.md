@@ -2,7 +2,7 @@
 
 ## Overview
 
-Add a dedicated Words modal for managing flashcards with edit and delete functionality, accessible via a new icon in the top bar.
+A dedicated Words modal for managing flashcards with edit, delete, and stats functionality. Replaces the separate Stats modal.
 
 ## Access
 
@@ -16,7 +16,10 @@ Add a dedicated Words modal for managing flashcards with edit and delete functio
 ┌─────────────────────────────────────────┐
 │  Words                            [✕]   │
 ├─────────────────────────────────────────┤
+│  Total: 3  Due: 1  New: 1  Learning: 0  │
+│                                         │
 │  Sort: [Due date ▼]  [Asc ▼]           │
+│  Next scheduled review date for word.   │
 │                                         │
 │  ┌─────────────────────────────────┐   │
 │  │ hello          New    [✎] [🗑]  │   │
@@ -28,9 +31,14 @@ Add a dedicated Words modal for managing flashcards with edit and delete functio
 
 ## Features
 
+### Stats Summary
+- Shows at top of modal: Total, Due, New, Learning, Review counts
+- Updates each time modal opens
+- Replaces the separate Stats modal
+
 ### Sorting
-- Reuses existing sort options from Stats modal
 - Options: due, difficulty, stability, lapses, reps, last_review, state, alpha
+- Sort hint shown below dropdowns explains current sort criteria
 - Sort preference persists only while modal is open
 
 ### Edit Action
