@@ -97,7 +97,6 @@
 
         /* Stats Card */
         .stats-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 1.1rem; }
-        .stats-card h2 { display: none; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .stat-item { text-align: center; padding: .75rem; background: #f5f5f7; border-radius: 10px; }
         .stat-num { font-size: 2rem; font-weight: 600; color: #1d1d1f; }
@@ -107,19 +106,16 @@
 
         /* Actions Card */
         .actions-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 1.1rem; }
-        .actions-card h2 { display: none; }
         .action-btns { display: flex; flex-direction: column; gap: .5rem; }
         .action-btns button { width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: .5rem; }
 
         /* Words Card */
         .words-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: 1; display: flex; flex-direction: column; max-height: 550px; }
         .words-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .words-header h2 { display: none; }
         .sort-select { font-size: .9rem; padding: .4rem .6rem; border-radius: 6px; border: 1px solid #d2d2d7; background: #f5f5f7; }
 
         /* Language Selector */
         .lang-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 1.1rem; }
-        .lang-card h2 { display: none; }
         .lang-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
         .lang-current { font-weight: 600; color: #1d1d1f; }
         .lang-count { font-size: .85rem; color: #86868b; }
@@ -234,7 +230,6 @@
 
     <aside class="sidebar">
         <div class="lang-card">
-            <h2>Language</h2>
             <div class="lang-header">
                 <span class="lang-current" id="langCurrent">English</span>
                 <span class="lang-count" id="langCount">0 cards</span>
@@ -257,7 +252,6 @@
         </div>
 
         <div class="stats-card">
-            <h2>Statistics</h2>
             <div class="stats-grid">
                 <div class="stat-item due"><div class="stat-num" id="statDue">0</div><div class="stat-label">Due Now</div></div>
                 <div class="stat-item"><div class="stat-num" id="statLearning">0</div><div class="stat-label">Learning</div></div>
@@ -267,7 +261,6 @@
         </div>
 
         <div class="actions-card">
-            <h2>Actions</h2>
             <div class="action-btns">
                 <button onclick="toggleAdd()">+ Add Card</button>
                 <button onclick="exp()">Export JSON</button>
@@ -279,7 +272,6 @@
 
         <div class="words-card">
             <div class="words-header">
-                <h2>Words</h2>
                 <select class="sort-select" id="sortSelect" onchange="renderList()">
                     <option value="due">Due First</option>
                     <option value="word">A-Z</option>
@@ -304,15 +296,14 @@
 </div>
 
 <script>
+// Data State
 let cards = JSON.parse(localStorage.cards || '0') || [
     {w:'apple', s:'She took a bite of the crisp red apple.', d:'a round fruit', lang:'en'},
     {w:'banana', s:'The monkey peeled the banana before eating.', d:'a long curved yellow fruit', lang:'en'},
     {w:'door', s:'Please close the door behind you.', d:'a barrier for an entrance', lang:'en'}
 ], cur, editIdx = -1, answerStartTime = 0;
 
-let languages = JSON.parse(localStorage.languages || '0') || [
-    {code: 'en', name: 'English'}
-];
+let languages = JSON.parse(localStorage.languages || '0') || [{code: 'en', name: 'English'}];
 let currentLang = localStorage.currentLang || 'en';
 
 // Session State
@@ -322,24 +313,55 @@ let sessionMistakes = [];
 let reviewingMistakes = false;
 let inSession = false;
 let sessionDueCards = [];
-let interleaveInterval = 10;
+const INTERLEAVE_INTERVAL = 10;
+let waitingForNext = false;
 
+// Data Access Functions
 const save = () => localStorage.cards = JSON.stringify(cards);
 const saveLangs = () => localStorage.languages = JSON.stringify(languages);
 const saveCurrentLang = () => localStorage.currentLang = currentLang;
 const dueCards = () => cards.filter(c => (c.due||0) <= Date.now() && (c.lang || 'en') === currentLang);
 const currentLangCards = () => cards.filter(c => (c.lang || 'en') === currentLang);
+const findCardIndex = (card) => cards.findIndex(c => c.w === card.w && c.s === card.s && c.lang === card.lang);
+const removeCardFromSession = (card) => {
+    sessionDueCards = sessionDueCards.filter(c => !(c.w === card.w && c.s === card.s));
+    sessionMistakes = sessionMistakes.filter(c => !(c.w === card.w && c.s === card.s));
+};
+
+// Shared Validation Utility
+function validateSentence(word, sentence, errorId, previewId) {
+    const errorEl = document.getElementById(errorId);
+    const previewEl = document.getElementById(previewId);
+    
+    if (word && sentence) {
+        if (sentence.toLowerCase().includes(word.toLowerCase())) {
+            errorEl?.classList.remove('show');
+            previewEl?.classList.add('show');
+            if (previewEl) {
+                previewEl.innerHTML = sentence.replace(new RegExp('(' + word + ')', 'gi'), '<strong>___</strong>');
+            }
+            return true;
+        } else {
+            errorEl?.classList.add('show');
+            previewEl?.classList.remove('show');
+            return false;
+        }
+    } else {
+        errorEl?.classList.remove('show');
+        previewEl?.classList.remove('show');
+        return false;
+    }
+}
 
 // SM-2 Algorithm Implementation
 function levenshtein(a, b) {
     const m = a.length, n = b.length;
-    const dp = Array.from({length: m + 1}, (_, i) => [i]);
-    for (let j = 1; j <= n; j++) dp[0][j] = j;
+    const dp = Array.from({length: m + 1}, () => Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
     for (let i = 1; i <= m; i++) {
         for (let j = 1; j <= n; j++) {
-            dp[i][j] = a[i-1] === b[j-1]
-                ? dp[i-1][j-1]
-                : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+            dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
         }
     }
     return dp[m][n];
@@ -354,14 +376,9 @@ function calculateQuality(userAnswer, correctAnswer, responseTimeMs) {
     const seconds = responseTimeMs / 1000;
 
     if (isCorrect) {
-        if (seconds < 3) return 5;
-        if (seconds < 8) return 4;
-        return 3;
-    } else {
-        if (similarity >= 0.8) return 2;
-        if (similarity >= 0.5) return 1;
-        return 0;
+        return seconds < 3 ? 5 : seconds < 8 ? 4 : 3;
     }
+    return similarity >= 0.8 ? 2 : similarity >= 0.5 ? 1 : 0;
 }
 
 function sm2(card, quality) {
@@ -372,7 +389,6 @@ function sm2(card, quality) {
     card.ef = Math.max(1.3, card.ef + (0.1 - qDiff * (0.08 + qDiff * 0.02)));
 
     let intervalMins;
-
     if (quality < 3) {
         card.n = 0;
         intervalMins = 1;
@@ -387,14 +403,14 @@ function sm2(card, quality) {
 
     card.int = Math.min(intervalMins, 525600);
     card.due = Date.now() + card.int * 60000;
-
     return quality >= 3;
 }
 
 function toggleFocus() {
-    document.querySelector('.container').classList.toggle('focus-mode');
-    let isFocus = document.querySelector('.container').classList.contains('focus-mode');
-    document.getElementById('focusBtn').textContent = isFocus ? '◧' : '☰';
+    const container = document.querySelector('.container');
+    const focusBtn = document.getElementById('focusBtn');
+    const isFocus = container.classList.toggle('focus-mode');
+    focusBtn.textContent = isFocus ? '◧' : '☰';
     localStorage.focusMode = isFocus;
 }
 
@@ -407,18 +423,14 @@ if (localStorage.focusMode === 'true') {
 function updateWelcomeStats() {
     const due = dueCards().length;
     document.getElementById('welcomeDue').textContent = due;
-    
-    // Disable start button if no cards due
     const startBtn = document.getElementById('startBtn');
     startBtn.disabled = due === 0;
     startBtn.textContent = due === 0 ? 'No Cards Due' : 'Start';
 }
 
 function updateWelcomeLangSelect() {
-    let select = document.getElementById('welcomeLangSelect');
-    select.innerHTML = languages.map(l => 
-        '<option value="' + l.code + '"' + (l.code === currentLang ? ' selected' : '') + '>' + l.name + '</option>'
-    ).join('');
+    const select = document.getElementById('welcomeLangSelect');
+    select.innerHTML = languages.map(l => `<option value="${l.code}"${l.code === currentLang ? ' selected' : ''}>${l.name}</option>`).join('');
 }
 
 function changeWelcomeLang() {
@@ -434,13 +446,8 @@ function startSession() {
     const due = dueCards();
     if (due.length === 0) return;
     
-    // Get session size from input
-    const sizeInput = document.getElementById('sessionSizeInput');
-    sessionSize = parseInt(sizeInput.value) || 20;
-    if (sessionSize < 1) sessionSize = 1;
-    if (sessionSize > 500) sessionSize = 500;
+    sessionSize = Math.min(500, Math.max(1, parseInt(document.getElementById('sessionSizeInput').value) || 20));
     
-    // Hide welcome, show study interface
     document.getElementById('welcomePage').style.display = 'none';
     document.getElementById('studyInterface').style.display = '';
     
@@ -450,12 +457,10 @@ function startSession() {
     reviewingMistakes = false;
     waitingForNext = false;
     
-    // Get up to sessionSize due cards, shuffled
-    sessionDueCards = shuffleArray(due.slice(0, sessionSize));
+    sessionDueCards = due.slice(0, sessionSize).sort(() => Math.random() - 0.5);
     
     updateSessionUI();
     document.getElementById('sessionInfo').style.display = 'block';
-    
     show();
 }
 
@@ -477,25 +482,17 @@ function returnToWelcome() {
     updateStats();
 }
 
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
 function updateSessionUI() {
     const totalInSession = Math.min(sessionSize, sessionDueCards.length + sessionCardsStudied);
     const progress = Math.min(sessionCardsStudied, totalInSession);
     const percent = totalInSession > 0 ? (progress / totalInSession * 100) : 0;
     
-    document.getElementById('sessionProgress').textContent = progress + '/' + totalInSession;
-    document.getElementById('progressFill').style.width = percent + '%';
+    document.getElementById('sessionProgress').textContent = `${progress}/${totalInSession}`;
+    document.getElementById('progressFill').style.width = `${percent}%`;
     
     const badge = document.getElementById('mistakeBadge');
     if (sessionMistakes.length > 0 && !reviewingMistakes) {
-        badge.textContent = '(' + sessionMistakes.length + ' mistakes)';
+        badge.textContent = `(${sessionMistakes.length} mistakes)`;
         badge.style.display = '';
     } else {
         badge.style.display = 'none';
@@ -503,7 +500,7 @@ function updateSessionUI() {
 }
 
 function checkInterleaveReview() {
-    if (!reviewingMistakes && sessionMistakes.length > 0 && sessionCardsStudied > 0 && sessionCardsStudied % interleaveInterval === 0) {
+    if (!reviewingMistakes && sessionMistakes.length > 0 && sessionCardsStudied > 0 && sessionCardsStudied % INTERLEAVE_INTERVAL === 0) {
         reviewingMistakes = true;
         return true;
     }
@@ -511,16 +508,12 @@ function checkInterleaveReview() {
 }
 
 function renderLangSelect() {
-    let select = document.getElementById('langSelect');
-    select.innerHTML = languages.map(l => 
-        '<option value="' + l.code + '"' + (l.code === currentLang ? ' selected' : '') + '>' + l.name + '</option>'
-    ).join('');
+    const select = document.getElementById('langSelect');
+    select.innerHTML = languages.map(l => `<option value="${l.code}"${l.code === currentLang ? ' selected' : ''}>${l.name}</option>`).join('');
     
-    let lang = languages.find(l => l.code === currentLang);
+    const lang = languages.find(l => l.code === currentLang);
     document.getElementById('langCurrent').textContent = lang ? lang.name : currentLang;
-    document.getElementById('langCount').textContent = currentLangCards().length + ' cards';
-    
-    // Also update welcome page language selector
+    document.getElementById('langCount').textContent = `${currentLangCards().length} cards`;
     updateWelcomeLangSelect();
 }
 
@@ -550,8 +543,8 @@ function cancelLangForm() {
 }
 
 function addLang() {
-    let name = document.getElementById('newLangName').value.trim();
-    let code = document.getElementById('newLangCode').value.trim().toLowerCase();
+    const name = document.getElementById('newLangName').value.trim();
+    const code = document.getElementById('newLangCode').value.trim().toLowerCase();
     
     if (!name || !code) return;
     if (languages.find(l => l.code === code)) {
@@ -571,63 +564,57 @@ function addLang() {
 }
 
 function renameLang() {
-    let lang = languages.find(l => l.code === currentLang);
+    const lang = languages.find(l => l.code === currentLang);
     if (!lang) return;
     
-    let newName = prompt('Rename "' + lang.name + '":', lang.name);
-    if (newName && newName.trim()) {
+    const newName = prompt(`Rename "${lang.name}":`, lang.name);
+    if (newName?.trim()) {
         lang.name = newName.trim();
         saveLangs();
         renderLangSelect();
         updateWelcomeLangSelect();
-        updateWelcomeStats();
     }
 }
 
 function formatInterval(mins) {
     if (!mins || mins <= 1) return 'new';
-    if (mins < 60) return Math.round(mins) + 'm';
-    if (mins < 1440) return Math.round(mins/60) + 'h';
-    return Math.round(mins/1440) + 'd';
+    if (mins < 60) return `${Math.round(mins)}m`;
+    if (mins < 1440) return `${Math.round(mins/60)}h`;
+    return `${Math.round(mins/1440)}d`;
 }
 
 function updateStats() {
-    let langCards = currentLangCards();
-    let due = dueCards().length;
-    let mastered = langCards.filter(c => (c.n||0) >= 4).length;
-    let learning = langCards.length - mastered;
-    let totalReviews = langCards.reduce((a,c) => a + (c.reviews||0), 0);
-    let totalCorrect = langCards.reduce((a,c) => a + (c.correct||0), 0);
-    let accuracy = totalReviews ? Math.round(totalCorrect/totalReviews*100) : 0;
+    const langCards = currentLangCards();
+    const due = dueCards().length;
+    const mastered = langCards.filter(c => (c.n||0) >= 4).length;
+    const totalReviews = langCards.reduce((a,c) => a + (c.reviews||0), 0);
+    const totalCorrect = langCards.reduce((a,c) => a + (c.correct||0), 0);
+    const accuracy = totalReviews ? Math.round(totalCorrect/totalReviews*100) : 0;
 
     document.getElementById('dueCount').textContent = due;
     document.getElementById('statDue').textContent = due;
-    document.getElementById('statLearning').textContent = learning;
+    document.getElementById('statLearning').textContent = langCards.length - mastered;
     document.getElementById('statMastered').textContent = mastered;
-    document.getElementById('statAccuracy').textContent = accuracy + '%';
-    document.getElementById('langCount').textContent = langCards.length + ' cards';
+    document.getElementById('statAccuracy').textContent = `${accuracy}%`;
+    document.getElementById('langCount').textContent = `${langCards.length} cards`;
 }
 
 function show() {
-    // Reset waiting state when showing new card
     waitingForNext = false;
-    
     updateStats();
     renderList();
     
-    // Check if in mistake review mode
     if (reviewingMistakes && sessionMistakes.length > 0) {
         showMistakeReview();
         return;
     }
     
-    // Check if we should enter mistake review mode
     if (inSession && checkInterleaveReview()) {
         showMistakeReview();
         return;
     }
     
-    let dc = inSession ? sessionDueCards : dueCards();
+    const dc = inSession ? sessionDueCards : dueCards();
 
     if (!dc.length) {
         if (inSession) {
@@ -651,14 +638,10 @@ function show() {
     answer.style.background = '';
     msg.textContent = '';
     
-    if (inSession) {
-        cur = dc[0];
-    } else {
-        cur = dc[Math.random()*dc.length|0];
-    }
+    cur = inSession ? dc[0] : dc[Math.random()*dc.length|0];
     
     sentence.textContent = cur.s.replace(new RegExp(cur.w, 'gi'), '___');
-    hint.textContent = cur.d + ' (' + cur.w[0] + ')';
+    hint.textContent = `${cur.d} (${cur.w[0]})`;
     answer.value = '';
     answer.focus();
     answerStartTime = Date.now();
@@ -683,7 +666,7 @@ function showMistakeReview() {
     
     cur = sessionMistakes[0];
     sentence.textContent = cur.s.replace(new RegExp(cur.w, 'gi'), '___');
-    hint.textContent = cur.d + ' (' + cur.w[0] + ')';
+    hint.textContent = `${cur.d} (${cur.w[0]})`;
     answer.value = '';
     answer.focus();
     answerStartTime = Date.now();
@@ -711,43 +694,33 @@ function showSessionComplete() {
     const remainingDue = dueCards().length;
     
     msg.innerHTML = 
-        '<div class="session-complete">' +
-        '<h2>🎉 Session Complete!</h2>' +
-        '<div class="session-stats">' +
-        '<div class="session-stat"><div class="num">' + sessionTotal + '</div><div class="label">Studied</div></div>' +
-        '<div class="session-stat"><div class="num">' + correctCount + '</div><div class="label">Correct</div></div>' +
-        '<div class="session-stat"><div class="num">' + accuracy + '%</div><div class="label">Accuracy</div></div>' +
-        '</div>' +
-        '<p style="color: #86868b; margin-bottom: 1rem;">' + remainingDue + ' cards still due</p>' +
-        '<button class="btn-primary" onclick="startSession()">New Session</button>' +
-        '<button onclick="returnToWelcome()" style="margin-left: .5rem;">Back to Home</button>' +
-        '</div>';
+        `<div class="session-complete">
+        <h2>🎉 Session Complete!</h2>
+        <div class="session-stats">
+        <div class="session-stat"><div class="num">${sessionTotal}</div><div class="label">Studied</div></div>
+        <div class="session-stat"><div class="num">${correctCount}</div><div class="label">Correct</div></div>
+        <div class="session-stat"><div class="num">${accuracy}%</div><div class="label">Accuracy</div></div>
+        </div>
+        <p style="color: #86868b; margin-bottom: 1rem;">${remainingDue} cards still due</p>
+        <button class="btn-primary" onclick="startSession()">New Session</button>
+        <button onclick="returnToWelcome()" style="margin-left: .5rem;">Back to Home</button>
+        </div>`;
 }
 
 function resetAll() {
-    cards.forEach(c => {
-        c.due = 0;
-        c.n = 0;
-        c.int = 1;
-    });
+    cards.forEach(c => { c.due = 0; c.n = 0; c.int = 1; });
     save();
     show();
 }
 
-let waitingForNext = false;
-let lastAnswerCorrect = false;
-
 // Close edit modal with Escape
 document.onkeydown = e => {
-    if (e.key === 'Escape') {
-        closeEditModal();
-    }
+    if (e.key === 'Escape') closeEditModal();
 };
 
 answer.onkeydown = e => {
     if (e.key !== 'Enter' || !cur) return;
     
-    // If we're waiting for user to acknowledge wrong answer, go to next card
     if (waitingForNext) {
         waitingForNext = false;
         msg.textContent = '';
@@ -767,10 +740,7 @@ answer.onkeydown = e => {
     save();
 
     const colorClass = ok ? 'ok' : 'no';
-    sentence.innerHTML = cur.s.replace(
-        new RegExp('(' + cur.w + ')', 'gi'),
-        '<span class="' + colorClass + '">$1</span>'
-    );
+    sentence.innerHTML = cur.s.replace(new RegExp(`(${cur.w})`, 'gi'), `<span class="${colorClass}">$1</span>`);
     
     if (inSession) {
         if (reviewingMistakes) {
@@ -778,10 +748,8 @@ answer.onkeydown = e => {
                 sessionMistakes = sessionMistakes.filter(c => !(c.w === cur.w && c.lang === cur.lang));
             }
         } else {
-            if (!ok) {
-                if (!sessionMistakes.find(c => c.w === cur.w && c.lang === cur.lang)) {
-                    sessionMistakes.push(cur);
-                }
+            if (!ok && !sessionMistakes.find(c => c.w === cur.w && c.lang === cur.lang)) {
+                sessionMistakes.push(cur);
             }
             sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.lang === cur.lang));
             sessionCardsStudied++;
@@ -789,7 +757,6 @@ answer.onkeydown = e => {
         updateSessionUI();
     }
     
-    // Wait for user to press Enter before showing next card
     waitingForNext = true;
     msg.innerHTML = '<span style="color: #86868b;">Press Enter to continue</span>';
     answer.value = '';
@@ -799,7 +766,7 @@ answer.onkeydown = e => {
 };
 
 function renderList() {
-    let sortBy = document.getElementById('sortSelect').value;
+    const sortBy = document.getElementById('sortSelect').value;
     let sorted = cards.map((c,i) => ({...c, idx: i})).filter(c => (c.lang || 'en') === currentLang);
 
     if (sortBy === 'word') sorted.sort((a,b) => a.w.localeCompare(b.w));
@@ -808,18 +775,18 @@ function renderList() {
     else if (sortBy === 'stage') sorted.sort((a,b) => (a.n||0) - (b.n||0));
 
     document.getElementById('wordsList').innerHTML = sorted.map(c => {
-        let isDue = (c.due||0) <= Date.now();
-        let ef = (c.ef || 2.5).toFixed(1);
-        let stage = (c.n || 0);
-        let stageLabel = stage === 0 ? 'new' : stage < 4 ? 'L' + stage : 'M';
-        return '<div class="word-item">' +
-            '<div class="word-status ' + (isDue ? 'due' : 'ok') + '"></div>' +
-            '<span class="word-name">' + c.w + '</span>' +
-            '<span class="word-stats">' + formatInterval(c.int) + ' · EF:' + ef + ' · ' + stageLabel + '</span>' +
-            '<div class="word-actions">' +
-            '<button onclick="editCard(' + c.idx + ')">Edit</button>' +
-            '<button class="btn-danger" onclick="delCard(' + c.idx + ')">Del</button>' +
-            '</div></div>';
+        const isDue = (c.due||0) <= Date.now();
+        const ef = (c.ef || 2.5).toFixed(1);
+        const stage = (c.n || 0);
+        const stageLabel = stage === 0 ? 'new' : stage < 4 ? `L${stage}` : 'M';
+        return `<div class="word-item">
+            <div class="word-status ${isDue ? 'due' : 'ok'}"></div>
+            <span class="word-name">${c.w}</span>
+            <span class="word-stats">${formatInterval(c.int)} · EF:${ef} · ${stageLabel}</span>
+            <div class="word-actions">
+            <button onclick="editCard(${c.idx})">Edit</button>
+            <button class="btn-danger" onclick="delCard(${c.idx})">Del</button>
+            </div></div>`;
     }).join('');
 }
 
@@ -837,30 +804,13 @@ function cancelAdd() {
 }
 
 function validateCard() {
-    let w = aWord.value.trim();
-    let s = aSent.value.trim();
-    let error = document.getElementById('addError');
-    let preview = document.getElementById('addPreview');
-
-    if (w && s) {
-        if (s.toLowerCase().includes(w.toLowerCase())) {
-            error.classList.remove('show');
-            preview.classList.add('show');
-            preview.innerHTML = s.replace(new RegExp('(' + w + ')', 'gi'), '<strong>___</strong>');
-        } else {
-            error.classList.add('show');
-            preview.classList.remove('show');
-        }
-    } else {
-        error.classList.remove('show');
-        preview.classList.remove('show');
-    }
+    validateSentence(aWord.value.trim(), aSent.value.trim(), 'addError', 'addPreview');
 }
 
 function saveCard() {
-    let w = aWord.value.trim();
-    let s = aSent.value.trim();
-    let d = aDef.value.trim();
+    const w = aWord.value.trim();
+    const s = aSent.value.trim();
+    const d = aDef.value.trim();
     if (!w || !s || !d) return;
     if (!s.toLowerCase().includes(w.toLowerCase())) return;
 
@@ -875,9 +825,7 @@ function saveCard() {
 
     save();
     cancelAdd();
-    if (!inSession) {
-        updateWelcomeStats();
-    }
+    if (!inSession) updateWelcomeStats();
     updateStats();
     renderList();
 }
@@ -892,12 +840,10 @@ function editCard(i) {
 }
 
 function delCard(i) {
-    if (confirm('Delete "' + cards[i].w + '"?')) {
+    if (confirm(`Delete "${cards[i].w}"?`)) {
         cards.splice(i, 1);
         save();
-        if (!inSession) {
-            updateWelcomeStats();
-        }
+        if (!inSession) updateWelcomeStats();
         updateStats();
         renderList();
     }
@@ -905,15 +851,11 @@ function delCard(i) {
 
 function editCurrentCard() {
     if (!cur) return;
-    
-    // Populate form
     document.getElementById('editWord').value = cur.w;
     document.getElementById('editDef').value = cur.d;
     document.getElementById('editSent').value = cur.s;
     document.getElementById('editError').classList.remove('show');
     document.getElementById('editPreview').classList.remove('show');
-    
-    // Show modal
     document.getElementById('editModal').classList.add('show');
     document.getElementById('editWord').focus();
 }
@@ -921,22 +863,7 @@ function editCurrentCard() {
 function validateEdit() {
     const word = document.getElementById('editWord').value.trim();
     const sent = document.getElementById('editSent').value.trim();
-    const error = document.getElementById('editError');
-    const preview = document.getElementById('editPreview');
-    
-    if (word && sent) {
-        if (sent.toLowerCase().includes(word.toLowerCase())) {
-            error.classList.remove('show');
-            preview.classList.add('show');
-            preview.innerHTML = sent.replace(new RegExp('(' + word + ')', 'gi'), '<strong>___</strong>');
-        } else {
-            error.classList.add('show');
-            preview.classList.remove('show');
-        }
-    } else {
-        error.classList.remove('show');
-        preview.classList.remove('show');
-    }
+    validateSentence(word, sent, 'editError', 'editPreview');
 }
 
 function closeEditModal() {
@@ -959,8 +886,7 @@ function saveEdit() {
         return;
     }
     
-    // Find and update the card
-    const idx = cards.findIndex(c => c.w === cur.w && c.s === cur.s && c.lang === cur.lang);
+    const idx = findCardIndex(cur);
     if (idx === -1) return;
     
     cards[idx].w = newWord;
@@ -968,84 +894,64 @@ function saveEdit() {
     cards[idx].s = newSent;
     save();
     
-    // Update current card reference
     cur = cards[idx];
+    sentence.innerHTML = cur.s.replace(new RegExp(`(${cur.w})`, 'gi'), '<span class="ok">$1</span>');
+    hint.textContent = `${cur.d} (${cur.w[0]})`;
     
-    // Update display
-    sentence.innerHTML = cur.s.replace(new RegExp('(' + cur.w + ')', 'gi'), '<span class="ok">$1</span>');
-    hint.textContent = cur.d + ' (' + cur.w[0] + ')';
-    
-    // Refresh lists
     renderList();
     updateStats();
     if (!inSession) updateWelcomeStats();
-    
-    // Close modal
     closeEditModal();
 }
 
 function deleteCurrentCard() {
     if (!cur) return;
+    if (!confirm(`Delete "${cur.w}"?`)) return;
     
-    if (!confirm('Delete "' + cur.w + '"?')) return;
-    
-    // Find and remove the card
-    const idx = cards.findIndex(c => c.w === cur.w && c.s === cur.s && c.lang === cur.lang);
+    const idx = findCardIndex(cur);
     if (idx === -1) return;
     
     cards.splice(idx, 1);
     save();
     
-    // Remove from session if needed
-    if (inSession) {
-        sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.s === cur.s));
-        sessionMistakes = sessionMistakes.filter(c => !(c.w === cur.w && c.s === cur.s));
-    }
+    if (inSession) removeCardFromSession(cur);
     
-    // Move to next card
     waitingForNext = false;
     document.getElementById('studyActions').style.display = 'none';
-    
-    // Refresh UI
     renderList();
     updateStats();
     if (!inSession) updateWelcomeStats();
-    
     show();
 }
 
 function clearWords() {
-    let langCards = currentLangCards();
+    const langCards = currentLangCards();
     if (langCards.length === 0) {
-        alert('No cards to clear for ' + languages.find(l => l.code === currentLang)?.name || currentLang);
+        alert(`No cards to clear for ${languages.find(l => l.code === currentLang)?.name || currentLang}`);
         return;
     }
     
-    let allCardsCount = cards.length;
-    let currentLangCount = langCards.length;
+    const allCardsCount = cards.length;
+    const currentLangCount = langCards.length;
     
-    let message = 'Clear cards for "' + (languages.find(l => l.code === currentLang)?.name || currentLang) + '" (' + currentLangCount + ' cards)?\n\n';
+    let message = `Clear cards for "${languages.find(l => l.code === currentLang)?.name || currentLang}" (${currentLangCount} cards)?\n\n`;
     message += 'Click OK to clear current language only.\n';
     if (allCardsCount > currentLangCount) {
-        message += 'Click Cancel, then type "ALL" to clear ALL ' + allCardsCount + ' cards across all languages.';
+        message += `Click Cancel, then type "ALL" to clear ALL ${allCardsCount} cards across all languages.`;
     }
     
     if (confirm(message)) {
         cards = cards.filter(c => (c.lang || 'en') !== currentLang);
         save();
-        if (!inSession) {
-            updateWelcomeStats();
-        }
+        if (!inSession) updateWelcomeStats();
         updateStats();
         renderList();
     } else {
-        let confirmAll = prompt('Type "ALL" (uppercase) to delete ALL ' + allCardsCount + ' cards across all languages:');
+        const confirmAll = prompt(`Type "ALL" (uppercase) to delete ALL ${allCardsCount} cards across all languages:`);
         if (confirmAll === 'ALL') {
             cards = [];
             save();
-            if (!inSession) {
-                updateWelcomeStats();
-            }
+            if (!inSession) updateWelcomeStats();
             updateStats();
             renderList();
         }
@@ -1053,8 +959,8 @@ function clearWords() {
 }
 
 function exp() {
-    let langCards = currentLangCards();
-    let exportData = {
+    const langCards = currentLangCards();
+    const exportData = {
         version: 1,
         exportedAt: new Date().toISOString(),
         language: languages.find(l => l.code === currentLang)?.name || currentLang,
@@ -1062,9 +968,9 @@ function exp() {
         cardCount: langCards.length,
         cards: langCards
     };
-    let a = document.createElement('a');
+    const a = document.createElement('a');
     a.href = 'data:application/json,' + encodeURIComponent(JSON.stringify(exportData, null, 2));
-    a.download = 'flashcards-' + currentLang + '-' + new Date().toISOString().split('T')[0] + '.json';
+    a.download = `flashcards-${currentLang}-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
 }
 
@@ -1072,10 +978,9 @@ function handleImport(input) {
     if (!input.files[0]) return;
     input.files[0].text().then(t => {
         try {
-            let data = JSON.parse(t);
+            const data = JSON.parse(t);
             let newCards = [];
             
-            // Support both new format (with cards array) and old flat array format
             if (data.cards && Array.isArray(data.cards)) {
                 newCards = data.cards;
             } else if (Array.isArray(data)) {
@@ -1085,22 +990,16 @@ function handleImport(input) {
                 return;
             }
             
-            // Validate cards have required fields
             newCards = newCards.filter(c => c.w && c.s && c.d);
-            
-            // Merge: remove duplicates (same word + same language)
             cards = cards.filter(c => !newCards.find(nc => nc.w === c.w && nc.lang === c.lang));
             cards = cards.concat(newCards);
             save();
             
-            // Update all UI
-            if (!inSession) {
-                updateWelcomeStats();
-            }
+            if (!inSession) updateWelcomeStats();
             updateStats();
             renderList();
             
-            alert('Imported ' + newCards.length + ' cards!');
+            alert(`Imported ${newCards.length} cards!`);
         } catch (e) {
             alert('Error reading JSON file: ' + e.message);
         }
