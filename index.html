@@ -873,6 +873,8 @@ answer.onkeydown = e => {
     if (inSession) {
         if (reviewingMistakes) {
             sessionMistakes = sessionMistakes.filter(c => !(c.w === cur.w && c.lang === cur.lang));
+            // Also remove from sessionDueCards to prevent showing again
+            sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.lang === cur.lang));
         } else {
             sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.lang === cur.lang));
             sessionCardsStudied++;
