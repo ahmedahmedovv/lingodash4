@@ -20,6 +20,10 @@ CLAUDE.md     # This documentation
 
 ## UI Layout
 
+### Top Bar
+- **Due Count**: Number of cards due for review
+- **Focus Button**: Toggle sidebar visibility
+
 ### Study Panel (Main Area)
 - **Sentence**: Cloze deletion format (word replaced with `___`)
 - **Hint**: Definition + first letter in parentheses
