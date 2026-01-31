@@ -2,64 +2,88 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=1280">
     <title>Flashcards</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font: 1rem system-ui, -apple-system, sans-serif; background: #f5f5f7; color: #1d1d1f; min-height: 100vh; }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 1fr 360px; gap: 2rem; min-height: 100vh; transition: all .3s; }
-        .container.focus-mode { grid-template-columns: 1fr; max-width: 700px; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 2rem 3rem; display: grid; grid-template-columns: 1fr 420px; gap: 3rem; min-height: 100vh; transition: all .3s; }
+        .container.focus-mode { grid-template-columns: 1fr; max-width: 900px; }
         .container.focus-mode .sidebar { display: none; }
 
         /* Top Bar */
-        .top-bar { position: fixed; top: 1rem; right: 1rem; display: flex; gap: .5rem; align-items: center; font-size: .85rem; color: #86868b; z-index: 10; }
-        .focus-btn { background: #fff; border: 1px solid #d2d2d7; font-size: 1rem; cursor: pointer; padding: .4rem .6rem; border-radius: 8px; transition: all .2s; }
+        .top-bar { position: fixed; top: 1.5rem; right: 1.5rem; display: flex; gap: .75rem; align-items: center; font-size: 1rem; color: #86868b; z-index: 10; }
+        .focus-btn { background: #fff; border: 1px solid #d2d2d7; font-size: 1.1rem; cursor: pointer; padding: .5rem .75rem; border-radius: 8px; transition: all .2s; }
         .focus-btn:hover { background: #f5f5f7; }
 
         /* Study Panel */
-        .study-panel { background: #fff; border-radius: 16px; padding: 3rem 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-        .sentence { font-size: 1.6rem; line-height: 1.7; text-align: center; margin-bottom: 1rem; color: #1d1d1f; }
-        .hint { color: #86868b; font-size: 1rem; margin-bottom: 2rem; text-align: center; font-style: italic; }
+        .study-panel { background: #fff; border-radius: 20px; padding: 4rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 550px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+        .sentence { font-size: 2.2rem; line-height: 1.5; text-align: center; margin-bottom: 2rem; color: #1d1d1f; max-width: 900px; }
+        .hint { color: #86868b; font-size: 1.3rem; margin-bottom: 3rem; text-align: center; font-style: italic; max-width: 800px; }
         .input-wrap { position: relative; }
-        input[type="text"] { border: 2px solid #d2d2d7; background: #f5f5f7; border-radius: 12px; padding: 1rem 1.5rem; width: 280px; font-size: 1.1rem; text-align: center; outline: none; transition: all .2s; }
+        input[type="text"] { border: 2px solid #d2d2d7; background: #f5f5f7; border-radius: 14px; padding: 1.3rem 2rem; width: 400px; font-size: 1.4rem; text-align: center; outline: none; transition: all .2s; }
         input[type="text"]:focus { border-color: #0071e3; background: #fff; }
-        .msg { margin-top: 1.5rem; font-size: 1.1rem; min-height: 1.5rem; font-weight: 500; }
+        .msg { margin-top: 2rem; font-size: 1.2rem; min-height: 1.5rem; font-weight: 500; }
+        
+        /* Study Actions */
+        .study-actions { display: flex; justify-content: center; gap: 2rem; margin-top: 1.5rem; }
+        .study-actions button { width: 44px; height: 44px; padding: 0; font-size: 1.3rem; background: transparent; border: none; border-radius: 8px; cursor: pointer; opacity: .6; transition: opacity .2s; }
+        .study-actions button:hover { opacity: 1; background: #f5f5f7; }
+        .study-actions .btn-delete:hover { background: #ffeceb; }
+        
+        /* Edit Modal */
+        .edit-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .edit-modal-overlay.show { display: flex; }
+        .edit-modal { background: #fff; border-radius: 16px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,.2); }
+        .edit-modal h3 { margin-bottom: 1.5rem; font-size: 1.3rem; }
+        .edit-modal .form-group { margin-bottom: 1rem; }
+        .edit-modal label { display: block; font-size: .85rem; color: #86868b; margin-bottom: .3rem; }
+        .edit-modal input, .edit-modal textarea { width: 100%; padding: .75rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: 1rem; }
+        .edit-modal textarea { height: 80px; resize: none; }
+        .edit-modal .error { color: #ff3b30; font-size: .85rem; margin-top: .25rem; display: none; }
+        .edit-modal .error.show { display: block; }
+        .edit-modal .preview { font-size: .9rem; color: #86868b; margin-top: .5rem; padding: .5rem; background: #f5f5f7; border-radius: 6px; display: none; }
+        .edit-modal .preview.show { display: block; }
+        .edit-modal .preview strong { color: #1d1d1f; }
+        .edit-modal-btns { display: flex; gap: .75rem; justify-content: flex-end; margin-top: 1.5rem; }
+        .edit-modal-btns button { padding: .6rem 1.2rem; font-size: 1rem; }
+        .edit-modal-btns .btn-save { background: #0071e3; color: #fff; border-color: #0071e3; }
         .ok { color: #34c759; font-weight: 600; }
         .no { color: #ff3b30; font-weight: 600; }
         .done-msg { color: #86868b; }
         .done-msg button { margin-top: 1rem; }
 
         /* Session Progress */
-        .session-info { position: fixed; top: 1rem; left: 1rem; background: #fff; padding: .6rem 1rem; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: .85rem; z-index: 10; }
-        .session-info .progress-bar { width: 120px; height: 4px; background: #e8e8ed; border-radius: 2px; margin-top: .3rem; overflow: hidden; }
+        .session-info { position: fixed; top: 1.5rem; left: 1.5rem; background: #fff; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.1); font-size: 1.1rem; z-index: 10; }
+        .session-info .progress-bar { width: 180px; height: 6px; background: #e8e8ed; border-radius: 3px; margin-top: .5rem; overflow: hidden; }
         .session-info .progress-fill { height: 100%; background: #0071e3; border-radius: 2px; transition: width .3s; }
         .session-info .mistake-badge { color: #ff3b30; font-weight: 600; }
 
         /* Review Mode Banner */
-        .review-banner { background: #fff5f5; border: 1px solid #ffccc9; color: #ff3b30; padding: .75rem 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; font-weight: 500; display: flex; align-items: center; gap: .5rem; }
+        .review-banner { background: #fff5f5; border: 1px solid #ffccc9; color: #ff3b30; padding: 1rem 2rem; border-radius: 12px; margin-bottom: 2rem; font-weight: 500; font-size: 1.1rem; display: flex; align-items: center; gap: .5rem; }
         .review-banner::before { content: "🔄"; }
 
         /* Session Complete */
         .session-complete { text-align: center; }
-        .session-complete h2 { font-size: 2rem; margin-bottom: 1rem; color: #34c759; }
-        .session-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0; max-width: 400px; }
-        .session-stat { background: #f5f5f7; padding: 1rem; border-radius: 12px; }
-        .session-stat .num { font-size: 1.8rem; font-weight: 600; color: #1d1d1f; }
-        .session-stat .label { font-size: .75rem; color: #86868b; margin-top: .25rem; }
+        .session-complete h2 { font-size: 2.5rem; margin-bottom: 1.5rem; color: #34c759; }
+        .session-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 2rem 0; max-width: 450px; }
+        .session-stat { background: #f5f5f7; padding: 1.25rem; border-radius: 12px; }
+        .session-stat .num { font-size: 2.2rem; font-weight: 600; color: #1d1d1f; }
+        .session-stat .label { font-size: .85rem; color: #86868b; margin-top: .25rem; }
 
         /* Welcome Page */
-        .welcome-page { background: #fff; border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; box-shadow: 0 1px 3px rgba(0,0,0,.08); text-align: center; }
-        .welcome-page h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #1d1d1f; }
-        .welcome-form { width: 100%; max-width: 280px; }
+        .welcome-page { background: #fff; border-radius: 20px; padding: 3rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; box-shadow: 0 2px 8px rgba(0,0,0,.08); text-align: center; }
+        .welcome-page h1 { font-size: 2rem; margin-bottom: 2rem; color: #1d1d1f; }
+        .welcome-form { width: 100%; max-width: 360px; }
         .welcome-form label { display: block; text-align: left; font-size: .85rem; color: #86868b; margin-bottom: .25rem; }
-        .welcome-form select, .welcome-form input[type="number"] { width: 100%; padding: .6rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; margin-bottom: 1rem; background: #fff; }
-        .welcome-form button { width: 100%; padding: .75rem; background: #0071e3; color: #fff; border: none; border-radius: 8px; font: inherit; font-weight: 500; cursor: pointer; }
+        .welcome-form select, .welcome-form input[type="number"] { width: 100%; padding: .875rem; border: 1px solid #d2d2d7; border-radius: 10px; font: inherit; font-size: 1.2rem; margin-bottom: 1.5rem; background: #fff; }
+        .welcome-form button { width: 100%; padding: 1rem; background: #0071e3; color: #fff; border: none; border-radius: 10px; font: inherit; font-size: 1.2rem; font-weight: 500; cursor: pointer; }
         .welcome-form button:hover { background: #0077ed; }
         .welcome-form button:disabled { background: #d2d2d7; cursor: not-allowed; }
 
         /* Buttons */
-        button { background: #f5f5f7; border: 1px solid #d2d2d7; color: #1d1d1f; padding: .6rem 1.2rem; border-radius: 8px; font: inherit; cursor: pointer; transition: all .2s; }
+        button { background: #f5f5f7; border: 1px solid #d2d2d7; color: #1d1d1f; padding: .7rem 1.4rem; border-radius: 8px; font: inherit; font-size: 1.05rem; cursor: pointer; transition: all .2s; }
         button:hover { background: #e8e8ed; }
         .btn-primary { background: #0071e3; border-color: #0071e3; color: #fff; }
         .btn-primary:hover { background: #0077ed; }
@@ -72,68 +96,67 @@
         .sidebar { display: flex; flex-direction: column; gap: 1rem; }
 
         /* Stats Card */
-        .stats-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .stats-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 1.1rem; }
         .stats-card h2 { display: none; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .stat-item { text-align: center; padding: .75rem; background: #f5f5f7; border-radius: 10px; }
-        .stat-num { font-size: 1.5rem; font-weight: 600; color: #1d1d1f; }
-        .stat-label { font-size: .75rem; color: #86868b; margin-top: .25rem; }
+        .stat-num { font-size: 2rem; font-weight: 600; color: #1d1d1f; }
+        .stat-label { font-size: .85rem; color: #86868b; margin-top: .25rem; }
         .stat-item.due .stat-num { color: #ff9500; }
         .stat-item.mastered .stat-num { color: #34c759; }
 
         /* Actions Card */
-        .actions-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .actions-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 1.1rem; }
         .actions-card h2 { display: none; }
         .action-btns { display: flex; flex-direction: column; gap: .5rem; }
         .action-btns button { width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: .5rem; }
 
         /* Words Card */
-        .words-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: 1; display: flex; flex-direction: column; max-height: 400px; }
+        .words-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: 1; display: flex; flex-direction: column; max-height: 550px; }
         .words-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         .words-header h2 { display: none; }
-        .sort-select { font-size: .8rem; padding: .3rem .5rem; border-radius: 6px; border: 1px solid #d2d2d7; background: #f5f5f7; }
+        .sort-select { font-size: .9rem; padding: .4rem .6rem; border-radius: 6px; border: 1px solid #d2d2d7; background: #f5f5f7; }
 
         /* Language Selector */
-        .lang-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .lang-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 1.1rem; }
         .lang-card h2 { display: none; }
         .lang-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
         .lang-current { font-weight: 600; color: #1d1d1f; }
-        .lang-count { font-size: .75rem; color: #86868b; }
-        .lang-select { width: 100%; padding: .5rem; border-radius: 8px; border: 1px solid #d2d2d7; background: #f5f5f7; font: inherit; font-size: .9rem; margin-bottom: .5rem; }
+        .lang-count { font-size: .85rem; color: #86868b; }
+        .lang-select { width: 100%; padding: .6rem; border-radius: 8px; border: 1px solid #d2d2d7; background: #f5f5f7; font: inherit; font-size: 1rem; margin-bottom: .5rem; }
         .lang-btns { display: flex; gap: .5rem; }
-        .lang-btns button { flex: 1; font-size: .8rem; padding: .4rem; }
+        .lang-btns button { flex: 1; font-size: .9rem; padding: .5rem; }
         .words-list { flex: 1; overflow-y: auto; }
-        .word-item { display: flex; align-items: center; padding: .6rem 0; border-bottom: 1px solid #f0f0f2; gap: .75rem; }
+        .word-item { display: flex; align-items: center; padding: .7rem 0; border-bottom: 1px solid #f0f0f2; gap: .75rem; }
         .word-item:last-child { border-bottom: none; }
         .word-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .word-status.due { background: #ff9500; }
         .word-status.ok { background: #34c759; }
-        .word-name { flex: 1; font-weight: 500; }
-        .word-stats { font-size: .75rem; color: #86868b; }
+        .word-name { flex: 1; font-weight: 500; font-size: 1.1rem; }
+        .word-stats { font-size: .9rem; color: #86868b; }
         .word-actions { display: flex; gap: .3rem; }
-        .word-actions button { padding: .3rem .5rem; font-size: .7rem; }
+        .word-actions button { padding: .35rem .6rem; font-size: .8rem; }
 
         /* Add Form */
         .add-form { display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f0f2; }
         .add-form.show { display: block; }
-        .add-form input, .add-form textarea { width: 100%; padding: .6rem; margin-bottom: .5rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: .9rem; }
-        .add-form textarea { height: 60px; resize: none; }
-        .add-form .error { color: #ff3b30; font-size: .75rem; margin: -.3rem 0 .5rem; display: none; }
+        .add-form input, .add-form textarea { width: 100%; padding: .75rem; margin-bottom: .6rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: 1rem; }
+        .add-form textarea { height: 70px; resize: none; }
+        .add-form .error { color: #ff3b30; font-size: .85rem; margin: -.3rem 0 .5rem; display: none; }
         .add-form .error.show { display: block; }
-        .add-form .preview { font-size: .8rem; color: #86868b; margin-bottom: .5rem; padding: .5rem; background: #f5f5f7; border-radius: 6px; display: none; }
+        .add-form .preview { font-size: .9rem; color: #86868b; margin-bottom: .5rem; padding: .6rem; background: #f5f5f7; border-radius: 6px; display: none; }
         .add-form .preview.show { display: block; }
         .add-form .preview strong { color: #1d1d1f; }
         .add-form-btns { display: flex; gap: .5rem; justify-content: flex-end; }
-        .add-form-btns button { font-size: .85rem; }
+        .add-form-btns button { font-size: .95rem; }
 
-        /* Mobile */
-        @media (max-width: 800px) {
-            .container { grid-template-columns: 1fr; padding: 1rem; }
-            .study-panel { min-height: 300px; padding: 2rem 1rem; }
-            .sentence { font-size: 1.3rem; }
-            .sidebar { order: 1; }
-            .session-info { position: static; margin-bottom: 1rem; }
-            .welcome-page { padding: 2rem 1.5rem; }
+        /* Large screens */
+        @media (min-width: 1920px) {
+            .container { max-width: 1800px; grid-template-columns: 1fr 480px; gap: 4rem; }
+            .sentence { font-size: 2.6rem; max-width: 1000px; }
+            .hint { font-size: 1.4rem; }
+            input[type="text"] { width: 450px; font-size: 1.6rem; }
+            .study-panel { min-height: 600px; }
         }
 
         input[type="file"] { display: none; }
@@ -177,6 +200,35 @@
                 <input type="text" id="answer" autocomplete="off">
             </div>
             <p class="msg" id="msg"></p>
+            <div class="study-actions" id="studyActions" style="display: none;">
+                <button onclick="editCurrentCard()" title="Edit">✏️</button>
+                <button class="btn-delete" onclick="deleteCurrentCard()" title="Delete">🗑️</button>
+            </div>
+            
+            <!-- Edit Modal -->
+            <div class="edit-modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
+                <div class="edit-modal">
+                    <h3>Edit Card</h3>
+                    <div class="form-group">
+                        <label>Word</label>
+                        <input type="text" id="editWord" oninput="validateEdit()">
+                    </div>
+                    <div class="form-group">
+                        <label>Definition</label>
+                        <input type="text" id="editDef">
+                    </div>
+                    <div class="form-group">
+                        <label>Sentence (include the word)</label>
+                        <textarea id="editSent" oninput="validateEdit()"></textarea>
+                        <p class="error" id="editError">Include the word in your sentence</p>
+                        <div class="preview" id="editPreview"></div>
+                    </div>
+                    <div class="edit-modal-btns">
+                        <button onclick="closeEditModal()">Cancel</button>
+                        <button class="btn-save" onclick="saveEdit()">Save</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -416,6 +468,7 @@ function returnToWelcome() {
     sessionDueCards = [];
     
     document.getElementById('studyInterface').style.display = 'none';
+    document.getElementById('studyActions').style.display = 'none';
     document.getElementById('welcomePage').style.display = '';
     document.getElementById('sessionInfo').style.display = 'none';
     document.getElementById('msg').innerHTML = '';
@@ -591,6 +644,7 @@ function show() {
     }
 
     document.getElementById('reviewBanner').style.display = 'none';
+    document.getElementById('studyActions').style.display = 'none';
     sentence.classList.remove('done-msg');
     answer.style.display = '';
     answer.readOnly = false;
@@ -620,6 +674,7 @@ function showMistakeReview() {
     }
     
     document.getElementById('reviewBanner').style.display = '';
+    document.getElementById('studyActions').style.display = 'none';
     sentence.classList.remove('done-msg');
     answer.style.display = '';
     answer.readOnly = false;
@@ -639,6 +694,7 @@ function showNoCards() {
     sentence.classList.add('done-msg');
     hint.textContent = '';
     answer.style.display = 'none';
+    document.getElementById('studyActions').style.display = 'none';
     msg.innerHTML = '<button class="btn-primary" onclick="resetAll()">Study Again</button>';
 }
 
@@ -646,6 +702,7 @@ function showSessionComplete() {
     sentence.classList.add('done-msg');
     hint.textContent = '';
     answer.style.display = 'none';
+    document.getElementById('studyActions').style.display = 'none';
     
     const sessionTotal = sessionCardsStudied;
     const mistakeCount = sessionMistakes.length;
@@ -680,6 +737,13 @@ function resetAll() {
 let waitingForNext = false;
 let lastAnswerCorrect = false;
 
+// Close edit modal with Escape
+document.onkeydown = e => {
+    if (e.key === 'Escape') {
+        closeEditModal();
+    }
+};
+
 answer.onkeydown = e => {
     if (e.key !== 'Enter' || !cur) return;
     
@@ -687,6 +751,7 @@ answer.onkeydown = e => {
     if (waitingForNext) {
         waitingForNext = false;
         msg.textContent = '';
+        document.getElementById('studyActions').style.display = 'none';
         show();
         return;
     }
@@ -730,6 +795,7 @@ answer.onkeydown = e => {
     answer.value = '';
     answer.readOnly = true;
     answer.style.background = '#e8e8ed';
+    document.getElementById('studyActions').style.display = '';
 };
 
 function renderList() {
@@ -835,6 +901,117 @@ function delCard(i) {
         updateStats();
         renderList();
     }
+}
+
+function editCurrentCard() {
+    if (!cur) return;
+    
+    // Populate form
+    document.getElementById('editWord').value = cur.w;
+    document.getElementById('editDef').value = cur.d;
+    document.getElementById('editSent').value = cur.s;
+    document.getElementById('editError').classList.remove('show');
+    document.getElementById('editPreview').classList.remove('show');
+    
+    // Show modal
+    document.getElementById('editModal').classList.add('show');
+    document.getElementById('editWord').focus();
+}
+
+function validateEdit() {
+    const word = document.getElementById('editWord').value.trim();
+    const sent = document.getElementById('editSent').value.trim();
+    const error = document.getElementById('editError');
+    const preview = document.getElementById('editPreview');
+    
+    if (word && sent) {
+        if (sent.toLowerCase().includes(word.toLowerCase())) {
+            error.classList.remove('show');
+            preview.classList.add('show');
+            preview.innerHTML = sent.replace(new RegExp('(' + word + ')', 'gi'), '<strong>___</strong>');
+        } else {
+            error.classList.add('show');
+            preview.classList.remove('show');
+        }
+    } else {
+        error.classList.remove('show');
+        preview.classList.remove('show');
+    }
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('show');
+}
+
+function saveEdit() {
+    if (!cur) return;
+    
+    const newWord = document.getElementById('editWord').value.trim();
+    const newDef = document.getElementById('editDef').value.trim();
+    const newSent = document.getElementById('editSent').value.trim();
+    
+    if (!newWord || !newDef || !newSent) {
+        alert('All fields are required');
+        return;
+    }
+    if (!newSent.toLowerCase().includes(newWord.toLowerCase())) {
+        alert('The sentence must include the word');
+        return;
+    }
+    
+    // Find and update the card
+    const idx = cards.findIndex(c => c.w === cur.w && c.s === cur.s && c.lang === cur.lang);
+    if (idx === -1) return;
+    
+    cards[idx].w = newWord;
+    cards[idx].d = newDef;
+    cards[idx].s = newSent;
+    save();
+    
+    // Update current card reference
+    cur = cards[idx];
+    
+    // Update display
+    sentence.innerHTML = cur.s.replace(new RegExp('(' + cur.w + ')', 'gi'), '<span class="ok">$1</span>');
+    hint.textContent = cur.d + ' (' + cur.w[0] + ')';
+    
+    // Refresh lists
+    renderList();
+    updateStats();
+    if (!inSession) updateWelcomeStats();
+    
+    // Close modal
+    closeEditModal();
+}
+
+function deleteCurrentCard() {
+    if (!cur) return;
+    
+    if (!confirm('Delete "' + cur.w + '"?')) return;
+    
+    // Find and remove the card
+    const idx = cards.findIndex(c => c.w === cur.w && c.s === cur.s && c.lang === cur.lang);
+    if (idx === -1) return;
+    
+    cards.splice(idx, 1);
+    save();
+    
+    // Remove from session if needed
+    if (inSession) {
+        sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.s === cur.s));
+        sessionMistakes = sessionMistakes.filter(c => !(c.w === cur.w && c.s === cur.s));
+    }
+    
+    // Move to next card
+    waitingForNext = false;
+    document.getElementById('studyActions').style.display = 'none';
+    
+    // Refresh UI
+    renderList();
+    updateStats();
+    if (!inSession) updateWelcomeStats();
+    
+    show();
 }
 
 function clearWords() {
