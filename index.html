@@ -354,6 +354,11 @@
             color: #86868b; 
             margin-top: .25rem; 
         }
+        .session-actions {
+            display: flex;
+            gap: .75rem;
+            justify-content: center;
+        }
 
         /* ===== WELCOME PAGE ===== */
         /* Shown before starting a study session */
@@ -1492,8 +1497,10 @@ function showSessionComplete() {
         <div class="session-stat"><div class="num">${accuracy}%</div><div class="label">Accuracy</div></div>
         </div>
         <p style="color: #86868b; margin-bottom: 1rem;">${remainingDue} cards still due</p>
-        <button class="btn-primary" onclick="startSession()">New Session</button>
-        <button onclick="returnToWelcome()" style="margin-left: .5rem;">Back to Home</button>
+        <div class="session-actions">
+            <button class="btn-primary" onclick="startSession()">New Session</button>
+            <button onclick="returnToWelcome()">Back to Home</button>
+        </div>
         </div>`;
 }
 
