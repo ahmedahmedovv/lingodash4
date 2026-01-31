@@ -49,26 +49,14 @@
         .session-stat .label { font-size: .75rem; color: #86868b; margin-top: .25rem; }
 
         /* Welcome Page */
-        .welcome-page { background: #fff; border-radius: 16px; padding: 3rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; box-shadow: 0 1px 3px rgba(0,0,0,.08); text-align: center; }
-        .welcome-page h1 { font-size: 2.5rem; margin-bottom: .5rem; background: linear-gradient(135deg, #0071e3, #34c759); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .welcome-page .subtitle { color: #86868b; font-size: 1.1rem; margin-bottom: 2rem; }
-        .welcome-stats { display: flex; gap: 2rem; margin-bottom: 2rem; }
-        .welcome-stat { text-align: center; }
-        .welcome-stat .num { font-size: 2rem; font-weight: 600; color: #1d1d1f; }
-        .welcome-stat .label { font-size: .85rem; color: #86868b; }
-        .welcome-stat.due .num { color: #ff9500; }
-        .session-selector { background: #f5f5f7; padding: 2rem; border-radius: 16px; width: 100%; max-width: 400px; }
-        .session-selector h3 { font-size: 1rem; margin-bottom: 1rem; color: #1d1d1f; }
-        .session-options { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
-        .session-option { padding: .6rem 1rem; border: 2px solid #d2d2d7; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: all .2s; background: #fff; }
-        .session-option:hover { border-color: #0071e3; }
-        .session-option.active { background: #0071e3; border-color: #0071e3; color: #fff; }
-        .session-custom { display: flex; gap: .5rem; justify-content: center; margin-bottom: 1.5rem; }
-        .session-custom input { width: 80px; padding: .6rem; border: 2px solid #d2d2d7; border-radius: 10px; text-align: center; font: inherit; font-size: 1rem; }
-        .session-custom input:focus { outline: none; border-color: #0071e3; }
-        .start-btn { background: #0071e3; color: #fff; border: none; padding: 1rem 3rem; border-radius: 12px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: all .2s; }
-        .start-btn:hover { background: #0077ed; transform: translateY(-1px); }
-        .start-btn:disabled { background: #d2d2d7; cursor: not-allowed; transform: none; }
+        .welcome-page { background: #fff; border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; box-shadow: 0 1px 3px rgba(0,0,0,.08); text-align: center; }
+        .welcome-page h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #1d1d1f; }
+        .welcome-form { width: 100%; max-width: 280px; }
+        .welcome-form label { display: block; text-align: left; font-size: .85rem; color: #86868b; margin-bottom: .25rem; }
+        .welcome-form select, .welcome-form input[type="number"] { width: 100%; padding: .6rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; margin-bottom: 1rem; background: #fff; }
+        .welcome-form button { width: 100%; padding: .75rem; background: #0071e3; color: #fff; border: none; border-radius: 8px; font: inherit; font-weight: 500; cursor: pointer; }
+        .welcome-form button:hover { background: #0077ed; }
+        .welcome-form button:disabled { background: #d2d2d7; cursor: not-allowed; }
 
         /* Buttons */
         button { background: #f5f5f7; border: 1px solid #d2d2d7; color: #1d1d1f; padding: .6rem 1.2rem; border-radius: 8px; font: inherit; cursor: pointer; transition: all .2s; }
@@ -146,8 +134,6 @@
             .sidebar { order: 1; }
             .session-info { position: static; margin-bottom: 1rem; }
             .welcome-page { padding: 2rem 1.5rem; }
-            .welcome-page h1 { font-size: 2rem; }
-            .welcome-stats { gap: 1.5rem; }
         }
 
         input[type="file"] { display: none; }
@@ -168,36 +154,17 @@
     <main class="study-panel" id="studyPanel">
         <!-- Welcome Page -->
         <div class="welcome-page" id="welcomePage">
-            <h1>📚 Flashcards</h1>
-            <p class="subtitle">Master vocabulary with spaced repetition</p>
-            
-            <div class="welcome-stats">
-                <div class="welcome-stat due">
-                    <div class="num" id="welcomeDue">0</div>
-                    <div class="label">Due Now</div>
-                </div>
-                <div class="welcome-stat">
-                    <div class="num" id="welcomeTotal">0</div>
-                    <div class="label">Total Cards</div>
-                </div>
-                <div class="welcome-stat">
-                    <div class="num" id="welcomeMastered">0</div>
-                    <div class="label">Mastered</div>
-                </div>
-            </div>
-            
-            <div class="session-selector">
-                <h3>How many cards would you like to study?</h3>
-                <div class="session-options">
-                    <span class="session-option" data-size="10" onclick="selectSessionSize(10)">10</span>
-                    <span class="session-option active" data-size="20" onclick="selectSessionSize(20)">20</span>
-                    <span class="session-option" data-size="50" onclick="selectSessionSize(50)">50</span>
-                    <span class="session-option" data-size="100" onclick="selectSessionSize(100)">100</span>
-                </div>
-                <div class="session-custom">
-                    <input type="number" id="customSize" placeholder="Custom" min="1" max="500" onchange="selectCustomSize()">
-                </div>
-                <button class="start-btn" id="startBtn" onclick="startSession()">Start Studying</button>
+            <h1>Flashcards</h1>
+            <div class="welcome-form">
+                <label>Language</label>
+                <select id="welcomeLangSelect" onchange="changeWelcomeLang()">
+                    <option value="en">English</option>
+                </select>
+                
+                <label>Cards to study (<span id="welcomeDue">0</span> due)</label>
+                <input type="number" id="sessionSizeInput" value="20" min="1" max="500">
+                
+                <button id="startBtn" onclick="startSession()">Start</button>
             </div>
         </div>
 
@@ -251,11 +218,11 @@
             <h2>Actions</h2>
             <div class="action-btns">
                 <button onclick="toggleAdd()">+ Add Card</button>
-                <button onclick="exp()">Export</button>
-                <button onclick="imp.click()">Import</button>
+                <button onclick="exp()">Export JSON</button>
+                <button onclick="imp.click()">Import JSON</button>
                 <button class="btn-danger" onclick="clearWords()">Clear All</button>
             </div>
-            <input type="file" id="imp" accept=".csv">
+            <input type="file" id="imp" accept=".json" onchange="handleImport(this)">
         </div>
 
         <div class="words-card">
@@ -386,45 +353,40 @@ if (localStorage.focusMode === 'true') {
 
 // Welcome Page Functions
 function updateWelcomeStats() {
-    const langCards = currentLangCards();
     const due = dueCards().length;
-    const total = langCards.length;
-    const mastered = langCards.filter(c => (c.n||0) >= 4).length;
-    
     document.getElementById('welcomeDue').textContent = due;
-    document.getElementById('welcomeTotal').textContent = total;
-    document.getElementById('welcomeMastered').textContent = mastered;
     
     // Disable start button if no cards due
     const startBtn = document.getElementById('startBtn');
-    if (due === 0) {
-        startBtn.disabled = true;
-        startBtn.textContent = 'No Cards Due';
-    } else {
-        startBtn.disabled = false;
-        startBtn.textContent = 'Start Studying';
-    }
+    startBtn.disabled = due === 0;
+    startBtn.textContent = due === 0 ? 'No Cards Due' : 'Start';
 }
 
-function selectSessionSize(size) {
-    sessionSize = size;
-    document.querySelectorAll('.session-option').forEach(el => {
-        el.classList.toggle('active', parseInt(el.dataset.size) === size);
-    });
-    document.getElementById('customSize').value = '';
+function updateWelcomeLangSelect() {
+    let select = document.getElementById('welcomeLangSelect');
+    select.innerHTML = languages.map(l => 
+        '<option value="' + l.code + '"' + (l.code === currentLang ? ' selected' : '') + '>' + l.name + '</option>'
+    ).join('');
 }
 
-function selectCustomSize() {
-    const val = parseInt(document.getElementById('customSize').value);
-    if (val >= 1 && val <= 500) {
-        sessionSize = val;
-        document.querySelectorAll('.session-option').forEach(el => el.classList.remove('active'));
-    }
+function changeWelcomeLang() {
+    currentLang = document.getElementById('welcomeLangSelect').value;
+    saveCurrentLang();
+    renderLangSelect();
+    updateWelcomeStats();
+    updateStats();
+    renderList();
 }
 
 function startSession() {
     const due = dueCards();
     if (due.length === 0) return;
+    
+    // Get session size from input
+    const sizeInput = document.getElementById('sessionSizeInput');
+    sessionSize = parseInt(sizeInput.value) || 20;
+    if (sessionSize < 1) sessionSize = 1;
+    if (sessionSize > 500) sessionSize = 500;
     
     // Hide welcome, show study interface
     document.getElementById('welcomePage').style.display = 'none';
@@ -434,6 +396,7 @@ function startSession() {
     sessionCardsStudied = 0;
     sessionMistakes = [];
     reviewingMistakes = false;
+    waitingForNext = false;
     
     // Get up to sessionSize due cards, shuffled
     sessionDueCards = shuffleArray(due.slice(0, sessionSize));
@@ -449,6 +412,7 @@ function returnToWelcome() {
     sessionCardsStudied = 0;
     sessionMistakes = [];
     reviewingMistakes = false;
+    waitingForNext = false;
     sessionDueCards = [];
     
     document.getElementById('studyInterface').style.display = 'none';
@@ -502,12 +466,16 @@ function renderLangSelect() {
     let lang = languages.find(l => l.code === currentLang);
     document.getElementById('langCurrent').textContent = lang ? lang.name : currentLang;
     document.getElementById('langCount').textContent = currentLangCards().length + ' cards';
+    
+    // Also update welcome page language selector
+    updateWelcomeLangSelect();
 }
 
 function switchLang() {
     currentLang = document.getElementById('langSelect').value;
     saveCurrentLang();
     renderLangSelect();
+    updateWelcomeLangSelect();
     if (inSession) {
         returnToWelcome();
     } else {
@@ -543,6 +511,7 @@ function addLang() {
     currentLang = code;
     saveCurrentLang();
     renderLangSelect();
+    updateWelcomeLangSelect();
     cancelLangForm();
     updateWelcomeStats();
     updateStats();
@@ -557,6 +526,7 @@ function renameLang() {
         lang.name = newName.trim();
         saveLangs();
         renderLangSelect();
+        updateWelcomeLangSelect();
         updateWelcomeStats();
     }
 }
@@ -586,6 +556,9 @@ function updateStats() {
 }
 
 function show() {
+    // Reset waiting state when showing new card
+    waitingForNext = false;
+    
     updateStats();
     renderList();
     
@@ -620,6 +593,8 @@ function show() {
     document.getElementById('reviewBanner').style.display = 'none';
     sentence.classList.remove('done-msg');
     answer.style.display = '';
+    answer.readOnly = false;
+    answer.style.background = '';
     msg.textContent = '';
     
     if (inSession) {
@@ -636,6 +611,8 @@ function show() {
 }
 
 function showMistakeReview() {
+    waitingForNext = false;
+    
     if (sessionMistakes.length === 0) {
         reviewingMistakes = false;
         show();
@@ -645,6 +622,8 @@ function showMistakeReview() {
     document.getElementById('reviewBanner').style.display = '';
     sentence.classList.remove('done-msg');
     answer.style.display = '';
+    answer.readOnly = false;
+    answer.style.background = '';
     msg.textContent = '';
     
     cur = sessionMistakes[0];
@@ -698,8 +677,20 @@ function resetAll() {
     show();
 }
 
+let waitingForNext = false;
+let lastAnswerCorrect = false;
+
 answer.onkeydown = e => {
     if (e.key !== 'Enter' || !cur) return;
+    
+    // If we're waiting for user to acknowledge wrong answer, go to next card
+    if (waitingForNext) {
+        waitingForNext = false;
+        msg.textContent = '';
+        show();
+        return;
+    }
+    
     const responseTime = Date.now() - answerStartTime;
     const quality = calculateQuality(answer.value, cur.w, responseTime);
     const ok = sm2(cur, quality);
@@ -715,7 +706,6 @@ answer.onkeydown = e => {
         new RegExp('(' + cur.w + ')', 'gi'),
         '<span class="' + colorClass + '">$1</span>'
     );
-    msg.textContent = '';
     
     if (inSession) {
         if (reviewingMistakes) {
@@ -734,7 +724,12 @@ answer.onkeydown = e => {
         updateSessionUI();
     }
     
-    setTimeout(show, ok ? 600 : 1200);
+    // Wait for user to press Enter before showing next card
+    waitingForNext = true;
+    msg.innerHTML = '<span style="color: #86868b;">Press Enter to continue</span>';
+    answer.value = '';
+    answer.readOnly = true;
+    answer.style.background = '#e8e8ed';
 };
 
 function renderList() {
@@ -880,89 +875,64 @@ function clearWords() {
     }
 }
 
-function escapeCSV(str) {
-    return '"' + str.replace(/"/g, '""') + '"';
-}
-
 function exp() {
     let langCards = currentLangCards();
-    let csv = 'Word,Definition,Example,Language\n';
-    csv += langCards.map(c => escapeCSV(c.w) + ',' + escapeCSV(c.d) + ',' + escapeCSV(c.s) + ',' + escapeCSV(c.lang || 'en')).join('\n');
+    let exportData = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        language: languages.find(l => l.code === currentLang)?.name || currentLang,
+        languageCode: currentLang,
+        cardCount: langCards.length,
+        cards: langCards
+    };
     let a = document.createElement('a');
-    a.href = 'data:text/csv,' + encodeURIComponent(csv);
-    a.download = 'cards-' + currentLang + '.csv';
+    a.href = 'data:application/json,' + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    a.download = 'flashcards-' + currentLang + '-' + new Date().toISOString().split('T')[0] + '.json';
     a.click();
 }
 
-function parseCSV(text) {
-    let lines = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < text.length; i++) {
-        let char = text[i];
-        if (char === '"') {
-            if (inQuotes && text[i+1] === '"') {
-                current += '"';
-                i++;
+function handleImport(input) {
+    if (!input.files[0]) return;
+    input.files[0].text().then(t => {
+        try {
+            let data = JSON.parse(t);
+            let newCards = [];
+            
+            // Support both new format (with cards array) and old flat array format
+            if (data.cards && Array.isArray(data.cards)) {
+                newCards = data.cards;
+            } else if (Array.isArray(data)) {
+                newCards = data;
             } else {
-                inQuotes = !inQuotes;
+                alert('Invalid JSON format');
+                return;
             }
-        } else if (char === '\n' && !inQuotes) {
-            lines.push(current);
-            current = '';
-        } else {
-            current += char;
-        }
-    }
-    if (current) lines.push(current);
-
-    return lines.map(line => {
-        let fields = [];
-        let field = '';
-        let inQ = false;
-        for (let i = 0; i < line.length; i++) {
-            let c = line[i];
-            if (c === '"') {
-                if (inQ && line[i+1] === '"') {
-                    field += '"';
-                    i++;
-                } else {
-                    inQ = !inQ;
-                }
-            } else if (c === ',' && !inQ) {
-                fields.push(field);
-                field = '';
-            } else {
-                field += c;
+            
+            // Validate cards have required fields
+            newCards = newCards.filter(c => c.w && c.s && c.d);
+            
+            // Merge: remove duplicates (same word + same language)
+            cards = cards.filter(c => !newCards.find(nc => nc.w === c.w && nc.lang === c.lang));
+            cards = cards.concat(newCards);
+            save();
+            
+            // Update all UI
+            if (!inSession) {
+                updateWelcomeStats();
             }
+            updateStats();
+            renderList();
+            
+            alert('Imported ' + newCards.length + ' cards!');
+        } catch (e) {
+            alert('Error reading JSON file: ' + e.message);
         }
-        fields.push(field);
-        return fields;
+        input.value = '';
     });
 }
 
-imp.onchange = e => {
-    if (!e.target.files[0]) return;
-    e.target.files[0].text().then(t => {
-        let rows = parseCSV(t);
-        if (rows[0]?.[0]?.toLowerCase() === 'word') rows.shift();
-        let newCards = rows.filter(r => r.length >= 3 && r[0]).map(r => ({
-            w: r[0], d: r[1], s: r[2], int: 1, due: 0, ef: 2.5, n: 0,
-            lang: r[3] || currentLang
-        }));
-        cards = cards.filter(c => !newCards.find(nc => nc.w === c.w && nc.lang === c.lang));
-        cards = cards.concat(newCards);
-        save();
-        if (!inSession) {
-            updateWelcomeStats();
-        }
-        updateStats();
-        renderList();
-    });
-};
-
 renderLangSelect();
+updateWelcomeLangSelect();
 updateWelcomeStats();
 updateStats();
 renderList();
