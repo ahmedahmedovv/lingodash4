@@ -27,10 +27,31 @@
         .msg { margin-top: 2rem; font-size: 1.2rem; min-height: 1.5rem; font-weight: 500; }
         
         /* Study Actions */
-        .study-actions { display: flex; justify-content: center; gap: 2rem; margin-top: 1.5rem; }
-        .study-actions button { width: 44px; height: 44px; padding: 0; font-size: 1.3rem; background: transparent; border: none; border-radius: 8px; cursor: pointer; opacity: .6; transition: opacity .2s; }
-        .study-actions button:hover { opacity: 1; background: #f5f5f7; }
-        .study-actions .btn-delete:hover { background: #ffeceb; }
+        .study-actions { 
+            display: flex; 
+            gap: .5rem; 
+            position: absolute; 
+            bottom: 1.5rem; 
+            right: 1.5rem;
+            opacity: 0.25;
+            transition: opacity .3s;
+        }
+        .study-panel:hover .study-actions { opacity: 0.6; }
+        .study-actions:hover { opacity: 1 !important; }
+        .study-actions button { 
+            width: 36px; 
+            height: 36px; 
+            padding: 0; 
+            font-size: 1rem; 
+            background: #f5f5f7; 
+            border: 1px solid #e8e8ed; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            opacity: 0.7;
+            transition: all .2s; 
+        }
+        .study-actions button:hover { opacity: 1; background: #e8e8ed; transform: scale(1.05); }
+        .study-actions .btn-delete:hover { background: #ffeceb; border-color: #ffccc9; }
         
         /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 100; }
@@ -224,7 +245,7 @@
                 <input type="text" id="answer" autocomplete="off">
             </div>
             <p class="msg" id="msg"></p>
-            <div class="study-actions" id="studyActions" style="display: none;">
+            <div class="study-actions" id="studyActions">
                 <button onclick="editCurrentCard()" title="Edit">✏️</button>
                 <button class="btn-delete" onclick="deleteCurrentCard()" title="Delete">🗑️</button>
             </div>
@@ -715,7 +736,7 @@ function show() {
     }
 
     document.getElementById('reviewBanner').style.display = 'none';
-    document.getElementById('studyActions').style.display = 'none';
+    
     sentence.classList.remove('done-msg');
     answer.style.display = '';
     answer.readOnly = false;
@@ -742,7 +763,7 @@ function showMistakeReview() {
     }
     
     document.getElementById('reviewBanner').style.display = '';
-    document.getElementById('studyActions').style.display = 'none';
+    
     sentence.classList.remove('done-msg');
     answer.style.display = '';
     answer.readOnly = false;
@@ -763,6 +784,7 @@ function showNoCards() {
     hint.textContent = '';
     answer.style.display = 'none';
     document.getElementById('studyActions').style.display = 'none';
+    
     msg.innerHTML = '<button class="btn-primary" onclick="resetAll()">Study Again</button>';
 }
 
@@ -771,6 +793,7 @@ function showSessionComplete() {
     hint.textContent = '';
     answer.style.display = 'none';
     document.getElementById('studyActions').style.display = 'none';
+    
     
     const sessionTotal = sessionCardsStudied;
     const mistakeCount = sessionMistakes.length;
@@ -812,7 +835,7 @@ answer.onkeydown = e => {
     if (waitingForNext) {
         waitingForNext = false;
         msg.textContent = '';
-        document.getElementById('studyActions').style.display = 'none';
+        
         // Reset input styling
         answer.readOnly = false;
         answer.style.background = '';
@@ -888,7 +911,6 @@ answer.onkeydown = e => {
     answer.value = '';
     answer.readOnly = true;
     answer.style.background = '#e8e8ed';
-    document.getElementById('studyActions').style.display = '';
 };
 
 function renderList() {
@@ -1081,7 +1103,7 @@ function deleteCurrentCard() {
     
     waitingForNext = false;
     lastAnswerWrong = false;
-    document.getElementById('studyActions').style.display = 'none';
+    
     renderList();
     updateStats();
     if (!inSession) updateWelcomeStats();
