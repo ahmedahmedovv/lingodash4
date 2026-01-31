@@ -174,6 +174,15 @@
         }
 
         input[type="file"] { display: none; }
+
+        /* Shake animation for wrong answer */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
     </style>
 </head>
 <body>
@@ -378,6 +387,7 @@ let inSession = false;
 let sessionDueCards = [];
 const INTERLEAVE_INTERVAL = 10;
 let waitingForNext = false;
+let lastAnswerWrong = false;
 
 // Data Access Functions
 const save = () => localStorage.cards = JSON.stringify(cards);
@@ -519,6 +529,7 @@ function startSession() {
     sessionMistakes = [];
     reviewingMistakes = false;
     waitingForNext = false;
+    lastAnswerWrong = false;
     
     sessionDueCards = due.slice(0, sessionSize).sort(() => Math.random() - 0.5);
     
@@ -533,6 +544,7 @@ function returnToWelcome() {
     sessionMistakes = [];
     reviewingMistakes = false;
     waitingForNext = false;
+    lastAnswerWrong = false;
     sessionDueCards = [];
     
     document.getElementById('studyInterface').style.display = 'none';
@@ -661,6 +673,7 @@ function updateStats() {
 
 function show() {
     waitingForNext = false;
+    lastAnswerWrong = false;
     updateStats();
     renderList();
     
@@ -709,6 +722,7 @@ function show() {
 
 function showMistakeReview() {
     waitingForNext = false;
+    lastAnswerWrong = false;
     
     if (sessionMistakes.length === 0) {
         reviewingMistakes = false;
@@ -788,10 +802,41 @@ answer.onkeydown = e => {
         waitingForNext = false;
         msg.textContent = '';
         document.getElementById('studyActions').style.display = 'none';
+        // Reset input styling
+        answer.readOnly = false;
+        answer.style.background = '';
+        
+        // If last answer was wrong, show same card again
+        if (lastAnswerWrong) {
+            lastAnswerWrong = false;
+            sentence.textContent = cur.s.replace(new RegExp(cur.w, 'gi'), '___');
+            answer.focus();
+            answerStartTime = Date.now();
+            return;
+        }
+        
+        // Otherwise show next card
         show();
         return;
     }
     
+    const userAnswer = answer.value.trim().toLowerCase();
+    const correctAnswer = cur.w.toLowerCase();
+    const isCorrect = userAnswer === correctAnswer;
+    
+    // If wrong answer, show correct answer and keep the same card
+    if (!isCorrect) {
+        lastAnswerWrong = true;
+        sentence.innerHTML = cur.s.replace(new RegExp(`(${cur.w})`, 'gi'), `<span class="no">$1</span>`);
+        msg.innerHTML = '<span style="color: #86868b;">Press Enter to try again</span>';
+        answer.value = '';
+        answer.readOnly = true;
+        answer.style.background = '#ffeceb';
+        waitingForNext = true;
+        return;
+    }
+    
+    // Correct answer - proceed with normal flow
     const responseTime = Date.now() - answerStartTime;
     const quality = calculateQuality(answer.value, cur.w, responseTime);
     const ok = sm2(cur, quality);
@@ -802,24 +847,19 @@ answer.onkeydown = e => {
     cur.lastQuality = quality;
     save();
 
-    const colorClass = ok ? 'ok' : 'no';
-    sentence.innerHTML = cur.s.replace(new RegExp(`(${cur.w})`, 'gi'), `<span class="${colorClass}">$1</span>`);
+    sentence.innerHTML = cur.s.replace(new RegExp(`(${cur.w})`, 'gi'), `<span class="ok">$1</span>`);
     
     if (inSession) {
         if (reviewingMistakes) {
-            if (ok) {
-                sessionMistakes = sessionMistakes.filter(c => !(c.w === cur.w && c.lang === cur.lang));
-            }
+            sessionMistakes = sessionMistakes.filter(c => !(c.w === cur.w && c.lang === cur.lang));
         } else {
-            if (!ok && !sessionMistakes.find(c => c.w === cur.w && c.lang === cur.lang)) {
-                sessionMistakes.push(cur);
-            }
             sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.lang === cur.lang));
             sessionCardsStudied++;
         }
         updateSessionUI();
     }
     
+    lastAnswerWrong = false;
     waitingForNext = true;
     msg.innerHTML = '<span style="color: #86868b;">Press Enter to continue</span>';
     answer.value = '';
@@ -1017,6 +1057,7 @@ function deleteCurrentCard() {
     if (inSession) removeCardFromSession(cur);
     
     waitingForNext = false;
+    lastAnswerWrong = false;
     document.getElementById('studyActions').style.display = 'none';
     renderList();
     updateStats();
