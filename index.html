@@ -176,6 +176,7 @@
         input[type="file"] { display: none; }
 
         /* Shake animation for wrong answer */
+        .shake { animation: shake 0.5s ease; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             20% { transform: translateX(-8px); }
@@ -364,18 +365,23 @@
             </div>
         </div>
     </div>
-    </aside>
 </div>
 
 <script>
+// DOM Element References
+const sentence = document.getElementById('sentence');
+const hint = document.getElementById('hint');
+const answer = document.getElementById('answer');
+const msg = document.getElementById('msg');
+
 // Data State
-let cards = JSON.parse(localStorage.cards || '0') || [
+let cards = JSON.parse(localStorage.cards || 'null') || [
     {w:'apple', s:'She took a bite of the crisp red apple.', d:'a round fruit', lang:'en'},
     {w:'banana', s:'The monkey peeled the banana before eating.', d:'a long curved yellow fruit', lang:'en'},
     {w:'door', s:'Please close the door behind you.', d:'a barrier for an entrance', lang:'en'}
 ], cur, editIdx = -1, answerStartTime = 0;
 
-let languages = JSON.parse(localStorage.languages || '0') || [{code: 'en', name: 'English'}];
+let languages = JSON.parse(localStorage.languages || 'null') || [{code: 'en', name: 'English'}];
 let currentLang = localStorage.currentLang || 'en';
 
 // Session State
@@ -401,6 +407,11 @@ const removeCardFromSession = (card) => {
     sessionMistakes = sessionMistakes.filter(c => !(c.w === card.w && c.s === card.s));
 };
 
+// Escape special regex characters
+function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // Shared Validation Utility
 function validateSentence(word, sentence, errorId, previewId) {
     const errorEl = document.getElementById(errorId);
@@ -411,7 +422,7 @@ function validateSentence(word, sentence, errorId, previewId) {
             errorEl?.classList.remove('show');
             previewEl?.classList.add('show');
             if (previewEl) {
-                previewEl.innerHTML = sentence.replace(new RegExp('(' + word + ')', 'gi'), '<strong>___</strong>');
+                previewEl.innerHTML = sentence.replace(new RegExp('(' + escapeRegex(word) + ')', 'gi'), '<strong>___</strong>');
             }
             return true;
         } else {
@@ -713,7 +724,7 @@ function show() {
     
     cur = inSession ? dc[0] : dc[Math.random()*dc.length|0];
     
-    sentence.textContent = cur.s.replace(new RegExp(cur.w, 'gi'), '___');
+    sentence.textContent = cur.s.replace(new RegExp(escapeRegex(cur.w), 'gi'), '___');
     hint.textContent = `${cur.d} (${cur.w[0]})`;
     answer.value = '';
     answer.focus();
@@ -739,7 +750,7 @@ function showMistakeReview() {
     msg.textContent = '';
     
     cur = sessionMistakes[0];
-    sentence.textContent = cur.s.replace(new RegExp(cur.w, 'gi'), '___');
+    sentence.textContent = cur.s.replace(new RegExp(escapeRegex(cur.w), 'gi'), '___');
     hint.textContent = `${cur.d} (${cur.w[0]})`;
     answer.value = '';
     answer.focus();
@@ -809,7 +820,7 @@ answer.onkeydown = e => {
         // If last answer was wrong, show same card again
         if (lastAnswerWrong) {
             lastAnswerWrong = false;
-            sentence.textContent = cur.s.replace(new RegExp(cur.w, 'gi'), '___');
+            sentence.textContent = cur.s.replace(new RegExp(escapeRegex(cur.w), 'gi'), '___');
             answer.focus();
             answerStartTime = Date.now();
             return;
@@ -827,12 +838,22 @@ answer.onkeydown = e => {
     // If wrong answer, show correct answer and keep the same card
     if (!isCorrect) {
         lastAnswerWrong = true;
-        sentence.innerHTML = cur.s.replace(new RegExp(`(${cur.w})`, 'gi'), `<span class="no">$1</span>`);
+        // Add to session mistakes if not already there (and in session mode)
+        if (inSession && !reviewingMistakes) {
+            const alreadyMistake = sessionMistakes.some(c => c.w === cur.w && c.lang === cur.lang);
+            if (!alreadyMistake) {
+                sessionMistakes.push(cur);
+            }
+        }
+        sentence.innerHTML = cur.s.replace(new RegExp(`(${escapeRegex(cur.w)})`, 'gi'), `<span class="no">$1</span>`);
         msg.innerHTML = '<span style="color: #86868b;">Press Enter to try again</span>';
         answer.value = '';
         answer.readOnly = true;
         answer.style.background = '#ffeceb';
+        answer.classList.add('shake');
+        setTimeout(() => answer.classList.remove('shake'), 500);
         waitingForNext = true;
+        updateSessionUI();
         return;
     }
     
@@ -847,7 +868,7 @@ answer.onkeydown = e => {
     cur.lastQuality = quality;
     save();
 
-    sentence.innerHTML = cur.s.replace(new RegExp(`(${cur.w})`, 'gi'), `<span class="ok">$1</span>`);
+    sentence.innerHTML = cur.s.replace(new RegExp(`(${escapeRegex(cur.w)})`, 'gi'), `<span class="ok">$1</span>`);
     
     if (inSession) {
         if (reviewingMistakes) {
