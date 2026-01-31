@@ -12,12 +12,10 @@
         .container.focus-mode { grid-template-columns: 1fr; max-width: 900px; }
         .container.focus-mode .sidebar { display: none; }
 
-        /* Top Bar */
         .top-bar { position: fixed; top: 1.5rem; right: 1.5rem; display: flex; gap: .75rem; align-items: center; font-size: 1rem; color: #86868b; z-index: 10; }
         .focus-btn { background: #fff; border: 1px solid #d2d2d7; font-size: 1.1rem; cursor: pointer; padding: .5rem .75rem; border-radius: 8px; transition: all .2s; }
         .focus-btn:hover { background: #f5f5f7; }
 
-        /* Study Panel */
         .study-panel { background: #fff; border-radius: 20px; padding: 4rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 550px; box-shadow: 0 2px 8px rgba(0,0,0,.08); position: sticky; top: 1.5rem; align-self: flex-start; z-index: 5; }
         .sentence { font-size: 2.2rem; line-height: 1.5; text-align: center; margin-bottom: 2rem; color: #1d1d1f; max-width: 900px; }
         .hint { color: #86868b; font-size: 1.3rem; margin-bottom: 3rem; text-align: center; font-style: italic; max-width: 800px; }
@@ -26,7 +24,6 @@
         input[type="text"]:focus { border-color: #0071e3; background: #fff; }
         .msg { margin-top: 2rem; font-size: 1.2rem; min-height: 1.5rem; font-weight: 500; }
         
-        /* Study Actions */
         .study-actions { 
             display: flex; 
             gap: .5rem; 
@@ -53,7 +50,6 @@
         .study-actions button:hover { opacity: 1; background: #e8e8ed; transform: scale(1.05); }
         .study-actions .btn-delete:hover { background: #ffeceb; border-color: #ffccc9; }
         
-        /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 100; }
         .modal-overlay.show { display: flex; }
         .modal { background: #fff; border-radius: 16px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,.2); }
@@ -75,17 +71,14 @@
         .done-msg { color: #86868b; }
         .done-msg button { margin-top: 1rem; }
 
-        /* Session Progress */
         .session-info { position: fixed; top: 1.5rem; left: 1.5rem; background: #fff; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.1); font-size: 1.1rem; z-index: 10; }
         .session-info .progress-bar { width: 180px; height: 6px; background: #e8e8ed; border-radius: 3px; margin-top: .5rem; overflow: hidden; }
         .session-info .progress-fill { height: 100%; background: #0071e3; border-radius: 2px; transition: width .3s; }
         .session-info .mistake-badge { color: #ff3b30; font-weight: 600; }
 
-        /* Review Mode Banner */
         .review-banner { background: #fff5f5; border: 1px solid #ffccc9; color: #ff3b30; padding: 1rem 2rem; border-radius: 12px; margin-bottom: 2rem; font-weight: 500; font-size: 1.1rem; display: flex; align-items: center; gap: .5rem; }
         .review-banner::before { content: "🔄"; }
 
-        /* Session Complete */
         .session-complete { text-align: center; }
         .session-complete h2 { font-size: 2.5rem; margin-bottom: 1.5rem; color: #34c759; }
         .session-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 2rem 0; max-width: 450px; }
@@ -93,7 +86,6 @@
         .session-stat .num { font-size: 2.2rem; font-weight: 600; color: #1d1d1f; }
         .session-stat .label { font-size: .85rem; color: #86868b; margin-top: .25rem; }
 
-        /* Welcome Page */
         .welcome-page { background: #fff; border-radius: 20px; padding: 3rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; box-shadow: 0 2px 8px rgba(0,0,0,.08); text-align: center; }
         .welcome-page h1 { font-size: 2rem; margin-bottom: 2rem; color: #1d1d1f; }
         .welcome-form { width: 100%; max-width: 360px; }
@@ -103,7 +95,6 @@
         .welcome-form button:hover { background: #0077ed; }
         .welcome-form button:disabled { background: #d2d2d7; cursor: not-allowed; }
 
-        /* Buttons */
         button { background: #f5f5f7; border: 1px solid #d2d2d7; color: #1d1d1f; padding: .7rem 1.4rem; border-radius: 8px; font: inherit; font-size: 1.05rem; cursor: pointer; transition: all .2s; }
         button:hover { background: #e8e8ed; }
         .btn-primary { background: #0071e3; border-color: #0071e3; color: #fff; }
@@ -113,10 +104,8 @@
         .btn-success { background: #34c759; border-color: #34c759; color: #fff; }
         .btn-success:hover { background: #30b350; }
 
-        /* Sidebar */
         .sidebar { display: flex; flex-direction: column; gap: 1.25rem; }
 
-        /* Header Section - Language & Stats Combined */
         .sidebar-header { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
         .lang-section { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
         .lang-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #0071e3, #00c6ff); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
@@ -127,7 +116,6 @@
         .lang-actions button { padding: .4rem .5rem; font-size: .85rem; background: transparent; border: none; border-radius: 6px; opacity: .6; }
         .lang-actions button:hover { opacity: 1; background: #f5f5f7; }
 
-        /* Stats Pills */
         .stats-row { display: flex; gap: .5rem; flex-wrap: wrap; }
         .stat-pill { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: #f5f5f7; border-radius: 20px; font-size: .9rem; }
         .stat-pill .icon { font-size: .95rem; }
@@ -138,7 +126,6 @@
         .stat-pill.mastered { background: #e8f5e9; }
         .stat-pill.mastered .num { color: #34c759; }
 
-        /* Data Management */
         .data-card { background: #fff; border-radius: 16px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
         .data-title { font-size: .75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #86868b; margin-bottom: .75rem; font-weight: 600; }
         .data-btns { display: flex; gap: .5rem; }
@@ -147,7 +134,6 @@
         .data-btns button.danger { color: #ff3b30; }
         .data-btns button.danger:hover { background: #ffeceb; border-color: #ffccc9; }
 
-        /* Words Card - Improved */
         .words-card { background: #fff; border-radius: 16px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: 1; display: flex; flex-direction: column; min-height: 0; }
         .words-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
         .words-title { font-size: .75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #86868b; font-weight: 600; }
@@ -174,18 +160,15 @@
         .word-actions button.danger { color: #ff3b30; }
         .word-actions button.danger:hover { background: #ffeceb; }
 
-        /* Empty state for words list */
         .words-empty { text-align: center; padding: 2rem 1rem; color: #86868b; font-size: .9rem; }
         .words-empty .icon { font-size: 2rem; margin-bottom: .5rem; opacity: .5; }
 
-        /* Language Form */
         .lang-form { display: none; margin-top: .75rem; padding: .75rem; background: #f5f5f7; border-radius: 10px; }
         .lang-form.show { display: block; animation: slideDown .2s ease; }
         .lang-form input { width: 100%; padding: .5rem .75rem; margin-bottom: .4rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: .9rem; }
         .lang-form-btns { display: flex; gap: .4rem; justify-content: flex-end; }
         .lang-form-btns button { font-size: .85rem; padding: .4rem .75rem; }
 
-        /* Large screens */
         @media (min-width: 1920px) {
             .container { max-width: 1800px; grid-template-columns: 1fr 480px; gap: 4rem; }
             .sentence { font-size: 2.6rem; max-width: 1000px; }
@@ -196,7 +179,6 @@
 
         input[type="file"] { display: none; }
 
-        /* Shake animation for wrong answer */
         .shake { animation: shake 0.5s ease; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -389,13 +371,11 @@
 </div>
 
 <script>
-// DOM Element References
 const sentence = document.getElementById('sentence');
 const hint = document.getElementById('hint');
 const answer = document.getElementById('answer');
 const msg = document.getElementById('msg');
 
-// Data State
 let cards = JSON.parse(localStorage.cards || 'null') || [
     {w:'apple', s:'She took a bite of the crisp red apple.', d:'a round fruit', lang:'en'},
     {w:'banana', s:'The monkey peeled the banana before eating.', d:'a long curved yellow fruit', lang:'en'},
@@ -405,7 +385,6 @@ let cards = JSON.parse(localStorage.cards || 'null') || [
 let languages = JSON.parse(localStorage.languages || 'null') || [{code: 'en', name: 'English'}];
 let currentLang = localStorage.currentLang || 'en';
 
-// Session State
 let sessionSize = 20;
 let sessionCardsStudied = 0;
 let sessionMistakes = [];
@@ -416,7 +395,6 @@ const INTERLEAVE_INTERVAL = 10;
 let waitingForNext = false;
 let lastAnswerWrong = false;
 
-// Data Access Functions
 const save = () => localStorage.cards = JSON.stringify(cards);
 const saveLangs = () => localStorage.languages = JSON.stringify(languages);
 const saveCurrentLang = () => localStorage.currentLang = currentLang;
@@ -428,12 +406,10 @@ const removeCardFromSession = (card) => {
     sessionMistakes = sessionMistakes.filter(c => !(c.w === card.w && c.s === card.s));
 };
 
-// Escape special regex characters
 function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Shared Validation Utility
 function validateSentence(word, sentence, errorId, previewId) {
     const errorEl = document.getElementById(errorId);
     const previewEl = document.getElementById(previewId);
@@ -458,7 +434,6 @@ function validateSentence(word, sentence, errorId, previewId) {
     }
 }
 
-// SM-2 Algorithm Implementation
 function levenshtein(a, b) {
     const m = a.length, n = b.length;
     const dp = Array.from({length: m + 1}, () => Array(n + 1).fill(0));
@@ -524,7 +499,6 @@ if (localStorage.focusMode === 'true') {
     document.getElementById('focusBtn').textContent = '◧';
 }
 
-// Welcome Page Functions
 function updateWelcomeStats() {
     const due = dueCards().length;
     document.getElementById('welcomeDue').textContent = due;
@@ -821,7 +795,6 @@ function resetAll() {
     show();
 }
 
-// Close modals with Escape
 document.onkeydown = e => {
     if (e.key === 'Escape') {
         closeEditModal();
@@ -836,11 +809,9 @@ answer.onkeydown = e => {
         waitingForNext = false;
         msg.textContent = '';
         
-        // Reset input styling
         answer.readOnly = false;
         answer.style.background = '';
         
-        // If last answer was wrong, show same card again
         if (lastAnswerWrong) {
             lastAnswerWrong = false;
             sentence.textContent = cur.s.replace(new RegExp(escapeRegex(cur.w), 'gi'), '___');
@@ -849,7 +820,6 @@ answer.onkeydown = e => {
             return;
         }
         
-        // Otherwise show next card
         show();
         return;
     }
@@ -858,10 +828,8 @@ answer.onkeydown = e => {
     const correctAnswer = cur.w.toLowerCase();
     const isCorrect = userAnswer === correctAnswer;
     
-    // If wrong answer, show correct answer and keep the same card
     if (!isCorrect) {
         lastAnswerWrong = true;
-        // Add to session mistakes if not already there (and in session mode)
         if (inSession && !reviewingMistakes) {
             const alreadyMistake = sessionMistakes.some(c => c.w === cur.w && c.lang === cur.lang);
             if (!alreadyMistake) {
@@ -880,7 +848,6 @@ answer.onkeydown = e => {
         return;
     }
     
-    // Correct answer - proceed with normal flow
     const responseTime = Date.now() - answerStartTime;
     const quality = calculateQuality(answer.value, cur.w, responseTime);
     const ok = sm2(cur, quality);
@@ -896,7 +863,6 @@ answer.onkeydown = e => {
     if (inSession) {
         if (reviewingMistakes) {
             sessionMistakes = sessionMistakes.filter(c => !(c.w === cur.w && c.lang === cur.lang));
-            // Also remove from sessionDueCards to prevent showing again
             sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.lang === cur.lang));
         } else {
             sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.lang === cur.lang));
@@ -954,7 +920,6 @@ function renderList() {
     }).join('');
 }
 
-// Add Card Modal Functions
 function openAddModal() {
     editIdx = -1;
     document.getElementById('aWord').value = '';
@@ -1007,7 +972,6 @@ function saveCard() {
     renderList();
 }
 
-// Keep for backwards compatibility
 toggleAdd = openAddModal;
 cancelAdd = closeAddModal;
 validateCard = validateAddForm;
