@@ -1462,7 +1462,8 @@ function showNoCards() {
 
 // Show session completion screen with stats
 function showSessionComplete() {
-    sentence.classList.add('done-msg');
+    sentence.textContent = '';
+    sentence.classList.remove('done-msg');
     hint.textContent = '';
     answer.style.display = 'none';
     document.getElementById('studyActions').style.display = 'none';
