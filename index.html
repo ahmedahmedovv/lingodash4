@@ -20,7 +20,7 @@
         /* Study Panel */
         .study-panel { background: #fff; border-radius: 16px; padding: 3rem 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
         .sentence { font-size: 1.6rem; line-height: 1.7; text-align: center; margin-bottom: 1rem; color: #1d1d1f; }
-        .hint { color: #86868b; font-size: 1rem; margin-bottom: 2rem; }
+        .hint { color: #86868b; font-size: 1rem; margin-bottom: 2rem; text-align: center; font-style: italic; }
         .input-wrap { position: relative; }
         input[type="text"] { border: 2px solid #d2d2d7; background: #f5f5f7; border-radius: 12px; padding: 1rem 1.5rem; width: 280px; font-size: 1.1rem; text-align: center; outline: none; transition: all .2s; }
         input[type="text"]:focus { border-color: #0071e3; background: #fff; }
@@ -48,6 +48,28 @@
         .session-stat .num { font-size: 1.8rem; font-weight: 600; color: #1d1d1f; }
         .session-stat .label { font-size: .75rem; color: #86868b; margin-top: .25rem; }
 
+        /* Welcome Page */
+        .welcome-page { background: #fff; border-radius: 16px; padding: 3rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; box-shadow: 0 1px 3px rgba(0,0,0,.08); text-align: center; }
+        .welcome-page h1 { font-size: 2.5rem; margin-bottom: .5rem; background: linear-gradient(135deg, #0071e3, #34c759); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .welcome-page .subtitle { color: #86868b; font-size: 1.1rem; margin-bottom: 2rem; }
+        .welcome-stats { display: flex; gap: 2rem; margin-bottom: 2rem; }
+        .welcome-stat { text-align: center; }
+        .welcome-stat .num { font-size: 2rem; font-weight: 600; color: #1d1d1f; }
+        .welcome-stat .label { font-size: .85rem; color: #86868b; }
+        .welcome-stat.due .num { color: #ff9500; }
+        .session-selector { background: #f5f5f7; padding: 2rem; border-radius: 16px; width: 100%; max-width: 400px; }
+        .session-selector h3 { font-size: 1rem; margin-bottom: 1rem; color: #1d1d1f; }
+        .session-options { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
+        .session-option { padding: .6rem 1rem; border: 2px solid #d2d2d7; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: all .2s; background: #fff; }
+        .session-option:hover { border-color: #0071e3; }
+        .session-option.active { background: #0071e3; border-color: #0071e3; color: #fff; }
+        .session-custom { display: flex; gap: .5rem; justify-content: center; margin-bottom: 1.5rem; }
+        .session-custom input { width: 80px; padding: .6rem; border: 2px solid #d2d2d7; border-radius: 10px; text-align: center; font: inherit; font-size: 1rem; }
+        .session-custom input:focus { outline: none; border-color: #0071e3; }
+        .start-btn { background: #0071e3; color: #fff; border: none; padding: 1rem 3rem; border-radius: 12px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .start-btn:hover { background: #0077ed; transform: translateY(-1px); }
+        .start-btn:disabled { background: #d2d2d7; cursor: not-allowed; transform: none; }
+
         /* Buttons */
         button { background: #f5f5f7; border: 1px solid #d2d2d7; color: #1d1d1f; padding: .6rem 1.2rem; border-radius: 8px; font: inherit; cursor: pointer; transition: all .2s; }
         button:hover { background: #e8e8ed; }
@@ -70,16 +92,6 @@
         .stat-label { font-size: .75rem; color: #86868b; margin-top: .25rem; }
         .stat-item.due .stat-num { color: #ff9500; }
         .stat-item.mastered .stat-num { color: #34c759; }
-
-        /* Session Settings Card */
-        .session-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-        .session-card h3 { font-size: .85rem; color: #86868b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 1rem; }
-        .session-options { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-        .session-option { padding: .4rem .8rem; border: 1px solid #d2d2d7; border-radius: 8px; cursor: pointer; font-size: .85rem; transition: all .2s; }
-        .session-option:hover { background: #f5f5f7; }
-        .session-option.active { background: #0071e3; border-color: #0071e3; color: #fff; }
-        .session-custom { display: flex; gap: .5rem; }
-        .session-custom input { width: 60px; padding: .4rem; border: 1px solid #d2d2d7; border-radius: 6px; text-align: center; font: inherit; }
 
         /* Actions Card */
         .actions-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
@@ -133,6 +145,9 @@
             .sentence { font-size: 1.3rem; }
             .sidebar { order: 1; }
             .session-info { position: static; margin-bottom: 1rem; }
+            .welcome-page { padding: 2rem 1.5rem; }
+            .welcome-page h1 { font-size: 2rem; }
+            .welcome-stats { gap: 1.5rem; }
         }
 
         input[type="file"] { display: none; }
@@ -151,13 +166,51 @@
 
 <div class="container">
     <main class="study-panel" id="studyPanel">
-        <div class="review-banner" id="reviewBanner" style="display: none;">Mistake Review Mode</div>
-        <p class="sentence" id="sentence"></p>
-        <p class="hint" id="hint"></p>
-        <div class="input-wrap">
-            <input type="text" id="answer" placeholder="Type your answer..." autocomplete="off">
+        <!-- Welcome Page -->
+        <div class="welcome-page" id="welcomePage">
+            <h1>📚 Flashcards</h1>
+            <p class="subtitle">Master vocabulary with spaced repetition</p>
+            
+            <div class="welcome-stats">
+                <div class="welcome-stat due">
+                    <div class="num" id="welcomeDue">0</div>
+                    <div class="label">Due Now</div>
+                </div>
+                <div class="welcome-stat">
+                    <div class="num" id="welcomeTotal">0</div>
+                    <div class="label">Total Cards</div>
+                </div>
+                <div class="welcome-stat">
+                    <div class="num" id="welcomeMastered">0</div>
+                    <div class="label">Mastered</div>
+                </div>
+            </div>
+            
+            <div class="session-selector">
+                <h3>How many cards would you like to study?</h3>
+                <div class="session-options">
+                    <span class="session-option" data-size="10" onclick="selectSessionSize(10)">10</span>
+                    <span class="session-option active" data-size="20" onclick="selectSessionSize(20)">20</span>
+                    <span class="session-option" data-size="50" onclick="selectSessionSize(50)">50</span>
+                    <span class="session-option" data-size="100" onclick="selectSessionSize(100)">100</span>
+                </div>
+                <div class="session-custom">
+                    <input type="number" id="customSize" placeholder="Custom" min="1" max="500" onchange="selectCustomSize()">
+                </div>
+                <button class="start-btn" id="startBtn" onclick="startSession()">Start Studying</button>
+            </div>
         </div>
-        <p class="msg" id="msg"></p>
+
+        <!-- Study Interface (hidden initially) -->
+        <div id="studyInterface" style="display: none; width: 100%; text-align: center;">
+            <div class="review-banner" id="reviewBanner" style="display: none;">Mistake Review Mode</div>
+            <p class="sentence" id="sentence"></p>
+            <p class="hint" id="hint"></p>
+            <div class="input-wrap">
+                <input type="text" id="answer" autocomplete="off">
+            </div>
+            <p class="msg" id="msg"></p>
+        </div>
     </main>
 
     <aside class="sidebar">
@@ -181,20 +234,6 @@
                     <button onclick="cancelLangForm()">Cancel</button>
                     <button class="btn-primary" onclick="addLang()">Add</button>
                 </div>
-            </div>
-        </div>
-
-        <div class="session-card">
-            <h3>Session Settings</h3>
-            <div class="session-options">
-                <span class="session-option" data-size="10" onclick="setSessionSize(10)">10</span>
-                <span class="session-option active" data-size="20" onclick="setSessionSize(20)">20</span>
-                <span class="session-option" data-size="50" onclick="setSessionSize(50)">50</span>
-                <span class="session-option" data-size="100" onclick="setSessionSize(100)">100</span>
-            </div>
-            <div class="session-custom">
-                <input type="number" id="customSize" placeholder="Custom" min="5" max="500" onchange="setCustomSessionSize()">
-                <button class="btn-primary" onclick="startSession()" id="startBtn">Start Session</button>
             </div>
         </div>
 
@@ -264,7 +303,7 @@ let sessionMistakes = [];
 let reviewingMistakes = false;
 let inSession = false;
 let sessionDueCards = [];
-let interleaveInterval = 10; // Review mistakes every N cards
+let interleaveInterval = 10;
 
 const save = () => localStorage.cards = JSON.stringify(cards);
 const saveLangs = () => localStorage.languages = JSON.stringify(languages);
@@ -345,8 +384,29 @@ if (localStorage.focusMode === 'true') {
     document.getElementById('focusBtn').textContent = '◧';
 }
 
-// Session Settings
-function setSessionSize(size) {
+// Welcome Page Functions
+function updateWelcomeStats() {
+    const langCards = currentLangCards();
+    const due = dueCards().length;
+    const total = langCards.length;
+    const mastered = langCards.filter(c => (c.n||0) >= 4).length;
+    
+    document.getElementById('welcomeDue').textContent = due;
+    document.getElementById('welcomeTotal').textContent = total;
+    document.getElementById('welcomeMastered').textContent = mastered;
+    
+    // Disable start button if no cards due
+    const startBtn = document.getElementById('startBtn');
+    if (due === 0) {
+        startBtn.disabled = true;
+        startBtn.textContent = 'No Cards Due';
+    } else {
+        startBtn.disabled = false;
+        startBtn.textContent = 'Start Studying';
+    }
+}
+
+function selectSessionSize(size) {
     sessionSize = size;
     document.querySelectorAll('.session-option').forEach(el => {
         el.classList.toggle('active', parseInt(el.dataset.size) === size);
@@ -354,9 +414,9 @@ function setSessionSize(size) {
     document.getElementById('customSize').value = '';
 }
 
-function setCustomSessionSize() {
+function selectCustomSize() {
     const val = parseInt(document.getElementById('customSize').value);
-    if (val >= 5 && val <= 500) {
+    if (val >= 1 && val <= 500) {
         sessionSize = val;
         document.querySelectorAll('.session-option').forEach(el => el.classList.remove('active'));
     }
@@ -364,10 +424,11 @@ function setCustomSessionSize() {
 
 function startSession() {
     const due = dueCards();
-    if (due.length === 0) {
-        alert('No cards due for review!');
-        return;
-    }
+    if (due.length === 0) return;
+    
+    // Hide welcome, show study interface
+    document.getElementById('welcomePage').style.display = 'none';
+    document.getElementById('studyInterface').style.display = '';
     
     inSession = true;
     sessionCardsStudied = 0;
@@ -379,9 +440,24 @@ function startSession() {
     
     updateSessionUI();
     document.getElementById('sessionInfo').style.display = 'block';
-    document.getElementById('startBtn').textContent = 'Restart';
     
     show();
+}
+
+function returnToWelcome() {
+    inSession = false;
+    sessionCardsStudied = 0;
+    sessionMistakes = [];
+    reviewingMistakes = false;
+    sessionDueCards = [];
+    
+    document.getElementById('studyInterface').style.display = 'none';
+    document.getElementById('welcomePage').style.display = '';
+    document.getElementById('sessionInfo').style.display = 'none';
+    document.getElementById('msg').innerHTML = '';
+    
+    updateWelcomeStats();
+    updateStats();
 }
 
 function shuffleArray(array) {
@@ -410,7 +486,6 @@ function updateSessionUI() {
 }
 
 function checkInterleaveReview() {
-    // Check if we should enter mistake review mode
     if (!reviewingMistakes && sessionMistakes.length > 0 && sessionCardsStudied > 0 && sessionCardsStudied % interleaveInterval === 0) {
         reviewingMistakes = true;
         return true;
@@ -433,9 +508,13 @@ function switchLang() {
     currentLang = document.getElementById('langSelect').value;
     saveCurrentLang();
     renderLangSelect();
-    // End current session when switching languages
-    endSession();
-    show();
+    if (inSession) {
+        returnToWelcome();
+    } else {
+        updateWelcomeStats();
+    }
+    updateStats();
+    renderList();
 }
 
 function toggleLangForm() {
@@ -465,7 +544,8 @@ function addLang() {
     saveCurrentLang();
     renderLangSelect();
     cancelLangForm();
-    show();
+    updateWelcomeStats();
+    updateStats();
 }
 
 function renameLang() {
@@ -477,6 +557,7 @@ function renameLang() {
         lang.name = newName.trim();
         saveLangs();
         renderLangSelect();
+        updateWelcomeStats();
     }
 }
 
@@ -524,7 +605,6 @@ function show() {
 
     if (!dc.length) {
         if (inSession) {
-            // Check if we have remaining mistakes to review
             if (sessionMistakes.length > 0) {
                 reviewingMistakes = true;
                 showMistakeReview();
@@ -543,7 +623,7 @@ function show() {
     msg.textContent = '';
     
     if (inSession) {
-        cur = dc[0]; // Take first from shuffled session cards
+        cur = dc[0];
     } else {
         cur = dc[Math.random()*dc.length|0];
     }
@@ -567,7 +647,7 @@ function showMistakeReview() {
     answer.style.display = '';
     msg.textContent = '';
     
-    cur = sessionMistakes[0]; // Take first mistake
+    cur = sessionMistakes[0];
     sentence.textContent = cur.s.replace(new RegExp(cur.w, 'gi'), '___');
     hint.textContent = cur.d + ' (' + cur.w[0] + ')';
     answer.value = '';
@@ -604,19 +684,8 @@ function showSessionComplete() {
         '</div>' +
         '<p style="color: #86868b; margin-bottom: 1rem;">' + remainingDue + ' cards still due</p>' +
         '<button class="btn-primary" onclick="startSession()">New Session</button>' +
-        '<button onclick="endSession()" style="margin-left: .5rem;">Back to Browse</button>' +
+        '<button onclick="returnToWelcome()" style="margin-left: .5rem;">Back to Home</button>' +
         '</div>';
-}
-
-function endSession() {
-    inSession = false;
-    sessionCardsStudied = 0;
-    sessionMistakes = [];
-    reviewingMistakes = false;
-    sessionDueCards = [];
-    document.getElementById('sessionInfo').style.display = 'none';
-    document.getElementById('startBtn').textContent = 'Start Session';
-    show();
 }
 
 function resetAll() {
@@ -641,7 +710,6 @@ answer.onkeydown = e => {
     cur.lastQuality = quality;
     save();
 
-    // Show sentence with answer highlighted
     const colorClass = ok ? 'ok' : 'no';
     sentence.innerHTML = cur.s.replace(
         new RegExp('(' + cur.w + ')', 'gi'),
@@ -649,24 +717,17 @@ answer.onkeydown = e => {
     );
     msg.textContent = '';
     
-    // Handle session tracking
     if (inSession) {
         if (reviewingMistakes) {
-            // In mistake review mode
             if (ok) {
-                // Remove from mistakes if answered correctly
                 sessionMistakes = sessionMistakes.filter(c => !(c.w === cur.w && c.lang === cur.lang));
             }
-            // If still wrong, keep in mistake queue for next review
         } else {
-            // Normal session card
             if (!ok) {
-                // Add to mistake queue
                 if (!sessionMistakes.find(c => c.w === cur.w && c.lang === cur.lang)) {
                     sessionMistakes.push(cur);
                 }
             }
-            // Remove from session queue
             sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.lang === cur.lang));
             sessionCardsStudied++;
         }
@@ -753,7 +814,11 @@ function saveCard() {
 
     save();
     cancelAdd();
-    show();
+    if (!inSession) {
+        updateWelcomeStats();
+    }
+    updateStats();
+    renderList();
 }
 
 function editCard(i) {
@@ -769,7 +834,11 @@ function delCard(i) {
     if (confirm('Delete "' + cards[i].w + '"?')) {
         cards.splice(i, 1);
         save();
-        show();
+        if (!inSession) {
+            updateWelcomeStats();
+        }
+        updateStats();
+        renderList();
     }
 }
 
@@ -792,13 +861,21 @@ function clearWords() {
     if (confirm(message)) {
         cards = cards.filter(c => (c.lang || 'en') !== currentLang);
         save();
-        show();
+        if (!inSession) {
+            updateWelcomeStats();
+        }
+        updateStats();
+        renderList();
     } else {
         let confirmAll = prompt('Type "ALL" (uppercase) to delete ALL ' + allCardsCount + ' cards across all languages:');
         if (confirmAll === 'ALL') {
             cards = [];
             save();
-            show();
+            if (!inSession) {
+                updateWelcomeStats();
+            }
+            updateStats();
+            renderList();
         }
     }
 }
@@ -877,12 +954,18 @@ imp.onchange = e => {
         cards = cards.filter(c => !newCards.find(nc => nc.w === c.w && nc.lang === c.lang));
         cards = cards.concat(newCards);
         save();
-        show();
+        if (!inSession) {
+            updateWelcomeStats();
+        }
+        updateStats();
+        renderList();
     });
 };
 
 renderLangSelect();
-show();
+updateWelcomeStats();
+updateStats();
+renderList();
 </script>
 </body>
 </html>
