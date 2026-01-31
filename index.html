@@ -62,6 +62,16 @@
         .words-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         .words-header h2 { display: none; }
         .sort-select { font-size: .8rem; padding: .3rem .5rem; border-radius: 6px; border: 1px solid #d2d2d7; background: #f5f5f7; }
+
+        /* Language Selector */
+        .lang-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .lang-card h2 { display: none; }
+        .lang-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+        .lang-current { font-weight: 600; color: #1d1d1f; }
+        .lang-count { font-size: .75rem; color: #86868b; }
+        .lang-select { width: 100%; padding: .5rem; border-radius: 8px; border: 1px solid #d2d2d7; background: #f5f5f7; font: inherit; font-size: .9rem; margin-bottom: .5rem; }
+        .lang-btns { display: flex; gap: .5rem; }
+        .lang-btns button { flex: 1; font-size: .8rem; padding: .4rem; }
         .words-list { flex: 1; overflow-y: auto; }
         .word-item { display: flex; align-items: center; padding: .6rem 0; border-bottom: 1px solid #f0f0f2; gap: .75rem; }
         .word-item:last-child { border-bottom: none; }
@@ -114,6 +124,29 @@
     </main>
 
     <aside class="sidebar">
+        <div class="lang-card">
+            <h2>Language</h2>
+            <div class="lang-header">
+                <span class="lang-current" id="langCurrent">English</span>
+                <span class="lang-count" id="langCount">0 cards</span>
+            </div>
+            <select class="lang-select" id="langSelect" onchange="switchLang()">
+                <option value="en">English</option>
+            </select>
+            <div class="lang-btns">
+                <button onclick="toggleLangForm()">+ New</button>
+                <button onclick="renameLang()">Rename</button>
+            </div>
+            <div class="add-form" id="langForm">
+                <input id="newLangName" placeholder="Language name (e.g., Spanish)">
+                <input id="newLangCode" placeholder="Code (e.g., es)">
+                <div class="add-form-btns">
+                    <button onclick="cancelLangForm()">Cancel</button>
+                    <button class="btn-primary" onclick="addLang()">Add</button>
+                </div>
+            </div>
+        </div>
+
         <div class="stats-card">
             <h2>Statistics</h2>
             <div class="stats-grid">
@@ -130,6 +163,7 @@
                 <button onclick="toggleAdd()">+ Add Card</button>
                 <button onclick="exp()">Export</button>
                 <button onclick="imp.click()">Import</button>
+                <button class="btn-danger" onclick="clearWords()">Clear All</button>
             </div>
             <input type="file" id="imp" accept=".csv">
         </div>
@@ -162,13 +196,21 @@
 
 <script>
 let cards = JSON.parse(localStorage.cards || '0') || [
-    {w:'apple', s:'She took a bite of the crisp red apple.', d:'a round fruit'},
-    {w:'banana', s:'The monkey peeled the banana before eating.', d:'a long curved yellow fruit'},
-    {w:'door', s:'Please close the door behind you.', d:'a barrier for an entrance'}
+    {w:'apple', s:'She took a bite of the crisp red apple.', d:'a round fruit', lang:'en'},
+    {w:'banana', s:'The monkey peeled the banana before eating.', d:'a long curved yellow fruit', lang:'en'},
+    {w:'door', s:'Please close the door behind you.', d:'a barrier for an entrance', lang:'en'}
 ], cur, editIdx = -1, answerStartTime = 0;
 
+let languages = JSON.parse(localStorage.languages || '0') || [
+    {code: 'en', name: 'English'}
+];
+let currentLang = localStorage.currentLang || 'en';
+
 const save = () => localStorage.cards = JSON.stringify(cards);
-const dueCards = () => cards.filter(c => (c.due||0) <= Date.now());
+const saveLangs = () => localStorage.languages = JSON.stringify(languages);
+const saveCurrentLang = () => localStorage.currentLang = currentLang;
+const dueCards = () => cards.filter(c => (c.due||0) <= Date.now() && (c.lang || 'en') === currentLang);
+const currentLangCards = () => cards.filter(c => (c.lang || 'en') === currentLang);
 
 // SM-2 Algorithm Implementation
 function levenshtein(a, b) {
@@ -258,6 +300,66 @@ if (localStorage.focusMode === 'true') {
     document.getElementById('focusBtn').textContent = '◧';
 }
 
+function renderLangSelect() {
+    let select = document.getElementById('langSelect');
+    select.innerHTML = languages.map(l => 
+        '<option value="' + l.code + '"' + (l.code === currentLang ? ' selected' : '') + '>' + l.name + '</option>'
+    ).join('');
+    
+    let lang = languages.find(l => l.code === currentLang);
+    document.getElementById('langCurrent').textContent = lang ? lang.name : currentLang;
+    document.getElementById('langCount').textContent = currentLangCards().length + ' cards';
+}
+
+function switchLang() {
+    currentLang = document.getElementById('langSelect').value;
+    saveCurrentLang();
+    renderLangSelect();
+    show();
+}
+
+function toggleLangForm() {
+    document.getElementById('langForm').classList.toggle('show');
+    document.getElementById('newLangName').focus();
+}
+
+function cancelLangForm() {
+    document.getElementById('langForm').classList.remove('show');
+    document.getElementById('newLangName').value = '';
+    document.getElementById('newLangCode').value = '';
+}
+
+function addLang() {
+    let name = document.getElementById('newLangName').value.trim();
+    let code = document.getElementById('newLangCode').value.trim().toLowerCase();
+    
+    if (!name || !code) return;
+    if (languages.find(l => l.code === code)) {
+        alert('Language code already exists');
+        return;
+    }
+    
+    languages.push({name, code});
+    saveLangs();
+    currentLang = code;
+    saveCurrentLang();
+    renderLangSelect();
+    cancelLangForm();
+    show();
+}
+
+function renameLang() {
+    let lang = languages.find(l => l.code === currentLang);
+    if (!lang) return;
+    
+    let newName = prompt('Rename "' + lang.name + '":', lang.name);
+    if (newName && newName.trim()) {
+        lang.name = newName.trim();
+        saveLangs();
+        renderLangSelect();
+    }
+}
+
 function formatInterval(mins) {
     if (!mins || mins <= 1) return 'new';
     if (mins < 60) return Math.round(mins) + 'm';
@@ -266,12 +368,13 @@ function formatInterval(mins) {
 }
 
 function updateStats() {
+    let langCards = currentLangCards();
     let due = dueCards().length;
     // SM-2: mastered = completed learning phase (n >= 4, meaning 4+ successful reviews)
-    let mastered = cards.filter(c => (c.n||0) >= 4).length;
-    let learning = cards.length - mastered;
-    let totalReviews = cards.reduce((a,c) => a + (c.reviews||0), 0);
-    let totalCorrect = cards.reduce((a,c) => a + (c.correct||0), 0);
+    let mastered = langCards.filter(c => (c.n||0) >= 4).length;
+    let learning = langCards.length - mastered;
+    let totalReviews = langCards.reduce((a,c) => a + (c.reviews||0), 0);
+    let totalCorrect = langCards.reduce((a,c) => a + (c.correct||0), 0);
     let accuracy = totalReviews ? Math.round(totalCorrect/totalReviews*100) : 0;
 
     document.getElementById('dueCount').textContent = due;
@@ -279,6 +382,7 @@ function updateStats() {
     document.getElementById('statLearning').textContent = learning;
     document.getElementById('statMastered').textContent = mastered;
     document.getElementById('statAccuracy').textContent = accuracy + '%';
+    document.getElementById('langCount').textContent = langCards.length + ' cards';
 }
 
 function show() {
@@ -299,7 +403,7 @@ function show() {
     answer.style.display = '';
     cur = dc[Math.random()*dc.length|0];
     sentence.textContent = cur.s.replace(new RegExp(cur.w, 'gi'), '___');
-    hint.textContent = cur.d + ' (starts with "' + cur.w[0] + '")';
+    hint.textContent = cur.d + ' (' + cur.w[0] + ')';
     answer.value = '';
     msg.textContent = '';
     answer.focus();
@@ -341,7 +445,7 @@ answer.onkeydown = e => {
 
 function renderList() {
     let sortBy = document.getElementById('sortSelect').value;
-    let sorted = cards.map((c,i) => ({...c, idx: i}));
+    let sorted = cards.map((c,i) => ({...c, idx: i})).filter(c => (c.lang || 'en') === currentLang);
 
     if (sortBy === 'word') sorted.sort((a,b) => a.w.localeCompare(b.w));
     else if (sortBy === 'due') sorted.sort((a,b) => (a.due||0) - (b.due||0));
@@ -409,8 +513,9 @@ function saveCard() {
         cards[editIdx].w = w;
         cards[editIdx].s = s;
         cards[editIdx].d = d;
+        cards[editIdx].lang = currentLang;
     } else {
-        cards.push({w, s, d, int: 1, due: 0, ef: 2.5, n: 0});
+        cards.push({w, s, d, int: 1, due: 0, ef: 2.5, n: 0, lang: currentLang});
     }
 
     save();
@@ -435,16 +540,49 @@ function delCard(i) {
     }
 }
 
+function clearWords() {
+    let langCards = currentLangCards();
+    if (langCards.length === 0) {
+        alert('No cards to clear for ' + languages.find(l => l.code === currentLang)?.name || currentLang);
+        return;
+    }
+    
+    let allCardsCount = cards.length;
+    let currentLangCount = langCards.length;
+    
+    let message = 'Clear cards for "' + (languages.find(l => l.code === currentLang)?.name || currentLang) + '" (' + currentLangCount + ' cards)?\n\n';
+    message += 'Click OK to clear current language only.\n';
+    if (allCardsCount > currentLangCount) {
+        message += 'Click Cancel, then type "ALL" to clear ALL ' + allCardsCount + ' cards across all languages.';
+    }
+    
+    if (confirm(message)) {
+        // Clear only current language
+        cards = cards.filter(c => (c.lang || 'en') !== currentLang);
+        save();
+        show();
+    } else {
+        // Ask if they want to clear ALL cards
+        let confirmAll = prompt('Type "ALL" (uppercase) to delete ALL ' + allCardsCount + ' cards across all languages:');
+        if (confirmAll === 'ALL') {
+            cards = [];
+            save();
+            show();
+        }
+    }
+}
+
 function escapeCSV(str) {
     return '"' + str.replace(/"/g, '""') + '"';
 }
 
 function exp() {
-    let csv = 'Word,Definition,Example\n';
-    csv += cards.map(c => escapeCSV(c.w) + ',' + escapeCSV(c.d) + ',' + escapeCSV(c.s)).join('\n');
+    let langCards = currentLangCards();
+    let csv = 'Word,Definition,Example,Language\n';
+    csv += langCards.map(c => escapeCSV(c.w) + ',' + escapeCSV(c.d) + ',' + escapeCSV(c.s) + ',' + escapeCSV(c.lang || 'en')).join('\n');
     let a = document.createElement('a');
     a.href = 'data:text/csv,' + encodeURIComponent(csv);
-    a.download = 'cards.csv';
+    a.download = 'cards-' + currentLang + '.csv';
     a.click();
 }
 
@@ -501,14 +639,19 @@ imp.onchange = e => {
     e.target.files[0].text().then(t => {
         let rows = parseCSV(t);
         if (rows[0]?.[0]?.toLowerCase() === 'word') rows.shift();
-        cards = rows.filter(r => r.length >= 3 && r[0]).map(r => ({
-            w: r[0], d: r[1], s: r[2], int: 1, due: 0, ef: 2.5, n: 0
+        let newCards = rows.filter(r => r.length >= 3 && r[0]).map(r => ({
+            w: r[0], d: r[1], s: r[2], int: 1, due: 0, ef: 2.5, n: 0,
+            lang: r[3] || currentLang
         }));
+        // Merge new cards with existing ones
+        cards = cards.filter(c => !newCards.find(nc => nc.w === c.w && nc.lang === c.lang));
+        cards = cards.concat(newCards);
         save();
         show();
     });
 };
 
+renderLangSelect();
 show();
 </script>
 </body>
