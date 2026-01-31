@@ -8,7 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font: 1rem system-ui, -apple-system, sans-serif; background: #f5f5f7; color: #1d1d1f; min-height: 100vh; }
 
-        .container { max-width: 1600px; margin: 0 auto; padding: 2rem 3rem; display: grid; grid-template-columns: 1fr 420px; gap: 3rem; min-height: 100vh; transition: all .3s; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 2rem 3rem; display: grid; grid-template-columns: 1fr 420px; gap: 3rem; min-height: calc(100vh - 3rem); transition: all .3s; align-items: start; }
         .container.focus-mode { grid-template-columns: 1fr; max-width: 900px; }
         .container.focus-mode .sidebar { display: none; }
 
@@ -18,7 +18,7 @@
         .focus-btn:hover { background: #f5f5f7; }
 
         /* Study Panel */
-        .study-panel { background: #fff; border-radius: 20px; padding: 4rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 550px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+        .study-panel { background: #fff; border-radius: 20px; padding: 4rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 550px; box-shadow: 0 2px 8px rgba(0,0,0,.08); position: sticky; top: 1.5rem; align-self: flex-start; z-index: 5; }
         .sentence { font-size: 2.2rem; line-height: 1.5; text-align: center; margin-bottom: 2rem; color: #1d1d1f; max-width: 900px; }
         .hint { color: #86868b; font-size: 1.3rem; margin-bottom: 3rem; text-align: center; font-style: italic; max-width: 800px; }
         .input-wrap { position: relative; }
@@ -32,23 +32,23 @@
         .study-actions button:hover { opacity: 1; background: #f5f5f7; }
         .study-actions .btn-delete:hover { background: #ffeceb; }
         
-        /* Edit Modal */
-        .edit-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 100; }
-        .edit-modal-overlay.show { display: flex; }
-        .edit-modal { background: #fff; border-radius: 16px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,.2); }
-        .edit-modal h3 { margin-bottom: 1.5rem; font-size: 1.3rem; }
-        .edit-modal .form-group { margin-bottom: 1rem; }
-        .edit-modal label { display: block; font-size: .85rem; color: #86868b; margin-bottom: .3rem; }
-        .edit-modal input, .edit-modal textarea { width: 100%; padding: .75rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: 1rem; }
-        .edit-modal textarea { height: 80px; resize: none; }
-        .edit-modal .error { color: #ff3b30; font-size: .85rem; margin-top: .25rem; display: none; }
-        .edit-modal .error.show { display: block; }
-        .edit-modal .preview { font-size: .9rem; color: #86868b; margin-top: .5rem; padding: .5rem; background: #f5f5f7; border-radius: 6px; display: none; }
-        .edit-modal .preview.show { display: block; }
-        .edit-modal .preview strong { color: #1d1d1f; }
-        .edit-modal-btns { display: flex; gap: .75rem; justify-content: flex-end; margin-top: 1.5rem; }
-        .edit-modal-btns button { padding: .6rem 1.2rem; font-size: 1rem; }
-        .edit-modal-btns .btn-save { background: #0071e3; color: #fff; border-color: #0071e3; }
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #fff; border-radius: 16px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,.2); }
+        .modal h3 { margin-bottom: 1.5rem; font-size: 1.3rem; }
+        .modal .form-group { margin-bottom: 1rem; }
+        .modal label { display: block; font-size: .85rem; color: #86868b; margin-bottom: .3rem; }
+        .modal input, .modal textarea { width: 100%; padding: .75rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: 1rem; }
+        .modal input:focus, .modal textarea:focus { outline: none; border-color: #0071e3; }
+        .modal textarea { height: 80px; resize: none; }
+        .modal .error { color: #ff3b30; font-size: .85rem; margin-top: .25rem; display: none; }
+        .modal .error.show { display: block; }
+        .modal .preview { font-size: .9rem; color: #86868b; margin-top: .5rem; padding: .5rem; background: #f5f5f7; border-radius: 6px; display: none; }
+        .modal .preview.show { display: block; }
+        .modal .preview strong { background: #0071e3; color: #fff; padding: .1rem .4rem; border-radius: 4px; }
+        .modal-btns { display: flex; gap: .75rem; justify-content: flex-end; margin-top: 1.5rem; }
+        .btn-save { background: #0071e3; color: #fff; border-color: #0071e3; }
         .ok { color: #34c759; font-weight: 600; }
         .no { color: #ff3b30; font-weight: 600; }
         .done-msg { color: #86868b; }
@@ -93,58 +93,76 @@
         .btn-success:hover { background: #30b350; }
 
         /* Sidebar */
-        .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+        .sidebar { display: flex; flex-direction: column; gap: 1.25rem; }
 
-        /* Stats Card */
-        .stats-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 1.1rem; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .stat-item { text-align: center; padding: .75rem; background: #f5f5f7; border-radius: 10px; }
-        .stat-num { font-size: 2rem; font-weight: 600; color: #1d1d1f; }
-        .stat-label { font-size: .85rem; color: #86868b; margin-top: .25rem; }
-        .stat-item.due .stat-num { color: #ff9500; }
-        .stat-item.mastered .stat-num { color: #34c759; }
+        /* Header Section - Language & Stats Combined */
+        .sidebar-header { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .lang-section { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+        .lang-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #0071e3, #00c6ff); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .lang-select-wrap { flex: 1; }
+        .lang-select { width: 100%; padding: .5rem .75rem; border-radius: 8px; border: 1px solid #d2d2d7; background: #f5f5f7; font: inherit; font-size: .95rem; cursor: pointer; transition: all .2s; }
+        .lang-select:hover { border-color: #0071e3; }
+        .lang-actions { display: flex; gap: .25rem; }
+        .lang-actions button { padding: .4rem .5rem; font-size: .85rem; background: transparent; border: none; border-radius: 6px; opacity: .6; }
+        .lang-actions button:hover { opacity: 1; background: #f5f5f7; }
 
-        /* Actions Card */
-        .actions-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 1.1rem; }
-        .action-btns { display: flex; flex-direction: column; gap: .5rem; }
-        .action-btns button { width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: .5rem; }
+        /* Stats Pills */
+        .stats-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+        .stat-pill { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: #f5f5f7; border-radius: 20px; font-size: .9rem; }
+        .stat-pill .icon { font-size: .95rem; }
+        .stat-pill .num { font-weight: 600; color: #1d1d1f; }
+        .stat-pill .label { color: #86868b; font-size: .8rem; }
+        .stat-pill.due { background: #fff4e6; }
+        .stat-pill.due .num { color: #ff9500; }
+        .stat-pill.mastered { background: #e8f5e9; }
+        .stat-pill.mastered .num { color: #34c759; }
 
-        /* Words Card */
-        .words-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: 1; display: flex; flex-direction: column; max-height: 550px; }
-        .words-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .sort-select { font-size: .9rem; padding: .4rem .6rem; border-radius: 6px; border: 1px solid #d2d2d7; background: #f5f5f7; }
+        /* Data Management */
+        .data-card { background: #fff; border-radius: 16px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .data-title { font-size: .75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #86868b; margin-bottom: .75rem; font-weight: 600; }
+        .data-btns { display: flex; gap: .5rem; }
+        .data-btns button { flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem; padding: .6rem; font-size: .85rem; background: #f5f5f7; border: 1px solid transparent; border-radius: 8px; }
+        .data-btns button:hover { background: #e8e8ed; }
+        .data-btns button.danger { color: #ff3b30; }
+        .data-btns button.danger:hover { background: #ffeceb; border-color: #ffccc9; }
 
-        /* Language Selector */
-        .lang-card { background: #fff; border-radius: 16px; padding: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 1.1rem; }
-        .lang-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
-        .lang-current { font-weight: 600; color: #1d1d1f; }
-        .lang-count { font-size: .85rem; color: #86868b; }
-        .lang-select { width: 100%; padding: .6rem; border-radius: 8px; border: 1px solid #d2d2d7; background: #f5f5f7; font: inherit; font-size: 1rem; margin-bottom: .5rem; }
-        .lang-btns { display: flex; gap: .5rem; }
-        .lang-btns button { flex: 1; font-size: .9rem; padding: .5rem; }
-        .words-list { flex: 1; overflow-y: auto; }
-        .word-item { display: flex; align-items: center; padding: .7rem 0; border-bottom: 1px solid #f0f0f2; gap: .75rem; }
-        .word-item:last-child { border-bottom: none; }
-        .word-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .word-status.due { background: #ff9500; }
+        /* Words Card - Improved */
+        .words-card { background: #fff; border-radius: 16px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .words-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+        .words-title { font-size: .75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #86868b; font-weight: 600; }
+        .words-title span { color: #1d1d1f; font-weight: 600; margin-left: .25rem; }
+        .sort-select { font-size: .85rem; padding: .35rem .6rem; border-radius: 8px; border: 1px solid #d2d2d7; background: #f5f5f7; cursor: pointer; }
+        .sort-select:hover { border-color: #0071e3; }
+        .btn-add-card { display: flex; align-items: center; gap: .3rem; padding: .4rem .75rem; background: #0071e3; color: #fff; border: none; border-radius: 8px; font-size: .85rem; font-weight: 500; cursor: pointer; transition: all .2s; }
+        .btn-add-card:hover { background: #0077ed; transform: translateY(-1px); }
+
+        .words-list { flex: 1; overflow-y: auto; min-height: 0; margin: 0 -.25rem; padding: 0 .25rem; }
+        .word-item { display: flex; align-items: center; padding: .6rem .5rem; border-radius: 10px; gap: .75rem; transition: background .15s; }
+        .word-item:hover { background: #f5f5f7; }
+        .word-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .word-status.due { background: #ff9500; box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15); }
         .word-status.ok { background: #34c759; }
-        .word-name { flex: 1; font-weight: 500; font-size: 1.1rem; }
-        .word-stats { font-size: .9rem; color: #86868b; }
-        .word-actions { display: flex; gap: .3rem; }
-        .word-actions button { padding: .35rem .6rem; font-size: .8rem; }
+        .word-status.new { background: #86868b; }
+        .word-info { flex: 1; min-width: 0; }
+        .word-name { font-weight: 500; font-size: 1rem; color: #1d1d1f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .word-meta { font-size: .75rem; color: #86868b; margin-top: .1rem; }
+        .word-actions { display: flex; gap: .25rem; opacity: 0; transition: opacity .15s; }
+        .word-item:hover .word-actions { opacity: 1; }
+        .word-actions button { padding: .35rem .5rem; font-size: .75rem; background: transparent; border: none; border-radius: 6px; opacity: .6; }
+        .word-actions button:hover { opacity: 1; background: #e8e8ed; }
+        .word-actions button.danger { color: #ff3b30; }
+        .word-actions button.danger:hover { background: #ffeceb; }
 
-        /* Add Form */
-        .add-form { display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f0f2; }
-        .add-form.show { display: block; }
-        .add-form input, .add-form textarea { width: 100%; padding: .75rem; margin-bottom: .6rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: 1rem; }
-        .add-form textarea { height: 70px; resize: none; }
-        .add-form .error { color: #ff3b30; font-size: .85rem; margin: -.3rem 0 .5rem; display: none; }
-        .add-form .error.show { display: block; }
-        .add-form .preview { font-size: .9rem; color: #86868b; margin-bottom: .5rem; padding: .6rem; background: #f5f5f7; border-radius: 6px; display: none; }
-        .add-form .preview.show { display: block; }
-        .add-form .preview strong { color: #1d1d1f; }
-        .add-form-btns { display: flex; gap: .5rem; justify-content: flex-end; }
-        .add-form-btns button { font-size: .95rem; }
+        /* Empty state for words list */
+        .words-empty { text-align: center; padding: 2rem 1rem; color: #86868b; font-size: .9rem; }
+        .words-empty .icon { font-size: 2rem; margin-bottom: .5rem; opacity: .5; }
+
+        /* Language Form */
+        .lang-form { display: none; margin-top: .75rem; padding: .75rem; background: #f5f5f7; border-radius: 10px; }
+        .lang-form.show { display: block; animation: slideDown .2s ease; }
+        .lang-form input { width: 100%; padding: .5rem .75rem; margin-bottom: .4rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: .9rem; }
+        .lang-form-btns { display: flex; gap: .4rem; justify-content: flex-end; }
+        .lang-form-btns button { font-size: .85rem; padding: .4rem .75rem; }
 
         /* Large screens */
         @media (min-width: 1920px) {
@@ -202,8 +220,8 @@
             </div>
             
             <!-- Edit Modal -->
-            <div class="edit-modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
-                <div class="edit-modal">
+            <div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
+                <div class="modal">
                     <h3>Edit Card</h3>
                     <div class="form-group">
                         <label>Word</label>
@@ -219,9 +237,9 @@
                         <p class="error" id="editError">Include the word in your sentence</p>
                         <div class="preview" id="editPreview"></div>
                     </div>
-                    <div class="edit-modal-btns">
+                    <div class="modal-btns">
                         <button onclick="closeEditModal()">Cancel</button>
-                        <button class="btn-save" onclick="saveEdit()">Save</button>
+                        <button class="btn-primary" onclick="saveEdit()">Save</button>
                     </div>
                 </div>
             </div>
@@ -229,69 +247,114 @@
     </main>
 
     <aside class="sidebar">
-        <div class="lang-card">
-            <div class="lang-header">
-                <span class="lang-current" id="langCurrent">English</span>
-                <span class="lang-count" id="langCount">0 cards</span>
+        <!-- Header: Language + Stats -->
+        <div class="sidebar-header">
+            <div class="lang-section">
+                <div class="lang-icon">🌐</div>
+                <div class="lang-select-wrap">
+                    <select class="lang-select" id="langSelect" onchange="switchLang()">
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="lang-actions">
+                    <button onclick="toggleLangForm()" title="Add language">+</button>
+                    <button onclick="renameLang()" title="Rename">✎</button>
+                </div>
             </div>
-            <select class="lang-select" id="langSelect" onchange="switchLang()">
-                <option value="ts">English</option>
-            </select>
-            <div class="lang-btns">
-                <button onclick="toggleLangForm()">+ New</button>
-                <button onclick="renameLang()">Rename</button>
-            </div>
-            <div class="add-form" id="langForm">
+            <div class="lang-form" id="langForm">
                 <input id="newLangName" placeholder="Language name (e.g., Spanish)">
                 <input id="newLangCode" placeholder="Code (e.g., es)">
-                <div class="add-form-btns">
+                <div class="lang-form-btns">
                     <button onclick="cancelLangForm()">Cancel</button>
                     <button class="btn-primary" onclick="addLang()">Add</button>
                 </div>
             </div>
-        </div>
-
-        <div class="stats-card">
-            <div class="stats-grid">
-                <div class="stat-item due"><div class="stat-num" id="statDue">0</div><div class="stat-label">Due Now</div></div>
-                <div class="stat-item"><div class="stat-num" id="statLearning">0</div><div class="stat-label">Learning</div></div>
-                <div class="stat-item mastered"><div class="stat-num" id="statMastered">0</div><div class="stat-label">Mastered</div></div>
-                <div class="stat-item"><div class="stat-num" id="statAccuracy">0%</div><div class="stat-label">Accuracy</div></div>
+            
+            <div class="stats-row">
+                <div class="stat-pill due">
+                    <span class="icon">⏰</span>
+                    <span class="num" id="statDue">0</span>
+                    <span class="label">due</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="icon">📚</span>
+                    <span class="num" id="statLearning">0</span>
+                    <span class="label">learning</span>
+                </div>
+                <div class="stat-pill mastered">
+                    <span class="icon">⭐</span>
+                    <span class="num" id="statMastered">0</span>
+                    <span class="label">mastered</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="icon">🎯</span>
+                    <span class="num" id="statAccuracy">0%</span>
+                    <span class="label">accuracy</span>
+                </div>
             </div>
         </div>
 
-        <div class="actions-card">
-            <div class="action-btns">
-                <button onclick="toggleAdd()">+ Add Card</button>
-                <button onclick="exp()">Export JSON</button>
-                <button onclick="imp.click()">Import JSON</button>
-                <button class="btn-danger" onclick="clearWords()">Clear All</button>
+        <!-- Data Management -->
+        <div class="data-card">
+            <div class="data-title">Data</div>
+            <div class="data-btns">
+                <button onclick="exp()">
+                    <span>📤</span> Export
+                </button>
+                <button onclick="imp.click()">
+                    <span>📥</span> Import
+                </button>
+                <button class="danger" onclick="clearWords()">
+                    <span>🗑️</span> Clear
+                </button>
             </div>
             <input type="file" id="imp" accept=".json" onchange="handleImport(this)">
         </div>
 
+        <!-- Words List -->
         <div class="words-card">
             <div class="words-header">
-                <select class="sort-select" id="sortSelect" onchange="renderList()">
-                    <option value="due">Due First</option>
-                    <option value="word">A-Z</option>
-                    <option value="ef">Hardest (EF)</option>
-                    <option value="stage">Learning Stage</option>
-                </select>
-            </div>
-            <div class="words-list" id="wordsList"></div>
-            <div class="add-form" id="addForm">
-                <input id="aWord" placeholder="Word" oninput="validateCard()">
-                <textarea id="aSent" placeholder="Sentence (include the word)" oninput="validateCard()"></textarea>
-                <p class="error" id="addError">Include the word in your sentence</p>
-                <div class="preview" id="addPreview"></div>
-                <input id="aDef" placeholder="Definition">
-                <div class="add-form-btns">
-                    <button onclick="cancelAdd()">Cancel</button>
-                    <button class="btn-primary" onclick="saveCard()">Save</button>
+                <div class="words-title">Cards <span id="langCount">0</span></div>
+                <div style="display: flex; gap: .5rem; align-items: center;">
+                    <button class="btn-add-card" onclick="openAddModal()" title="Add new card">
+                        <span>➕</span> Add
+                    </button>
+                    <select class="sort-select" id="sortSelect" onchange="renderList()">
+                        <option value="due">Due First</option>
+                        <option value="word">A-Z</option>
+                        <option value="ef">Hardest</option>
+                        <option value="stage">Stage</option>
+                    </select>
                 </div>
             </div>
+            <div class="words-list" id="wordsList"></div>
         </div>
+    </aside>
+
+    <!-- Add Card Modal -->
+    <div class="modal-overlay" id="addModal" onclick="if(event.target===this)closeAddModal()">
+        <div class="modal">
+            <h3>Add New Card</h3>
+            <div class="form-group">
+                <label>Word</label>
+                <input type="text" id="aWord" placeholder="e.g., elephant" oninput="validateAddForm()">
+            </div>
+            <div class="form-group">
+                <label>Definition (hint)</label>
+                <input type="text" id="aDef" placeholder="e.g., a large animal with a trunk">
+            </div>
+            <div class="form-group">
+                <label>Sentence (include the word)</label>
+                <textarea id="aSent" placeholder="e.g., The elephant sprayed water with its trunk." oninput="validateAddForm()"></textarea>
+                <p class="error" id="addError">Include the word in your sentence</p>
+                <div class="preview" id="addPreview"></div>
+            </div>
+            <div class="modal-btns">
+                <button onclick="closeAddModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveCard()">Save Card</button>
+            </div>
+        </div>
+    </div>
     </aside>
 </div>
 
@@ -510,10 +573,7 @@ function checkInterleaveReview() {
 function renderLangSelect() {
     const select = document.getElementById('langSelect');
     select.innerHTML = languages.map(l => `<option value="${l.code}"${l.code === currentLang ? ' selected' : ''}>${l.name}</option>`).join('');
-    
-    const lang = languages.find(l => l.code === currentLang);
-    document.getElementById('langCurrent').textContent = lang ? lang.name : currentLang;
-    document.getElementById('langCount').textContent = `${currentLangCards().length} cards`;
+    document.getElementById('langCount').textContent = currentLangCards().length;
     updateWelcomeLangSelect();
 }
 
@@ -596,7 +656,7 @@ function updateStats() {
     document.getElementById('statLearning').textContent = langCards.length - mastered;
     document.getElementById('statMastered').textContent = mastered;
     document.getElementById('statAccuracy').textContent = `${accuracy}%`;
-    document.getElementById('langCount').textContent = `${langCards.length} cards`;
+    document.getElementById('langCount').textContent = langCards.length;
 }
 
 function show() {
@@ -713,9 +773,12 @@ function resetAll() {
     show();
 }
 
-// Close edit modal with Escape
+// Close modals with Escape
 document.onkeydown = e => {
-    if (e.key === 'Escape') closeEditModal();
+    if (e.key === 'Escape') {
+        closeEditModal();
+        closeAddModal();
+    }
 };
 
 answer.onkeydown = e => {
@@ -774,45 +837,74 @@ function renderList() {
     else if (sortBy === 'ef') sorted.sort((a,b) => (a.ef||2.5) - (b.ef||2.5));
     else if (sortBy === 'stage') sorted.sort((a,b) => (a.n||0) - (b.n||0));
 
+    if (sorted.length === 0) {
+        document.getElementById('wordsList').innerHTML = `
+            <div class="words-empty">
+                <div class="icon">📝</div>
+                <div>No cards yet</div>
+                <div style="font-size: .8rem; margin-top: .25rem;">Click "Add Card" to create one</div>
+            </div>`;
+        return;
+    }
+
     document.getElementById('wordsList').innerHTML = sorted.map(c => {
         const isDue = (c.due||0) <= Date.now();
+        const isNew = (c.n || 0) === 0;
         const ef = (c.ef || 2.5).toFixed(1);
         const stage = (c.n || 0);
-        const stageLabel = stage === 0 ? 'new' : stage < 4 ? `L${stage}` : 'M';
+        const stageLabel = stage === 0 ? 'New' : stage < 4 ? `Learning ${stage}` : 'Mastered';
+        const statusClass = isDue ? 'due' : isNew ? 'new' : 'ok';
+        
         return `<div class="word-item">
-            <div class="word-status ${isDue ? 'due' : 'ok'}"></div>
-            <span class="word-name">${c.w}</span>
-            <span class="word-stats">${formatInterval(c.int)} · EF:${ef} · ${stageLabel}</span>
+            <div class="word-status ${statusClass}"></div>
+            <div class="word-info">
+                <div class="word-name">${c.w}</div>
+                <div class="word-meta">${stageLabel} · Next: ${formatInterval(c.int)} · EF: ${ef}</div>
+            </div>
             <div class="word-actions">
-            <button onclick="editCard(${c.idx})">Edit</button>
-            <button class="btn-danger" onclick="delCard(${c.idx})">Del</button>
-            </div></div>`;
+                <button onclick="editCard(${c.idx})" title="Edit">✎</button>
+                <button class="danger" onclick="delCard(${c.idx})" title="Delete">🗑</button>
+            </div>
+        </div>`;
     }).join('');
 }
 
-function toggleAdd() {
+// Add Card Modal Functions
+function openAddModal() {
     editIdx = -1;
-    aWord.value = aSent.value = aDef.value = '';
+    document.getElementById('aWord').value = '';
+    document.getElementById('aSent').value = '';
+    document.getElementById('aDef').value = '';
     document.getElementById('addError').classList.remove('show');
     document.getElementById('addPreview').classList.remove('show');
-    document.getElementById('addForm').classList.toggle('show');
+    document.getElementById('addModal').classList.add('show');
+    document.getElementById('aWord').focus();
 }
 
-function cancelAdd() {
+function closeAddModal() {
     editIdx = -1;
-    document.getElementById('addForm').classList.remove('show');
+    document.getElementById('addModal').classList.remove('show');
 }
 
-function validateCard() {
-    validateSentence(aWord.value.trim(), aSent.value.trim(), 'addError', 'addPreview');
+function validateAddForm() {
+    const word = document.getElementById('aWord').value.trim();
+    const sent = document.getElementById('aSent').value.trim();
+    validateSentence(word, sent, 'addError', 'addPreview');
 }
 
 function saveCard() {
-    const w = aWord.value.trim();
-    const s = aSent.value.trim();
-    const d = aDef.value.trim();
-    if (!w || !s || !d) return;
-    if (!s.toLowerCase().includes(w.toLowerCase())) return;
+    const w = document.getElementById('aWord').value.trim();
+    const s = document.getElementById('aSent').value.trim();
+    const d = document.getElementById('aDef').value.trim();
+    
+    if (!w || !s || !d) {
+        alert('Please fill in all fields');
+        return;
+    }
+    if (!s.toLowerCase().includes(w.toLowerCase())) {
+        alert('The sentence must include the word');
+        return;
+    }
 
     if (editIdx >= 0) {
         cards[editIdx].w = w;
@@ -824,19 +916,27 @@ function saveCard() {
     }
 
     save();
-    cancelAdd();
+    closeAddModal();
     if (!inSession) updateWelcomeStats();
     updateStats();
     renderList();
 }
 
+// Keep for backwards compatibility
+toggleAdd = openAddModal;
+cancelAdd = closeAddModal;
+validateCard = validateAddForm;
+
 function editCard(i) {
     editIdx = i;
-    aWord.value = cards[i].w;
-    aSent.value = cards[i].s;
-    aDef.value = cards[i].d;
-    document.getElementById('addForm').classList.add('show');
-    validateCard();
+    document.getElementById('aWord').value = cards[i].w;
+    document.getElementById('aSent').value = cards[i].s;
+    document.getElementById('aDef').value = cards[i].d;
+    document.getElementById('addError').classList.remove('show');
+    document.getElementById('addPreview').classList.remove('show');
+    document.getElementById('addModal').classList.add('show');
+    validateAddForm();
+    document.getElementById('aWord').focus();
 }
 
 function delCard(i) {
