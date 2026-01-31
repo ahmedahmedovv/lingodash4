@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Flashcards</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font: 1rem system-ui, -apple-system, sans-serif; background: #f5f5f7; color: #1d1d1f; min-height: 100vh; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 1fr 360px; gap: 2rem; min-height: 100vh; transition: all .3s; }
+        .container.focus-mode { grid-template-columns: 1fr; max-width: 700px; }
+        .container.focus-mode .sidebar { display: none; }
+
+        /* Top Bar */
+        .top-bar { position: fixed; top: 1rem; right: 1rem; display: flex; gap: .5rem; align-items: center; font-size: .85rem; color: #86868b; z-index: 10; }
+        .focus-btn { background: #fff; border: 1px solid #d2d2d7; font-size: 1rem; cursor: pointer; padding: .4rem .6rem; border-radius: 8px; transition: all .2s; }
+        .focus-btn:hover { background: #f5f5f7; }
+
+        /* Study Panel */
+        .study-panel { background: #fff; border-radius: 16px; padding: 3rem 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .sentence { font-size: 1.6rem; line-height: 1.7; text-align: center; margin-bottom: 1rem; color: #1d1d1f; }
+        .hint { color: #86868b; font-size: 1rem; margin-bottom: 2rem; }
+        .input-wrap { position: relative; }
+        input[type="text"] { border: 2px solid #d2d2d7; background: #f5f5f7; border-radius: 12px; padding: 1rem 1.5rem; width: 280px; font-size: 1.1rem; text-align: center; outline: none; transition: all .2s; }
+        input[type="text"]:focus { border-color: #0071e3; background: #fff; }
+        .msg { margin-top: 1.5rem; font-size: 1.1rem; min-height: 1.5rem; font-weight: 500; }
+        .ok { color: #34c759; font-weight: 600; }
+        .no { color: #ff3b30; font-weight: 600; }
+        .done-msg { color: #86868b; }
+        .done-msg button { margin-top: 1rem; }
+
+        /* Buttons */
+        button { background: #f5f5f7; border: 1px solid #d2d2d7; color: #1d1d1f; padding: .6rem 1.2rem; border-radius: 8px; font: inherit; cursor: pointer; transition: all .2s; }
+        button:hover { background: #e8e8ed; }
+        .btn-primary { background: #0071e3; border-color: #0071e3; color: #fff; }
+        .btn-primary:hover { background: #0077ed; }
+        .btn-danger { color: #ff3b30; border-color: #ffccc9; background: #fff5f5; }
+        .btn-danger:hover { background: #ffeceb; }
+
+        /* Sidebar */
+        .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+
+        /* Stats Card */
+        .stats-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .stats-card h2 { display: none; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .stat-item { text-align: center; padding: .75rem; background: #f5f5f7; border-radius: 10px; }
+        .stat-num { font-size: 1.5rem; font-weight: 600; color: #1d1d1f; }
+        .stat-label { font-size: .75rem; color: #86868b; margin-top: .25rem; }
+        .stat-item.due .stat-num { color: #ff9500; }
+        .stat-item.mastered .stat-num { color: #34c759; }
+
+        /* Actions Card */
+        .actions-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .actions-card h2 { display: none; }
+        .action-btns { display: flex; flex-direction: column; gap: .5rem; }
+        .action-btns button { width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: .5rem; }
+
+        /* Words Card */
+        .words-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: 1; display: flex; flex-direction: column; max-height: 400px; }
+        .words-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .words-header h2 { display: none; }
+        .sort-select { font-size: .8rem; padding: .3rem .5rem; border-radius: 6px; border: 1px solid #d2d2d7; background: #f5f5f7; }
+        .words-list { flex: 1; overflow-y: auto; }
+        .word-item { display: flex; align-items: center; padding: .6rem 0; border-bottom: 1px solid #f0f0f2; gap: .75rem; }
+        .word-item:last-child { border-bottom: none; }
+        .word-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .word-status.due { background: #ff9500; }
+        .word-status.ok { background: #34c759; }
+        .word-name { flex: 1; font-weight: 500; }
+        .word-stats { font-size: .75rem; color: #86868b; }
+        .word-actions { display: flex; gap: .3rem; }
+        .word-actions button { padding: .3rem .5rem; font-size: .7rem; }
+
+        /* Add Form */
+        .add-form { display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f0f2; }
+        .add-form.show { display: block; }
+        .add-form input, .add-form textarea { width: 100%; padding: .6rem; margin-bottom: .5rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: .9rem; }
+        .add-form textarea { height: 60px; resize: none; }
+        .add-form .error { color: #ff3b30; font-size: .75rem; margin: -.3rem 0 .5rem; display: none; }
+        .add-form .error.show { display: block; }
+        .add-form .preview { font-size: .8rem; color: #86868b; margin-bottom: .5rem; padding: .5rem; background: #f5f5f7; border-radius: 6px; display: none; }
+        .add-form .preview.show { display: block; }
+        .add-form .preview strong { color: #1d1d1f; }
+        .add-form-btns { display: flex; gap: .5rem; justify-content: flex-end; }
+        .add-form-btns button { font-size: .85rem; }
+
+        /* Mobile */
+        @media (max-width: 800px) {
+            .container { grid-template-columns: 1fr; padding: 1rem; }
+            .study-panel { min-height: 300px; padding: 2rem 1rem; }
+            .sentence { font-size: 1.3rem; }
+            .sidebar { order: 1; }
+        }
+
+        input[type="file"] { display: none; }
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <span><strong id="dueCount">0</strong> due</span>
+    <button class="focus-btn" onclick="toggleFocus()" title="Toggle sidebar" id="focusBtn">☰</button>
+</div>
+
+<div class="container">
+    <main class="study-panel" id="studyPanel">
+        <p class="sentence" id="sentence"></p>
+        <p class="hint" id="hint"></p>
+        <div class="input-wrap">
+            <input type="text" id="answer" placeholder="Type your answer..." autocomplete="off">
+        </div>
+        <p class="msg" id="msg"></p>
+    </main>
+
+    <aside class="sidebar">
+        <div class="stats-card">
+            <h2>Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-item due"><div class="stat-num" id="statDue">0</div><div class="stat-label">Due Now</div></div>
+                <div class="stat-item"><div class="stat-num" id="statLearning">0</div><div class="stat-label">Learning</div></div>
+                <div class="stat-item mastered"><div class="stat-num" id="statMastered">0</div><div class="stat-label">Mastered</div></div>
+                <div class="stat-item"><div class="stat-num" id="statAccuracy">0%</div><div class="stat-label">Accuracy</div></div>
+            </div>
+        </div>
+
+        <div class="actions-card">
+            <h2>Actions</h2>
+            <div class="action-btns">
+                <button onclick="toggleAdd()">+ Add Card</button>
+                <button onclick="exp()">Export</button>
+                <button onclick="imp.click()">Import</button>
+            </div>
+            <input type="file" id="imp" accept=".csv">
+        </div>
+
+        <div class="words-card">
+            <div class="words-header">
+                <h2>Words</h2>
+                <select class="sort-select" id="sortSelect" onchange="renderList()">
+                    <option value="due">Due First</option>
+                    <option value="word">A-Z</option>
+                    <option value="ef">Hardest (EF)</option>
+                    <option value="stage">Learning Stage</option>
+                </select>
+            </div>
+            <div class="words-list" id="wordsList"></div>
+            <div class="add-form" id="addForm">
+                <input id="aWord" placeholder="Word" oninput="validateCard()">
+                <textarea id="aSent" placeholder="Sentence (include the word)" oninput="validateCard()"></textarea>
+                <p class="error" id="addError">Include the word in your sentence</p>
+                <div class="preview" id="addPreview"></div>
+                <input id="aDef" placeholder="Definition">
+                <div class="add-form-btns">
+                    <button onclick="cancelAdd()">Cancel</button>
+                    <button class="btn-primary" onclick="saveCard()">Save</button>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<script>
+let cards = JSON.parse(localStorage.cards || '0') || [
+    {w:'apple', s:'She took a bite of the crisp red apple.', d:'a round fruit'},
+    {w:'banana', s:'The monkey peeled the banana before eating.', d:'a long curved yellow fruit'},
+    {w:'door', s:'Please close the door behind you.', d:'a barrier for an entrance'}
+], cur, editIdx = -1, answerStartTime = 0;
+
+const save = () => localStorage.cards = JSON.stringify(cards);
+const dueCards = () => cards.filter(c => (c.due||0) <= Date.now());
+
+// SM-2 Algorithm Implementation
+function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({length: m + 1}, (_, i) => [i]);
+    for (let j = 1; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            dp[i][j] = a[i-1] === b[j-1]
+                ? dp[i-1][j-1]
+                : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+        }
+    }
+    return dp[m][n];
+}
+
+function calculateQuality(userAnswer, correctAnswer, responseTimeMs) {
+    const ua = userAnswer.trim().toLowerCase();
+    const ca = correctAnswer.toLowerCase();
+    const isCorrect = ua === ca;
+    const distance = levenshtein(ua, ca);
+    const similarity = 1 - distance / Math.max(ca.length, 1);
+    const seconds = responseTimeMs / 1000;
+
+    if (isCorrect) {
+        // Correct answers: q = 3, 4, or 5 based on speed
+        if (seconds < 3) return 5;      // Fast recall - perfect
+        if (seconds < 8) return 4;      // Normal recall - good
+        return 3;                        // Slow recall - difficult
+    } else {
+        // Wrong answers: q = 0, 1, or 2 based on similarity
+        if (similarity >= 0.8) return 2; // Close typo - recognized
+        if (similarity >= 0.5) return 1; // Partial recall
+        return 0;                         // Complete blackout
+    }
+}
+
+function sm2(card, quality) {
+    // Initialize SM-2 fields if missing
+    if (card.ef === undefined) card.ef = 2.5;
+    if (card.n === undefined) card.n = 0;
+
+    // Update Easiness Factor (EF)
+    // EF' = EF + (0.1 - (5-q) * (0.08 + (5-q) * 0.02))
+    const qDiff = 5 - quality;
+    card.ef = Math.max(1.3, card.ef + (0.1 - qDiff * (0.08 + qDiff * 0.02)));
+
+    let intervalMins;
+
+    if (quality < 3) {
+        // Failed - reset repetitions, short interval
+        card.n = 0;
+        intervalMins = 1; // 1 minute for immediate re-review
+    } else {
+        // Successful recall - advance in schedule
+        if (card.n === 0) {
+            intervalMins = 1;           // First success: 1 minute
+        } else if (card.n === 1) {
+            intervalMins = 10;          // Second success: 10 minutes
+        } else if (card.n === 2) {
+            intervalMins = 1440;        // Third success: 1 day
+        } else if (card.n === 3) {
+            intervalMins = 6 * 1440;    // Fourth success: 6 days
+        } else {
+            // Subsequent: previous interval * EF
+            intervalMins = Math.round((card.int || 1440) * card.ef);
+        }
+        card.n++;
+    }
+
+    // Cap at 1 year
+    card.int = Math.min(intervalMins, 525600);
+    card.due = Date.now() + card.int * 60000;
+
+    return quality >= 3;
+}
+
+function toggleFocus() {
+    document.querySelector('.container').classList.toggle('focus-mode');
+    let isFocus = document.querySelector('.container').classList.contains('focus-mode');
+    document.getElementById('focusBtn').textContent = isFocus ? '◧' : '☰';
+    localStorage.focusMode = isFocus;
+}
+
+if (localStorage.focusMode === 'true') {
+    document.querySelector('.container').classList.add('focus-mode');
+    document.getElementById('focusBtn').textContent = '◧';
+}
+
+function formatInterval(mins) {
+    if (!mins || mins <= 1) return 'new';
+    if (mins < 60) return Math.round(mins) + 'm';
+    if (mins < 1440) return Math.round(mins/60) + 'h';
+    return Math.round(mins/1440) + 'd';
+}
+
+function updateStats() {
+    let due = dueCards().length;
+    // SM-2: mastered = completed learning phase (n >= 4, meaning 4+ successful reviews)
+    let mastered = cards.filter(c => (c.n||0) >= 4).length;
+    let learning = cards.length - mastered;
+    let totalReviews = cards.reduce((a,c) => a + (c.reviews||0), 0);
+    let totalCorrect = cards.reduce((a,c) => a + (c.correct||0), 0);
+    let accuracy = totalReviews ? Math.round(totalCorrect/totalReviews*100) : 0;
+
+    document.getElementById('dueCount').textContent = due;
+    document.getElementById('statDue').textContent = due;
+    document.getElementById('statLearning').textContent = learning;
+    document.getElementById('statMastered').textContent = mastered;
+    document.getElementById('statAccuracy').textContent = accuracy + '%';
+}
+
+function show() {
+    updateStats();
+    renderList();
+    let dc = dueCards();
+
+    if (!dc.length) {
+        sentence.textContent = 'All done';
+        sentence.classList.add('done-msg');
+        hint.textContent = '';
+        answer.style.display = 'none';
+        msg.innerHTML = '<button class="btn-primary" onclick="resetAll()">Study Again</button>';
+        return;
+    }
+
+    sentence.classList.remove('done-msg');
+    answer.style.display = '';
+    cur = dc[Math.random()*dc.length|0];
+    sentence.textContent = cur.s.replace(new RegExp(cur.w, 'gi'), '___');
+    hint.textContent = cur.d + ' (starts with "' + cur.w[0] + '")';
+    answer.value = '';
+    msg.textContent = '';
+    answer.focus();
+    answerStartTime = Date.now();
+}
+
+function resetAll() {
+    cards.forEach(c => {
+        c.due = 0;
+        c.n = 0;        // Reset repetition count
+        c.int = 1;      // Reset interval
+        // Keep EF - it represents learned difficulty
+    });
+    save();
+    show();
+}
+
+answer.onkeydown = e => {
+    if (e.key !== 'Enter' || !cur) return;
+    const responseTime = Date.now() - answerStartTime;
+    const quality = calculateQuality(answer.value, cur.w, responseTime);
+    const ok = sm2(cur, quality);
+
+    cur.reviews = (cur.reviews || 0) + 1;
+    cur.correct = (cur.correct || 0) + (ok ? 1 : 0);
+    cur.lastReview = new Date().toISOString();
+    cur.lastQuality = quality;
+    save();
+
+    // Show sentence with answer highlighted
+    const colorClass = ok ? 'ok' : 'no';
+    sentence.innerHTML = cur.s.replace(
+        new RegExp('(' + cur.w + ')', 'gi'),
+        '<span class="' + colorClass + '">$1</span>'
+    );
+    msg.textContent = '';
+    setTimeout(show, ok ? 600 : 1200);
+};
+
+function renderList() {
+    let sortBy = document.getElementById('sortSelect').value;
+    let sorted = cards.map((c,i) => ({...c, idx: i}));
+
+    if (sortBy === 'word') sorted.sort((a,b) => a.w.localeCompare(b.w));
+    else if (sortBy === 'due') sorted.sort((a,b) => (a.due||0) - (b.due||0));
+    else if (sortBy === 'ef') sorted.sort((a,b) => (a.ef||2.5) - (b.ef||2.5)); // Lowest EF = hardest
+    else if (sortBy === 'stage') sorted.sort((a,b) => (a.n||0) - (b.n||0)); // Lowest stage first
+
+    document.getElementById('wordsList').innerHTML = sorted.map(c => {
+        let isDue = (c.due||0) <= Date.now();
+        let ef = (c.ef || 2.5).toFixed(1);
+        let stage = (c.n || 0);
+        let stageLabel = stage === 0 ? 'new' : stage < 4 ? 'L' + stage : 'M';
+        return '<div class="word-item">' +
+            '<div class="word-status ' + (isDue ? 'due' : 'ok') + '"></div>' +
+            '<span class="word-name">' + c.w + '</span>' +
+            '<span class="word-stats">' + formatInterval(c.int) + ' · EF:' + ef + ' · ' + stageLabel + '</span>' +
+            '<div class="word-actions">' +
+            '<button onclick="editCard(' + c.idx + ')">Edit</button>' +
+            '<button class="btn-danger" onclick="delCard(' + c.idx + ')">Del</button>' +
+            '</div></div>';
+    }).join('');
+}
+
+function toggleAdd() {
+    editIdx = -1;
+    aWord.value = aSent.value = aDef.value = '';
+    document.getElementById('addError').classList.remove('show');
+    document.getElementById('addPreview').classList.remove('show');
+    document.getElementById('addForm').classList.toggle('show');
+}
+
+function cancelAdd() {
+    editIdx = -1;
+    document.getElementById('addForm').classList.remove('show');
+}
+
+function validateCard() {
+    let w = aWord.value.trim();
+    let s = aSent.value.trim();
+    let error = document.getElementById('addError');
+    let preview = document.getElementById('addPreview');
+
+    if (w && s) {
+        if (s.toLowerCase().includes(w.toLowerCase())) {
+            error.classList.remove('show');
+            preview.classList.add('show');
+            preview.innerHTML = s.replace(new RegExp('(' + w + ')', 'gi'), '<strong>___</strong>');
+        } else {
+            error.classList.add('show');
+            preview.classList.remove('show');
+        }
+    } else {
+        error.classList.remove('show');
+        preview.classList.remove('show');
+    }
+}
+
+function saveCard() {
+    let w = aWord.value.trim();
+    let s = aSent.value.trim();
+    let d = aDef.value.trim();
+    if (!w || !s || !d) return;
+    if (!s.toLowerCase().includes(w.toLowerCase())) return;
+
+    if (editIdx >= 0) {
+        cards[editIdx].w = w;
+        cards[editIdx].s = s;
+        cards[editIdx].d = d;
+    } else {
+        cards.push({w, s, d, int: 1, due: 0, ef: 2.5, n: 0});
+    }
+
+    save();
+    cancelAdd();
+    show();
+}
+
+function editCard(i) {
+    editIdx = i;
+    aWord.value = cards[i].w;
+    aSent.value = cards[i].s;
+    aDef.value = cards[i].d;
+    document.getElementById('addForm').classList.add('show');
+    validateCard();
+}
+
+function delCard(i) {
+    if (confirm('Delete "' + cards[i].w + '"?')) {
+        cards.splice(i, 1);
+        save();
+        show();
+    }
+}
+
+function escapeCSV(str) {
+    return '"' + str.replace(/"/g, '""') + '"';
+}
+
+function exp() {
+    let csv = 'Word,Definition,Example\n';
+    csv += cards.map(c => escapeCSV(c.w) + ',' + escapeCSV(c.d) + ',' + escapeCSV(c.s)).join('\n');
+    let a = document.createElement('a');
+    a.href = 'data:text/csv,' + encodeURIComponent(csv);
+    a.download = 'cards.csv';
+    a.click();
+}
+
+function parseCSV(text) {
+    let lines = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+        if (char === '"') {
+            if (inQuotes && text[i+1] === '"') {
+                current += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === '\n' && !inQuotes) {
+            lines.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    if (current) lines.push(current);
+
+    return lines.map(line => {
+        let fields = [];
+        let field = '';
+        let inQ = false;
+        for (let i = 0; i < line.length; i++) {
+            let c = line[i];
+            if (c === '"') {
+                if (inQ && line[i+1] === '"') {
+                    field += '"';
+                    i++;
+                } else {
+                    inQ = !inQ;
+                }
+            } else if (c === ',' && !inQ) {
+                fields.push(field);
+                field = '';
+            } else {
+                field += c;
+            }
+        }
+        fields.push(field);
+        return fields;
+    });
+}
+
+imp.onchange = e => {
+    if (!e.target.files[0]) return;
+    e.target.files[0].text().then(t => {
+        let rows = parseCSV(t);
+        if (rows[0]?.[0]?.toLowerCase() === 'word') rows.shift();
+        cards = rows.filter(r => r.length >= 3 && r[0]).map(r => ({
+            w: r[0], d: r[1], s: r[2], int: 1, due: 0, ef: 2.5, n: 0
+        }));
+        save();
+        show();
+    });
+};
+
+show();
+</script>
+</body>
+</html>
