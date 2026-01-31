@@ -1,40 +1,165 @@
 <!DOCTYPE html>
+<!--
+  FLASHCARDS APP - A Spaced Repetition Learning Tool
+  ================================================
+  This app helps you learn vocabulary using the SM-2 algorithm, similar to Anki.
+  
+  HOW IT WORKS:
+  1. Cards have a word, definition, and example sentence
+  2. You see the sentence with the word hidden (___)
+  3. Type the missing word - the app grades your response
+  4. Based on accuracy and speed, the card is scheduled for review
+  
+  KEY CONCEPTS:
+  - Due cards: Cards ready for review (based on spacing algorithm)
+  - Learning stages: New → Learning → Mastered
+  - Mistake review: Wrong answers reappear during the session
+  - Focus mode: Hide sidebar to concentrate on studying
+-->
 <html>
 <head>
     <meta charset="UTF-8">
+    <!-- Fixed width for consistent study experience -->
     <meta name="viewport" content="width=1280">
     <title>Flashcards</title>
     <style>
+        /* ===== GLOBAL STYLES ===== */
+        /* Reset default margins and use border-box for predictable sizing */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font: 1rem system-ui, -apple-system, sans-serif; background: #f5f5f7; color: #1d1d1f; min-height: 100vh; }
+        
+        /* Main page styling: light gray background with system fonts */
+        body { 
+            font: 1rem system-ui, -apple-system, sans-serif; 
+            background: #f5f5f7; /* Apple-style light gray */ 
+            color: #1d1d1f; /* Near-black for readability */ 
+            min-height: 100vh; 
+        }
 
-        .container { max-width: 1600px; margin: 0 auto; padding: 2rem 3rem; display: grid; grid-template-columns: 1fr 420px; gap: 3rem; min-height: calc(100vh - 3rem); transition: all .3s; align-items: start; }
+        /* ===== MAIN LAYOUT ===== */
+        /* Container uses CSS grid: main study area + sidebar */
+        .container { 
+            max-width: 1600px; 
+            margin: 0 auto; 
+            padding: 2rem 3rem; 
+            display: grid; 
+            grid-template-columns: 1fr 420px; /* Main content | Sidebar */ 
+            gap: 3rem; 
+            min-height: calc(100vh - 3rem); 
+            transition: all .3s; 
+            align-items: start; 
+        }
+        
+        /* Focus mode: hide sidebar, center the study panel */
         .container.focus-mode { grid-template-columns: 1fr; max-width: 900px; }
         .container.focus-mode .sidebar { display: none; }
 
-        .top-bar { position: fixed; top: 1.5rem; right: 1.5rem; display: flex; gap: .75rem; align-items: center; font-size: 1rem; color: #86868b; z-index: 10; }
-        .focus-btn { background: #fff; border: 1px solid #d2d2d7; font-size: 1.1rem; cursor: pointer; padding: .5rem .75rem; border-radius: 8px; transition: all .2s; }
+        /* ===== TOP BAR ===== */
+        /* Fixed position buttons in top-right corner */
+        .top-bar { 
+            position: fixed; 
+            top: 1.5rem; 
+            right: 1.5rem; 
+            display: flex; 
+            gap: .75rem; 
+            align-items: center; 
+            font-size: 1rem; 
+            color: #86868b; /* Medium gray */ 
+            z-index: 10; 
+        }
+        
+        /* Hamburger button to toggle focus mode */
+        .focus-btn { 
+            background: #fff; 
+            border: 1px solid #d2d2d7; 
+            font-size: 1.1rem; 
+            cursor: pointer; 
+            padding: .5rem .75rem; 
+            border-radius: 8px; 
+            transition: all .2s; 
+        }
         .focus-btn:hover { background: #f5f5f7; }
 
-        .study-panel { background: #fff; border-radius: 20px; padding: 4rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 550px; box-shadow: 0 2px 8px rgba(0,0,0,.08); position: sticky; top: 1.5rem; align-self: flex-start; z-index: 5; }
-        .sentence { font-size: 2.2rem; line-height: 1.5; text-align: center; margin-bottom: 2rem; color: #1d1d1f; max-width: 900px; }
-        .hint { color: #86868b; font-size: 1.3rem; margin-bottom: 3rem; text-align: center; font-style: italic; max-width: 800px; }
-        .input-wrap { position: relative; }
-        input[type="text"] { border: 2px solid #d2d2d7; background: #f5f5f7; border-radius: 14px; padding: 1.3rem 2rem; width: 400px; font-size: 1.4rem; text-align: center; outline: none; transition: all .2s; }
-        input[type="text"]:focus { border-color: #0071e3; background: #fff; }
-        .msg { margin-top: 2rem; font-size: 1.2rem; min-height: 1.5rem; font-weight: 500; }
+        /* ===== STUDY PANEL (Main Learning Area) ===== */
+        /* White card where you actually study flashcards */
+        .study-panel { 
+            background: #fff; 
+            border-radius: 20px; 
+            padding: 4rem; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 550px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,.08); 
+            position: sticky; 
+            top: 1.5rem; /* Stick to top when scrolling */
+            align-self: flex-start; 
+            z-index: 5; 
+        }
         
+        /* Example sentence with hidden word shown as ___ */
+        .sentence { 
+            font-size: 2.2rem; 
+            line-height: 1.5; 
+            text-align: center; 
+            margin-bottom: 2rem; 
+            color: #1d1d1f; 
+            max-width: 900px; 
+        }
+        
+        /* Definition hint shown below the sentence */
+        .hint { 
+            color: #86868b; /* Gray hint text */ 
+            font-size: 1.3rem; 
+            margin-bottom: 3rem; 
+            text-align: center; 
+            font-style: italic; 
+            max-width: 800px; 
+        }
+        
+        /* Container for the answer input field */
+        .input-wrap { position: relative; }
+        
+        /* Main text input where you type the answer */
+        input[type="text"] { 
+            border: 2px solid #d2d2d7; 
+            background: #f5f5f7; 
+            border-radius: 14px; 
+            padding: 1.3rem 2rem; 
+            width: 400px; 
+            font-size: 1.4rem; 
+            text-align: center; 
+            outline: none; 
+            transition: all .2s; 
+        }
+        input[type="text"]:focus { 
+            border-color: #0071e3; /* Apple blue on focus */ 
+            background: #fff; 
+        }
+        
+        /* Feedback message (correct/incorrect/prompts) */
+        .msg { 
+            margin-top: 2rem; 
+            font-size: 1.2rem; 
+            min-height: 1.5rem; 
+            font-weight: 500; 
+        }
+        
+        /* ===== STUDY ACTIONS (Edit/Delete buttons) ===== */
+        /* Hidden by default, appear on hover */
         .study-actions { 
             display: flex; 
             gap: .5rem; 
             position: absolute; 
             bottom: 1.5rem; 
             right: 1.5rem;
-            opacity: 0.25;
+            opacity: 0.25; /* Semi-transparent normally */
             transition: opacity .3s;
         }
         .study-panel:hover .study-actions { opacity: 0.6; }
         .study-actions:hover { opacity: 1 !important; }
+        
+        /* Small action buttons in the study panel */
         .study-actions button { 
             width: 36px; 
             height: 36px; 
@@ -47,138 +172,564 @@
             opacity: 0.7;
             transition: all .2s; 
         }
-        .study-actions button:hover { opacity: 1; background: #e8e8ed; transform: scale(1.05); }
-        .study-actions .btn-delete:hover { background: #ffeceb; border-color: #ffccc9; }
+        .study-actions button:hover { 
+            opacity: 1; 
+            background: #e8e8ed; 
+            transform: scale(1.05); 
+        }
+        /* Delete button turns red on hover */
+        .study-actions .btn-delete:hover { 
+            background: #ffeceb; 
+            border-color: #ffccc9; 
+        }
         
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 100; }
+        /* ===== MODAL DIALOGS (Add/Edit Card) ===== */
+        /* Dark overlay behind modal */
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,.5); 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 100; 
+        }
         .modal-overlay.show { display: flex; }
-        .modal { background: #fff; border-radius: 16px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,.2); }
+        
+        /* White modal box */
+        .modal { 
+            background: #fff; 
+            border-radius: 16px; 
+            padding: 2rem; 
+            width: 90%; 
+            max-width: 500px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,.2); 
+        }
         .modal h3 { margin-bottom: 1.5rem; font-size: 1.3rem; }
         .modal .form-group { margin-bottom: 1rem; }
-        .modal label { display: block; font-size: .85rem; color: #86868b; margin-bottom: .3rem; }
-        .modal input, .modal textarea { width: 100%; padding: .75rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: 1rem; }
-        .modal input:focus, .modal textarea:focus { outline: none; border-color: #0071e3; }
+        .modal label { 
+            display: block; 
+            font-size: .85rem; 
+            color: #86868b; 
+            margin-bottom: .3rem; 
+        }
+        .modal input, .modal textarea { 
+            width: 100%; 
+            padding: .75rem; 
+            border: 1px solid #d2d2d7; 
+            border-radius: 8px; 
+            font: inherit; 
+            font-size: 1rem; 
+        }
+        .modal input:focus, .modal textarea:focus { 
+            outline: none; 
+            border-color: #0071e3; 
+        }
         .modal textarea { height: 80px; resize: none; }
-        .modal .error { color: #ff3b30; font-size: .85rem; margin-top: .25rem; display: none; }
+        
+        /* Error message shown when sentence doesn't contain the word */
+        .modal .error { 
+            color: #ff3b30; /* Apple red */ 
+            font-size: .85rem; 
+            margin-top: .25rem; 
+            display: none; 
+        }
         .modal .error.show { display: block; }
-        .modal .preview { font-size: .9rem; color: #86868b; margin-top: .5rem; padding: .5rem; background: #f5f5f7; border-radius: 6px; display: none; }
+        
+        /* Preview showing how the sentence will look */
+        .modal .preview { 
+            font-size: .9rem; 
+            color: #86868b; 
+            margin-top: .5rem; 
+            padding: .5rem; 
+            background: #f5f5f7; 
+            border-radius: 6px; 
+            display: none; 
+        }
         .modal .preview.show { display: block; }
-        .modal .preview strong { background: #0071e3; color: #fff; padding: .1rem .4rem; border-radius: 4px; }
-        .modal-btns { display: flex; gap: .75rem; justify-content: flex-end; margin-top: 1.5rem; }
+        /* The hidden word shown as a blue box in preview */
+        .modal .preview strong { 
+            background: #0071e3; 
+            color: #fff; 
+            padding: .1rem .4rem; 
+            border-radius: 4px; 
+        }
+        
+        .modal-btns { 
+            display: flex; 
+            gap: .75rem; 
+            justify-content: flex-end; 
+            margin-top: 1.5rem; 
+        }
         .btn-save { background: #0071e3; color: #fff; border-color: #0071e3; }
-        .ok { color: #34c759; font-weight: 600; }
-        .no { color: #ff3b30; font-weight: 600; }
+        
+        /* Feedback colors */
+        .ok { color: #34c759; font-weight: 600; } /* Green for correct */
+        .no { color: #ff3b30; font-weight: 600; } /* Red for incorrect */
         .done-msg { color: #86868b; }
         .done-msg button { margin-top: 1rem; }
 
-        .session-info { position: fixed; top: 1.5rem; left: 1.5rem; background: #fff; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.1); font-size: 1.1rem; z-index: 10; }
-        .session-info .progress-bar { width: 180px; height: 6px; background: #e8e8ed; border-radius: 3px; margin-top: .5rem; overflow: hidden; }
-        .session-info .progress-fill { height: 100%; background: #0071e3; border-radius: 2px; transition: width .3s; }
+        /* ===== SESSION INFO (Top Left) ===== */
+        /* Shows progress: "5/20" and progress bar */
+        .session-info { 
+            position: fixed; 
+            top: 1.5rem; 
+            left: 1.5rem; 
+            background: #fff; 
+            padding: 1rem 1.5rem; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,.1); 
+            font-size: 1.1rem; 
+            z-index: 10; 
+        }
+        /* Blue progress bar */
+        .session-info .progress-bar { 
+            width: 180px; 
+            height: 6px; 
+            background: #e8e8ed; 
+            border-radius: 3px; 
+            margin-top: .5rem; 
+            overflow: hidden; 
+        }
+        .session-info .progress-fill { 
+            height: 100%; 
+            background: #0071e3; 
+            border-radius: 2px; 
+            transition: width .3s; 
+        }
+        /* Red badge showing mistake count */
         .session-info .mistake-badge { color: #ff3b30; font-weight: 600; }
 
-        .review-banner { background: #fff5f5; border: 1px solid #ffccc9; color: #ff3b30; padding: 1rem 2rem; border-radius: 12px; margin-bottom: 2rem; font-weight: 500; font-size: 1.1rem; display: flex; align-items: center; gap: .5rem; }
+        /* ===== MISTAKE REVIEW BANNER ===== */
+        /* Yellow banner shown when reviewing cards you got wrong */
+        .review-banner { 
+            background: #fff5f5; 
+            border: 1px solid #ffccc9; 
+            color: #ff3b30; 
+            padding: 1rem 2rem; 
+            border-radius: 12px; 
+            margin-bottom: 2rem; 
+            font-weight: 500; 
+            font-size: 1.1rem; 
+            display: flex; 
+            align-items: center; 
+            gap: .5rem; 
+        }
         .review-banner::before { content: "🔄"; }
 
+        /* ===== SESSION COMPLETE SCREEN ===== */
         .session-complete { text-align: center; }
-        .session-complete h2 { font-size: 2.5rem; margin-bottom: 1.5rem; color: #34c759; }
-        .session-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 2rem 0; max-width: 450px; }
-        .session-stat { background: #f5f5f7; padding: 1.25rem; border-radius: 12px; }
-        .session-stat .num { font-size: 2.2rem; font-weight: 600; color: #1d1d1f; }
-        .session-stat .label { font-size: .85rem; color: #86868b; margin-top: .25rem; }
+        .session-complete h2 { 
+            font-size: 2.5rem; 
+            margin-bottom: 1.5rem; 
+            color: #34c759; /* Green success color */ 
+        }
+        /* Stats grid: Studied | Correct | Accuracy */
+        .session-stats { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 1.5rem; 
+            margin: 2rem 0; 
+            max-width: 450px; 
+        }
+        .session-stat { 
+            background: #f5f5f7; 
+            padding: 1.25rem; 
+            border-radius: 12px; 
+        }
+        .session-stat .num { 
+            font-size: 2.2rem; 
+            font-weight: 600; 
+            color: #1d1d1f; 
+        }
+        .session-stat .label { 
+            font-size: .85rem; 
+            color: #86868b; 
+            margin-top: .25rem; 
+        }
 
-        .welcome-page { background: #fff; border-radius: 20px; padding: 3rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; box-shadow: 0 2px 8px rgba(0,0,0,.08); text-align: center; }
+        /* ===== WELCOME PAGE ===== */
+        /* Shown before starting a study session */
+        .welcome-page { 
+            background: #fff; 
+            border-radius: 20px; 
+            padding: 3rem; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 400px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,.08); 
+            text-align: center; 
+        }
         .welcome-page h1 { font-size: 2rem; margin-bottom: 2rem; color: #1d1d1f; }
         .welcome-form { width: 100%; max-width: 360px; }
-        .welcome-form label { display: block; text-align: left; font-size: .85rem; color: #86868b; margin-bottom: .25rem; }
-        .welcome-form select, .welcome-form input[type="number"] { width: 100%; padding: .875rem; border: 1px solid #d2d2d7; border-radius: 10px; font: inherit; font-size: 1.2rem; margin-bottom: 1.5rem; background: #fff; }
-        .welcome-form button { width: 100%; padding: 1rem; background: #0071e3; color: #fff; border: none; border-radius: 10px; font: inherit; font-size: 1.2rem; font-weight: 500; cursor: pointer; }
+        .welcome-form label { 
+            display: block; 
+            text-align: left; 
+            font-size: .85rem; 
+            color: #86868b; 
+            margin-bottom: .25rem; 
+        }
+        .welcome-form select, .welcome-form input[type="number"] { 
+            width: 100%; 
+            padding: .875rem; 
+            border: 1px solid #d2d2d7; 
+            border-radius: 10px; 
+            font: inherit; 
+            font-size: 1.2rem; 
+            margin-bottom: 1.5rem; 
+            background: #fff; 
+        }
+        .welcome-form button { 
+            width: 100%; 
+            padding: 1rem; 
+            background: #0071e3; 
+            color: #fff; 
+            border: none; 
+            border-radius: 10px; 
+            font: inherit; 
+            font-size: 1.2rem; 
+            font-weight: 500; 
+            cursor: pointer; 
+        }
         .welcome-form button:hover { background: #0077ed; }
-        .welcome-form button:disabled { background: #d2d2d7; cursor: not-allowed; }
+        .welcome-form button:disabled { 
+            background: #d2d2d7; 
+            cursor: not-allowed; 
+        }
 
-        button { background: #f5f5f7; border: 1px solid #d2d2d7; color: #1d1d1f; padding: .7rem 1.4rem; border-radius: 8px; font: inherit; font-size: 1.05rem; cursor: pointer; transition: all .2s; }
+        /* ===== BUTTON STYLES ===== */
+        button { 
+            background: #f5f5f7; 
+            border: 1px solid #d2d2d7; 
+            color: #1d1d1f; 
+            padding: .7rem 1.4rem; 
+            border-radius: 8px; 
+            font: inherit; 
+            font-size: 1.05rem; 
+            cursor: pointer; 
+            transition: all .2s; 
+        }
         button:hover { background: #e8e8ed; }
-        .btn-primary { background: #0071e3; border-color: #0071e3; color: #fff; }
+        
+        /* Primary action button (blue) */
+        .btn-primary { 
+            background: #0071e3; 
+            border-color: #0071e3; 
+            color: #fff; 
+        }
         .btn-primary:hover { background: #0077ed; }
-        .btn-danger { color: #ff3b30; border-color: #ffccc9; background: #fff5f5; }
+        
+        /* Danger button (red) */
+        .btn-danger { 
+            color: #ff3b30; 
+            border-color: #ffccc9; 
+            background: #fff5f5; 
+        }
         .btn-danger:hover { background: #ffeceb; }
-        .btn-success { background: #34c759; border-color: #34c759; color: #fff; }
+        
+        /* Success button (green) */
+        .btn-success { 
+            background: #34c759; 
+            border-color: #34c759; 
+            color: #fff; 
+        }
         .btn-success:hover { background: #30b350; }
 
-        .sidebar { display: flex; flex-direction: column; gap: 1.25rem; }
+        /* ===== SIDEBAR (Right Column) ===== */
+        .sidebar { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1.25rem; 
+        }
 
-        .sidebar-header { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-        .lang-section { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
-        .lang-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #0071e3, #00c6ff); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        /* Header card: Language selector + stats */
+        .sidebar-header { 
+            background: #fff; 
+            border-radius: 16px; 
+            padding: 1.5rem; 
+            box-shadow: 0 1px 3px rgba(0,0,0,.08); 
+        }
+        .lang-section { 
+            display: flex; 
+            align-items: center; 
+            gap: .75rem; 
+            margin-bottom: 1rem; 
+        }
+        /* Blue gradient icon for language */
+        .lang-icon { 
+            width: 40px; 
+            height: 40px; 
+            background: linear-gradient(135deg, #0071e3, #00c6ff); 
+            border-radius: 10px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.2rem; 
+        }
         .lang-select-wrap { flex: 1; }
-        .lang-select { width: 100%; padding: .5rem .75rem; border-radius: 8px; border: 1px solid #d2d2d7; background: #f5f5f7; font: inherit; font-size: .95rem; cursor: pointer; transition: all .2s; }
+        .lang-select { 
+            width: 100%; 
+            padding: .5rem .75rem; 
+            border-radius: 8px; 
+            border: 1px solid #d2d2d7; 
+            background: #f5f5f7; 
+            font: inherit; 
+            font-size: .95rem; 
+            cursor: pointer; 
+            transition: all .2s; 
+        }
         .lang-select:hover { border-color: #0071e3; }
         .lang-actions { display: flex; gap: .25rem; }
-        .lang-actions button { padding: .4rem .5rem; font-size: .85rem; background: transparent; border: none; border-radius: 6px; opacity: .6; }
+        .lang-actions button { 
+            padding: .4rem .5rem; 
+            font-size: .85rem; 
+            background: transparent; 
+            border: none; 
+            border-radius: 6px; 
+            opacity: .6; 
+        }
         .lang-actions button:hover { opacity: 1; background: #f5f5f7; }
 
-        .stats-row { display: flex; gap: .5rem; flex-wrap: wrap; }
-        .stat-pill { display: flex; align-items: center; gap: .4rem; padding: .5rem .75rem; background: #f5f5f7; border-radius: 20px; font-size: .9rem; }
+        /* Stats pills: Due, Learning, Mastered, Accuracy */
+        .stats-row { 
+            display: flex; 
+            gap: .5rem; 
+            flex-wrap: wrap; 
+        }
+        .stat-pill { 
+            display: flex; 
+            align-items: center; 
+            gap: .4rem; 
+            padding: .5rem .75rem; 
+            background: #f5f5f7; 
+            border-radius: 20px; 
+            font-size: .9rem; 
+        }
         .stat-pill .icon { font-size: .95rem; }
         .stat-pill .num { font-weight: 600; color: #1d1d1f; }
         .stat-pill .label { color: #86868b; font-size: .8rem; }
+        /* Orange pill for due cards */
         .stat-pill.due { background: #fff4e6; }
         .stat-pill.due .num { color: #ff9500; }
+        /* Green pill for mastered cards */
         .stat-pill.mastered { background: #e8f5e9; }
         .stat-pill.mastered .num { color: #34c759; }
 
-        .data-card { background: #fff; border-radius: 16px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-        .data-title { font-size: .75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #86868b; margin-bottom: .75rem; font-weight: 600; }
+        /* Data management card (Export/Import/Clear) */
+        .data-card { 
+            background: #fff; 
+            border-radius: 16px; 
+            padding: 1.25rem; 
+            box-shadow: 0 1px 3px rgba(0,0,0,.08); 
+        }
+        .data-title { 
+            font-size: .75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            color: #86868b; 
+            margin-bottom: .75rem; 
+            font-weight: 600; 
+        }
         .data-btns { display: flex; gap: .5rem; }
-        .data-btns button { flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem; padding: .6rem; font-size: .85rem; background: #f5f5f7; border: 1px solid transparent; border-radius: 8px; }
+        .data-btns button { 
+            flex: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: .4rem; 
+            padding: .6rem; 
+            font-size: .85rem; 
+            background: #f5f5f7; 
+            border: 1px solid transparent; 
+            border-radius: 8px; 
+        }
         .data-btns button:hover { background: #e8e8ed; }
         .data-btns button.danger { color: #ff3b30; }
-        .data-btns button.danger:hover { background: #ffeceb; border-color: #ffccc9; }
+        .data-btns button.danger:hover { 
+            background: #ffeceb; 
+            border-color: #ffccc9; 
+        }
 
-        .words-card { background: #fff; border-radius: 16px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: 1; display: flex; flex-direction: column; min-height: 0; }
-        .words-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
-        .words-title { font-size: .75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #86868b; font-weight: 600; }
+        /* Words list card (scrollable list of all cards) */
+        .words-card { 
+            background: #fff; 
+            border-radius: 16px; 
+            padding: 1.25rem; 
+            box-shadow: 0 1px 3px rgba(0,0,0,.08); 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 0; 
+        }
+        .words-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: .75rem; 
+        }
+        .words-title { 
+            font-size: .75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            color: #86868b; 
+            font-weight: 600; 
+        }
         .words-title span { color: #1d1d1f; font-weight: 600; margin-left: .25rem; }
-        .sort-select { font-size: .85rem; padding: .35rem .6rem; border-radius: 8px; border: 1px solid #d2d2d7; background: #f5f5f7; cursor: pointer; }
+        .sort-select { 
+            font-size: .85rem; 
+            padding: .35rem .6rem; 
+            border-radius: 8px; 
+            border: 1px solid #d2d2d7; 
+            background: #f5f5f7; 
+            cursor: pointer; 
+        }
         .sort-select:hover { border-color: #0071e3; }
-        .btn-add-card { display: flex; align-items: center; gap: .3rem; padding: .4rem .75rem; background: #0071e3; color: #fff; border: none; border-radius: 8px; font-size: .85rem; font-weight: 500; cursor: pointer; transition: all .2s; }
-        .btn-add-card:hover { background: #0077ed; transform: translateY(-1px); }
+        
+        /* Blue "Add Card" button */
+        .btn-add-card { 
+            display: flex; 
+            align-items: center; 
+            gap: .3rem; 
+            padding: .4rem .75rem; 
+            background: #0071e3; 
+            color: #fff; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: .85rem; 
+            font-weight: 500; 
+            cursor: pointer; 
+            transition: all .2s; 
+        }
+        .btn-add-card:hover { 
+            background: #0077ed; 
+            transform: translateY(-1px); 
+        }
 
-        .words-list { flex: 1; overflow-y: auto; min-height: 0; margin: 0 -.25rem; padding: 0 .25rem; }
-        .word-item { display: flex; align-items: center; padding: .6rem .5rem; border-radius: 10px; gap: .75rem; transition: background .15s; }
+        /* Scrollable list of vocabulary cards */
+        .words-list { 
+            flex: 1; 
+            overflow-y: auto; /* Scroll if too many cards */
+            min-height: 0; 
+            margin: 0 -.25rem; 
+            padding: 0 .25rem; 
+        }
+        
+        /* Individual card row in the list */
+        .word-item { 
+            display: flex; 
+            align-items: center; 
+            padding: .6rem .5rem; 
+            border-radius: 10px; 
+            gap: .75rem; 
+            transition: background .15s; 
+        }
         .word-item:hover { background: #f5f5f7; }
-        .word-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-        .word-status.due { background: #ff9500; box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15); }
+        
+        /* Status dot: orange=due, green=mastered, gray=new */
+        .word-status { 
+            width: 10px; 
+            height: 10px; 
+            border-radius: 50%; 
+            flex-shrink: 0; 
+        }
+        .word-status.due { 
+            background: #ff9500; 
+            box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15); 
+        }
         .word-status.ok { background: #34c759; }
         .word-status.new { background: #86868b; }
+        
         .word-info { flex: 1; min-width: 0; }
-        .word-name { font-weight: 500; font-size: 1rem; color: #1d1d1f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .word-meta { font-size: .75rem; color: #86868b; margin-top: .1rem; }
-        .word-actions { display: flex; gap: .25rem; opacity: 0; transition: opacity .15s; }
+        .word-name { 
+            font-weight: 500; 
+            font-size: 1rem; 
+            color: #1d1d1f; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+        .word-meta { 
+            font-size: .75rem; 
+            color: #86868b; 
+            margin-top: .1rem; 
+        }
+        
+        /* Edit/Delete buttons appear on hover */
+        .word-actions { 
+            display: flex; 
+            gap: .25rem; 
+            opacity: 0; 
+            transition: opacity .15s; 
+        }
         .word-item:hover .word-actions { opacity: 1; }
-        .word-actions button { padding: .35rem .5rem; font-size: .75rem; background: transparent; border: none; border-radius: 6px; opacity: .6; }
+        .word-actions button { 
+            padding: .35rem .5rem; 
+            font-size: .75rem; 
+            background: transparent; 
+            border: none; 
+            border-radius: 6px; 
+            opacity: .6; 
+        }
         .word-actions button:hover { opacity: 1; background: #e8e8ed; }
         .word-actions button.danger { color: #ff3b30; }
         .word-actions button.danger:hover { background: #ffeceb; }
 
-        .words-empty { text-align: center; padding: 2rem 1rem; color: #86868b; font-size: .9rem; }
+        /* Empty state when no cards exist */
+        .words-empty { 
+            text-align: center; 
+            padding: 2rem 1rem; 
+            color: #86868b; 
+            font-size: .9rem; 
+        }
         .words-empty .icon { font-size: 2rem; margin-bottom: .5rem; opacity: .5; }
 
-        .lang-form { display: none; margin-top: .75rem; padding: .75rem; background: #f5f5f7; border-radius: 10px; }
-        .lang-form.show { display: block; animation: slideDown .2s ease; }
-        .lang-form input { width: 100%; padding: .5rem .75rem; margin-bottom: .4rem; border: 1px solid #d2d2d7; border-radius: 8px; font: inherit; font-size: .9rem; }
-        .lang-form-btns { display: flex; gap: .4rem; justify-content: flex-end; }
+        /* Add language form (hidden by default) */
+        .lang-form { 
+            display: none; 
+            margin-top: .75rem; 
+            padding: .75rem; 
+            background: #f5f5f7; 
+            border-radius: 10px; 
+        }
+        .lang-form.show { 
+            display: block; 
+            animation: slideDown .2s ease; 
+        }
+        .lang-form input { 
+            width: 100%; 
+            padding: .5rem .75rem; 
+            margin-bottom: .4rem; 
+            border: 1px solid #d2d2d7; 
+            border-radius: 8px; 
+            font: inherit; 
+            font-size: .9rem; 
+        }
+        .lang-form-btns { 
+            display: flex; 
+            gap: .4rem; 
+            justify-content: flex-end; 
+        }
         .lang-form-btns button { font-size: .85rem; padding: .4rem .75rem; }
 
+        /* ===== RESPONSIVE STYLES (Large Screens) ===== */
         @media (min-width: 1920px) {
-            .container { max-width: 1800px; grid-template-columns: 1fr 480px; gap: 4rem; }
+            .container { 
+                max-width: 1800px; 
+                grid-template-columns: 1fr 480px; 
+                gap: 4rem; 
+            }
             .sentence { font-size: 2.6rem; max-width: 1000px; }
             .hint { font-size: 1.4rem; }
             input[type="text"] { width: 450px; font-size: 1.6rem; }
             .study-panel { min-height: 600px; }
         }
 
+        /* Hide file input (triggered by button) */
         input[type="file"] { display: none; }
 
+        /* Shake animation for wrong answers */
         .shake { animation: shake 0.5s ease; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -190,19 +741,29 @@
     </style>
 </head>
 <body>
+
+<!-- ===== SESSION PROGRESS (Top Left) ===== -->
+<!-- Shows "5/20" progress and how many mistakes to review -->
 <div class="session-info" id="sessionInfo" style="display: none;">
     <div>Session: <span id="sessionProgress">0/20</span> <span id="mistakeBadge" class="mistake-badge" style="display: none;"></span></div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
 </div>
 
+<!-- ===== TOP BAR (Top Right) ===== -->
+<!-- Shows count of due cards and focus mode toggle -->
 <div class="top-bar">
     <span><strong id="dueCount">0</strong> due</span>
     <button class="focus-btn" onclick="toggleFocus()" title="Toggle sidebar" id="focusBtn">☰</button>
 </div>
 
+<!-- ===== MAIN CONTAINER ===== -->
+<!-- Grid layout: study panel + sidebar -->
 <div class="container">
+    
+    <!-- ===== MAIN STUDY AREA ===== -->
     <main class="study-panel" id="studyPanel">
-        <!-- Welcome Page -->
+        
+        <!-- WELCOME PAGE: Shown before starting a session -->
         <div class="welcome-page" id="welcomePage">
             <h1>Flashcards</h1>
             <div class="welcome-form">
@@ -218,21 +779,32 @@
             </div>
         </div>
 
-        <!-- Study Interface (hidden initially) -->
+        <!-- STUDY INTERFACE: Shown during active session -->
         <div id="studyInterface" style="display: none; width: 100%; text-align: center;">
+            <!-- Banner shown when reviewing mistakes -->
             <div class="review-banner" id="reviewBanner" style="display: none;">Mistake Review Mode</div>
+            
+            <!-- Main sentence with hidden word -->
             <p class="sentence" id="sentence"></p>
+            
+            <!-- Definition hint with first letter revealed -->
             <p class="hint" id="hint"></p>
+            
+            <!-- Answer input field -->
             <div class="input-wrap">
                 <input type="text" id="answer" autocomplete="off">
             </div>
+            
+            <!-- Feedback message area -->
             <p class="msg" id="msg"></p>
+            
+            <!-- Quick edit/delete for current card -->
             <div class="study-actions" id="studyActions">
                 <button onclick="editCurrentCard()" title="Edit">✏️</button>
                 <button class="btn-delete" onclick="deleteCurrentCard()" title="Delete">🗑️</button>
             </div>
             
-            <!-- Edit Modal -->
+            <!-- EDIT MODAL: Popup to edit the current card -->
             <div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
                 <div class="modal">
                     <h3>Edit Card</h3>
@@ -259,8 +831,10 @@
         </div>
     </main>
 
+    <!-- ===== SIDEBAR (Right Column) ===== -->
     <aside class="sidebar">
-        <!-- Header: Language + Stats -->
+        
+        <!-- LANGUAGE SELECTOR & STATS -->
         <div class="sidebar-header">
             <div class="lang-section">
                 <div class="lang-icon">🌐</div>
@@ -274,6 +848,8 @@
                     <button onclick="renameLang()" title="Rename">✎</button>
                 </div>
             </div>
+            
+            <!-- Hidden form to add new language -->
             <div class="lang-form" id="langForm">
                 <input id="newLangName" placeholder="Language name (e.g., Spanish)">
                 <input id="newLangCode" placeholder="Code (e.g., es)">
@@ -283,6 +859,7 @@
                 </div>
             </div>
             
+            <!-- Stats pills row -->
             <div class="stats-row">
                 <div class="stat-pill due">
                     <span class="icon">⏰</span>
@@ -307,7 +884,7 @@
             </div>
         </div>
 
-        <!-- Data Management -->
+        <!-- DATA MANAGEMENT CARD -->
         <div class="data-card">
             <div class="data-title">Data</div>
             <div class="data-btns">
@@ -321,10 +898,11 @@
                     <span>🗑️</span> Clear
                 </button>
             </div>
+            <!-- Hidden file input for import -->
             <input type="file" id="imp" accept=".json" onchange="handleImport(this)">
         </div>
 
-        <!-- Words List -->
+        <!-- VOCABULARY LIST CARD -->
         <div class="words-card">
             <div class="words-header">
                 <div class="words-title">Cards <span id="langCount">0</span></div>
@@ -340,11 +918,12 @@
                     </select>
                 </div>
             </div>
+            <!-- Scrollable list container -->
             <div class="words-list" id="wordsList"></div>
         </div>
     </aside>
 
-    <!-- Add Card Modal -->
+    <!-- ADD CARD MODAL: Popup to create new flashcards -->
     <div class="modal-overlay" id="addModal" onclick="if(event.target===this)closeAddModal()">
         <div class="modal">
             <h3>Add New Card</h3>
@@ -371,45 +950,75 @@
 </div>
 
 <script>
+// ===== DOM ELEMENT REFERENCES =====
+// Cache frequently accessed elements for better performance
 const sentence = document.getElementById('sentence');
 const hint = document.getElementById('hint');
 const answer = document.getElementById('answer');
 const msg = document.getElementById('msg');
 
+// ===== DATA STORAGE =====
+// Load cards from localStorage, or use default starter cards
 let cards = JSON.parse(localStorage.cards || 'null') || [
     {w:'apple', s:'She took a bite of the crisp red apple.', d:'a round fruit', lang:'en'},
     {w:'banana', s:'The monkey peeled the banana before eating.', d:'a long curved yellow fruit', lang:'en'},
     {w:'door', s:'Please close the door behind you.', d:'a barrier for an entrance', lang:'en'}
 ], cur, editIdx = -1, answerStartTime = 0;
 
+// Languages list with current selection
 let languages = JSON.parse(localStorage.languages || 'null') || [{code: 'en', name: 'English'}];
 let currentLang = localStorage.currentLang || 'en';
 
-let sessionSize = 20;
-let sessionCardsStudied = 0;
-let sessionMistakes = [];
-let reviewingMistakes = false;
-let inSession = false;
-let sessionDueCards = [];
-const INTERLEAVE_INTERVAL = 10;
-let waitingForNext = false;
-let lastAnswerWrong = false;
+// ===== SESSION STATE =====
+// Variables to track the current study session
+let sessionSize = 20;           // How many cards to study in this session
+let sessionCardsStudied = 0;    // Counter for cards completed
+let sessionMistakes = [];       // Cards answered wrong (for review)
+let reviewingMistakes = false;  // Currently in "mistake review mode"?
+let inSession = false;          // Is a session active?
+let sessionDueCards = [];       // Queue of cards due for this session
+const INTERLEAVE_INTERVAL = 10; // Review mistakes every N cards
+let waitingForNext = false;     // Waiting for Enter key to proceed?
+let lastAnswerWrong = false;    // Was the last answer incorrect?
 
+// ===== HELPER FUNCTIONS =====
+
+// Save cards to localStorage (persist data)
 const save = () => localStorage.cards = JSON.stringify(cards);
+
+// Save language settings
 const saveLangs = () => localStorage.languages = JSON.stringify(languages);
 const saveCurrentLang = () => localStorage.currentLang = currentLang;
+
+// Get cards that are due for review in current language
 const dueCards = () => cards.filter(c => (c.due||0) <= Date.now() && (c.lang || 'en') === currentLang);
+
+// Get all cards for current language
 const currentLangCards = () => cards.filter(c => (c.lang || 'en') === currentLang);
+
+// Find index of a card in the main array (for editing/deleting)
 const findCardIndex = (card) => cards.findIndex(c => c.w === card.w && c.s === card.s && c.lang === card.lang);
+
+// Remove a card from the current session (when deleted)
 const removeCardFromSession = (card) => {
     sessionDueCards = sessionDueCards.filter(c => !(c.w === card.w && c.s === card.s));
     sessionMistakes = sessionMistakes.filter(c => !(c.w === card.w && c.s === card.s));
 };
 
+// Escape special regex characters for safe matching
 function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/**
+ * Validate that a sentence contains the target word
+ * Shows error if missing, shows preview with word hidden if valid
+ * @param {string} word - The word that should appear
+ * @param {string} sentence - The sentence to check
+ * @param {string} errorId - ID of error message element
+ * @param {string} previewId - ID of preview element
+ * @returns {boolean} - True if valid
+ */
 function validateSentence(word, sentence, errorId, previewId) {
     const errorEl = document.getElementById(errorId);
     const previewEl = document.getElementById(previewId);
@@ -419,6 +1028,7 @@ function validateSentence(word, sentence, errorId, previewId) {
             errorEl?.classList.remove('show');
             previewEl?.classList.add('show');
             if (previewEl) {
+                // Show preview with word replaced by ___
                 previewEl.innerHTML = sentence.replace(new RegExp('(' + escapeRegex(word) + ')', 'gi'), '<strong>___</strong>');
             }
             return true;
@@ -434,6 +1044,11 @@ function validateSentence(word, sentence, errorId, previewId) {
     }
 }
 
+/**
+ * Calculate Levenshtein distance between two strings
+ * Used for fuzzy matching (detecting typos)
+ * Returns number of character edits needed to transform a into b
+ */
 function levenshtein(a, b) {
     const m = a.length, n = b.length;
     const dp = Array.from({length: m + 1}, () => Array(n + 1).fill(0));
@@ -447,6 +1062,15 @@ function levenshtein(a, b) {
     return dp[m][n];
 }
 
+/**
+ * Calculate response quality (0-5) based on accuracy and speed
+ * 5 = Perfect, fast (< 3 sec)
+ * 4 = Perfect, normal (3-8 sec)
+ * 3 = Perfect, slow (> 8 sec)
+ * 2 = Minor typo (80%+ similar)
+ * 1 = Major mistake (50%+ similar)
+ * 0 = Complete miss (< 50% similar)
+ */
 function calculateQuality(userAnswer, correctAnswer, responseTimeMs) {
     const ua = userAnswer.trim().toLowerCase();
     const ca = correctAnswer.toLowerCase();
@@ -461,31 +1085,54 @@ function calculateQuality(userAnswer, correctAnswer, responseTimeMs) {
     return similarity >= 0.8 ? 2 : similarity >= 0.5 ? 1 : 0;
 }
 
+/**
+ * SM-2 Spaced Repetition Algorithm
+ * This is the core algorithm that schedules when cards appear again
+ * 
+ * How it works:
+ * - EF (Ease Factor): How easy the card is (starts at 2.5, min 1.3)
+ * - n: Number of successful reviews in a row
+ * - Interval: Minutes until next review
+ * 
+ * Intervals: 1min → 10min → 1day → 6days → EF multiplier
+ * Wrong answers reset to 1 minute
+ */
 function sm2(card, quality) {
+    // Initialize card properties if new
     if (card.ef === undefined) card.ef = 2.5;
     if (card.n === undefined) card.n = 0;
 
+    // Update ease factor based on performance
     const qDiff = 5 - quality;
     card.ef = Math.max(1.3, card.ef + (0.1 - qDiff * (0.08 + qDiff * 0.02)));
 
+    // Calculate next interval (in minutes)
     let intervalMins;
     if (quality < 3) {
+        // Failed - reset to beginning
         card.n = 0;
         intervalMins = 1;
     } else {
+        // Passed - increase interval
         if (card.n === 0) intervalMins = 1;
         else if (card.n === 1) intervalMins = 10;
-        else if (card.n === 2) intervalMins = 1440;
-        else if (card.n === 3) intervalMins = 6 * 1440;
+        else if (card.n === 2) intervalMins = 1440;      // 1 day
+        else if (card.n === 3) intervalMins = 6 * 1440;  // 6 days
         else intervalMins = Math.round((card.int || 1440) * card.ef);
         card.n++;
     }
 
+    // Cap at 1 year (525600 minutes)
     card.int = Math.min(intervalMins, 525600);
+    // Schedule due date
     card.due = Date.now() + card.int * 60000;
     return quality >= 3;
 }
 
+/**
+ * Toggle focus mode (hide sidebar for distraction-free studying)
+ * Saves preference to localStorage
+ */
 function toggleFocus() {
     const container = document.querySelector('.container');
     const focusBtn = document.getElementById('focusBtn');
@@ -494,11 +1141,15 @@ function toggleFocus() {
     localStorage.focusMode = isFocus;
 }
 
+// Restore focus mode on page load
 if (localStorage.focusMode === 'true') {
     document.querySelector('.container').classList.add('focus-mode');
     document.getElementById('focusBtn').textContent = '◧';
 }
 
+// ===== WELCOME PAGE FUNCTIONS =====
+
+// Update the "X due" count on welcome screen
 function updateWelcomeStats() {
     const due = dueCards().length;
     document.getElementById('welcomeDue').textContent = due;
@@ -507,11 +1158,13 @@ function updateWelcomeStats() {
     startBtn.textContent = due === 0 ? 'No Cards Due' : 'Start';
 }
 
+// Populate language dropdown on welcome page
 function updateWelcomeLangSelect() {
     const select = document.getElementById('welcomeLangSelect');
     select.innerHTML = languages.map(l => `<option value="${l.code}"${l.code === currentLang ? ' selected' : ''}>${l.name}</option>`).join('');
 }
 
+// When language changes on welcome page
 function changeWelcomeLang() {
     currentLang = document.getElementById('welcomeLangSelect').value;
     saveCurrentLang();
@@ -521,6 +1174,14 @@ function changeWelcomeLang() {
     renderList();
 }
 
+// ===== SESSION MANAGEMENT =====
+
+/**
+ * Start a new study session
+ * 1. Get due cards for selected language
+ * 2. Shuffle and limit to session size
+ * 3. Show study interface, hide welcome page
+ */
 function startSession() {
     const due = dueCards();
     if (due.length === 0) return;
@@ -530,6 +1191,7 @@ function startSession() {
     document.getElementById('welcomePage').style.display = 'none';
     document.getElementById('studyInterface').style.display = '';
     
+    // Reset session state
     inSession = true;
     sessionCardsStudied = 0;
     sessionMistakes = [];
@@ -537,6 +1199,7 @@ function startSession() {
     waitingForNext = false;
     lastAnswerWrong = false;
     
+    // Shuffle and select cards for this session
     sessionDueCards = due.slice(0, sessionSize).sort(() => Math.random() - 0.5);
     
     updateSessionUI();
@@ -544,6 +1207,7 @@ function startSession() {
     show();
 }
 
+// Return to welcome page, ending current session
 function returnToWelcome() {
     inSession = false;
     sessionCardsStudied = 0;
@@ -563,6 +1227,7 @@ function returnToWelcome() {
     updateStats();
 }
 
+// Update progress bar and badge in top-left
 function updateSessionUI() {
     const totalInSession = Math.min(sessionSize, sessionDueCards.length + sessionCardsStudied);
     const progress = Math.min(sessionCardsStudied, totalInSession);
@@ -580,6 +1245,7 @@ function updateSessionUI() {
     }
 }
 
+// Check if it's time to review mistakes (every 10 cards)
 function checkInterleaveReview() {
     if (!reviewingMistakes && sessionMistakes.length > 0 && sessionCardsStudied > 0 && sessionCardsStudied % INTERLEAVE_INTERVAL === 0) {
         reviewingMistakes = true;
@@ -588,6 +1254,9 @@ function checkInterleaveReview() {
     return false;
 }
 
+// ===== LANGUAGE MANAGEMENT =====
+
+// Update language dropdown in sidebar
 function renderLangSelect() {
     const select = document.getElementById('langSelect');
     select.innerHTML = languages.map(l => `<option value="${l.code}"${l.code === currentLang ? ' selected' : ''}>${l.name}</option>`).join('');
@@ -595,6 +1264,7 @@ function renderLangSelect() {
     updateWelcomeLangSelect();
 }
 
+// Switch to a different language
 function switchLang() {
     currentLang = document.getElementById('langSelect').value;
     saveCurrentLang();
@@ -609,6 +1279,7 @@ function switchLang() {
     renderList();
 }
 
+// Show/hide the "add language" form
 function toggleLangForm() {
     document.getElementById('langForm').classList.toggle('show');
     document.getElementById('newLangName').focus();
@@ -620,6 +1291,7 @@ function cancelLangForm() {
     document.getElementById('newLangCode').value = '';
 }
 
+// Add a new language to the system
 function addLang() {
     const name = document.getElementById('newLangName').value.trim();
     const code = document.getElementById('newLangCode').value.trim().toLowerCase();
@@ -641,6 +1313,7 @@ function addLang() {
     updateStats();
 }
 
+// Rename current language
 function renameLang() {
     const lang = languages.find(l => l.code === currentLang);
     if (!lang) return;
@@ -654,6 +1327,7 @@ function renameLang() {
     }
 }
 
+// Format minutes into human-readable string
 function formatInterval(mins) {
     if (!mins || mins <= 1) return 'new';
     if (mins < 60) return `${Math.round(mins)}m`;
@@ -661,9 +1335,13 @@ function formatInterval(mins) {
     return `${Math.round(mins/1440)}d`;
 }
 
+// ===== STATS & DISPLAY =====
+
+// Update all statistics displays
 function updateStats() {
     const langCards = currentLangCards();
     const due = dueCards().length;
+    // Mastered = 4+ successful reviews
     const mastered = langCards.filter(c => (c.n||0) >= 4).length;
     const totalReviews = langCards.reduce((a,c) => a + (c.reviews||0), 0);
     const totalCorrect = langCards.reduce((a,c) => a + (c.correct||0), 0);
@@ -677,26 +1355,38 @@ function updateStats() {
     document.getElementById('langCount').textContent = langCards.length;
 }
 
+/**
+ * Show the next flashcard
+ * Handles three modes:
+ * 1. Regular session - show due cards in order
+ * 2. Mistake review - show cards that were answered wrong
+ * 3. No cards - show completion/empty state
+ */
 function show() {
     waitingForNext = false;
     lastAnswerWrong = false;
     updateStats();
     renderList();
     
+    // Priority 1: Review mistakes if in that mode
     if (reviewingMistakes && sessionMistakes.length > 0) {
         showMistakeReview();
         return;
     }
     
+    // Priority 2: Check if it's time for interleaved review
     if (inSession && checkInterleaveReview()) {
         showMistakeReview();
         return;
     }
     
+    // Get the appropriate card queue
     const dc = inSession ? sessionDueCards : dueCards();
 
+    // No cards available
     if (!dc.length) {
         if (inSession) {
+            // Session complete or still have mistakes
             if (sessionMistakes.length > 0) {
                 reviewingMistakes = true;
                 showMistakeReview();
@@ -709,6 +1399,7 @@ function show() {
         return;
     }
 
+    // Hide review banner, reset UI
     document.getElementById('reviewBanner').style.display = 'none';
     
     sentence.classList.remove('done-msg');
@@ -717,19 +1408,24 @@ function show() {
     answer.style.background = '';
     msg.textContent = '';
     
+    // Select next card (random if casual, sequential if session)
     cur = inSession ? dc[0] : dc[Math.random()*dc.length|0];
     
+    // Display sentence with word hidden
     sentence.textContent = cur.s.replace(new RegExp(escapeRegex(cur.w), 'gi'), '___');
+    // Show hint: definition + first letter
     hint.textContent = `${cur.d} (${cur.w[0]})`;
     answer.value = '';
     answer.focus();
     answerStartTime = Date.now();
 }
 
+// Show a card from the mistake review queue
 function showMistakeReview() {
     waitingForNext = false;
     lastAnswerWrong = false;
     
+    // No more mistakes? Return to normal
     if (sessionMistakes.length === 0) {
         reviewingMistakes = false;
         show();
@@ -744,6 +1440,7 @@ function showMistakeReview() {
     answer.style.background = '';
     msg.textContent = '';
     
+    // Take first mistake card
     cur = sessionMistakes[0];
     sentence.textContent = cur.s.replace(new RegExp(escapeRegex(cur.w), 'gi'), '___');
     hint.textContent = `${cur.d} (${cur.w[0]})`;
@@ -752,6 +1449,7 @@ function showMistakeReview() {
     answerStartTime = Date.now();
 }
 
+// Show "All done" when no cards are due
 function showNoCards() {
     sentence.textContent = 'All done';
     sentence.classList.add('done-msg');
@@ -762,6 +1460,7 @@ function showNoCards() {
     msg.innerHTML = '<button class="btn-primary" onclick="resetAll()">Study Again</button>';
 }
 
+// Show session completion screen with stats
 function showSessionComplete() {
     sentence.classList.add('done-msg');
     hint.textContent = '';
@@ -789,12 +1488,16 @@ function showSessionComplete() {
         </div>`;
 }
 
+// Reset all cards to "new" state (for testing or restarting)
 function resetAll() {
     cards.forEach(c => { c.due = 0; c.n = 0; c.int = 1; });
     save();
     show();
 }
 
+// ===== KEYBOARD SHORTCUTS =====
+
+// ESC key closes modals
 document.onkeydown = e => {
     if (e.key === 'Escape') {
         closeEditModal();
@@ -802,9 +1505,11 @@ document.onkeydown = e => {
     }
 };
 
+// ENTER key handles answer submission and progression
 answer.onkeydown = e => {
     if (e.key !== 'Enter' || !cur) return;
     
+    // If we already showed feedback, Enter proceeds to next card
     if (waitingForNext) {
         waitingForNext = false;
         msg.textContent = '';
@@ -812,6 +1517,7 @@ answer.onkeydown = e => {
         answer.readOnly = false;
         answer.style.background = '';
         
+        // If wrong, give another chance on same card
         if (lastAnswerWrong) {
             lastAnswerWrong = false;
             sentence.textContent = cur.s.replace(new RegExp(escapeRegex(cur.w), 'gi'), '___');
@@ -820,51 +1526,62 @@ answer.onkeydown = e => {
             return;
         }
         
+        // Move to next card
         show();
         return;
     }
     
+    // Check the answer
     const userAnswer = answer.value.trim().toLowerCase();
     const correctAnswer = cur.w.toLowerCase();
     const isCorrect = userAnswer === correctAnswer;
     
+    // WRONG ANSWER
     if (!isCorrect) {
         lastAnswerWrong = true;
+        // Track mistake for review
         if (inSession && !reviewingMistakes) {
             const alreadyMistake = sessionMistakes.some(c => c.w === cur.w && c.lang === cur.lang);
             if (!alreadyMistake) {
                 sessionMistakes.push(cur);
             }
         }
+        // Show the correct word in red
         sentence.innerHTML = cur.s.replace(new RegExp(`(${escapeRegex(cur.w)})`, 'gi'), `<span class="no">$1</span>`);
         msg.innerHTML = '<span style="color: #86868b;">Press Enter to try again</span>';
         answer.value = '';
         answer.readOnly = true;
-        answer.style.background = '#ffeceb';
-        answer.classList.add('shake');
+        answer.style.background = '#ffeceb'; // Light red background
+        answer.classList.add('shake'); // Shake animation
         setTimeout(() => answer.classList.remove('shake'), 500);
         waitingForNext = true;
         updateSessionUI();
         return;
     }
     
+    // CORRECT ANSWER
     const responseTime = Date.now() - answerStartTime;
     const quality = calculateQuality(answer.value, cur.w, responseTime);
-    const ok = sm2(cur, quality);
+    const ok = sm2(cur, quality); // Apply SM-2 algorithm
 
+    // Track stats
     cur.reviews = (cur.reviews || 0) + 1;
     cur.correct = (cur.correct || 0) + (ok ? 1 : 0);
     cur.lastReview = new Date().toISOString();
     cur.lastQuality = quality;
     save();
 
+    // Show the correct word in green
     sentence.innerHTML = cur.s.replace(new RegExp(`(${escapeRegex(cur.w)})`, 'gi'), `<span class="ok">$1</span>`);
     
+    // Update session progress
     if (inSession) {
         if (reviewingMistakes) {
+            // Remove from mistake queue
             sessionMistakes = sessionMistakes.filter(c => !(c.w === cur.w && c.lang === cur.lang));
             sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.lang === cur.lang));
         } else {
+            // Normal session progress
             sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.lang === cur.lang));
             sessionCardsStudied++;
         }
@@ -876,18 +1593,24 @@ answer.onkeydown = e => {
     msg.innerHTML = '<span style="color: #86868b;">Press Enter to continue</span>';
     answer.value = '';
     answer.readOnly = true;
-    answer.style.background = '#e8e8ed';
+    answer.style.background = '#e8e8ed'; // Gray background (done)
 };
 
+// ===== SIDEBAR: CARD LIST =====
+
+// Render the scrollable list of all cards
 function renderList() {
     const sortBy = document.getElementById('sortSelect').value;
+    // Filter to current language and add index for editing
     let sorted = cards.map((c,i) => ({...c, idx: i})).filter(c => (c.lang || 'en') === currentLang);
 
+    // Apply sorting
     if (sortBy === 'word') sorted.sort((a,b) => a.w.localeCompare(b.w));
     else if (sortBy === 'due') sorted.sort((a,b) => (a.due||0) - (b.due||0));
     else if (sortBy === 'ef') sorted.sort((a,b) => (a.ef||2.5) - (b.ef||2.5));
     else if (sortBy === 'stage') sorted.sort((a,b) => (a.n||0) - (b.n||0));
 
+    // Empty state
     if (sorted.length === 0) {
         document.getElementById('wordsList').innerHTML = `
             <div class="words-empty">
@@ -898,6 +1621,7 @@ function renderList() {
         return;
     }
 
+    // Render each card row
     document.getElementById('wordsList').innerHTML = sorted.map(c => {
         const isDue = (c.due||0) <= Date.now();
         const isNew = (c.n || 0) === 0;
@@ -919,6 +1643,8 @@ function renderList() {
         </div>`;
     }).join('');
 }
+
+// ===== ADD CARD MODAL =====
 
 function openAddModal() {
     editIdx = -1;
@@ -942,6 +1668,7 @@ function validateAddForm() {
     validateSentence(word, sent, 'addError', 'addPreview');
 }
 
+// Save new or edited card
 function saveCard() {
     const w = document.getElementById('aWord').value.trim();
     const s = document.getElementById('aSent').value.trim();
@@ -957,11 +1684,13 @@ function saveCard() {
     }
 
     if (editIdx >= 0) {
+        // Edit existing
         cards[editIdx].w = w;
         cards[editIdx].s = s;
         cards[editIdx].d = d;
         cards[editIdx].lang = currentLang;
     } else {
+        // Add new card with SM-2 defaults
         cards.push({w, s, d, int: 1, due: 0, ef: 2.5, n: 0, lang: currentLang});
     }
 
@@ -972,10 +1701,12 @@ function saveCard() {
     renderList();
 }
 
+// Legacy aliases for backward compatibility
 toggleAdd = openAddModal;
 cancelAdd = closeAddModal;
 validateCard = validateAddForm;
 
+// Edit a card from the sidebar list
 function editCard(i) {
     editIdx = i;
     document.getElementById('aWord').value = cards[i].w;
@@ -988,6 +1719,7 @@ function editCard(i) {
     document.getElementById('aWord').focus();
 }
 
+// Delete a card from the sidebar
 function delCard(i) {
     if (confirm(`Delete "${cards[i].w}"?`)) {
         cards.splice(i, 1);
@@ -998,6 +1730,9 @@ function delCard(i) {
     }
 }
 
+// ===== STUDY PANEL: EDIT CURRENT CARD =====
+
+// Edit the card currently being studied
 function editCurrentCard() {
     if (!cur) return;
     document.getElementById('editWord').value = cur.w;
@@ -1019,6 +1754,7 @@ function closeEditModal() {
     document.getElementById('editModal').classList.remove('show');
 }
 
+// Save changes to the currently studied card
 function saveEdit() {
     if (!cur) return;
     
@@ -1043,6 +1779,7 @@ function saveEdit() {
     cards[idx].s = newSent;
     save();
     
+    // Update the displayed card
     cur = cards[idx];
     sentence.innerHTML = cur.s.replace(new RegExp(`(${cur.w})`, 'gi'), '<span class="ok">$1</span>');
     hint.textContent = `${cur.d} (${cur.w[0]})`;
@@ -1053,6 +1790,7 @@ function saveEdit() {
     closeEditModal();
 }
 
+// Delete the card currently being studied
 function deleteCurrentCard() {
     if (!cur) return;
     if (!confirm(`Delete "${cur.w}"?`)) return;
@@ -1074,6 +1812,9 @@ function deleteCurrentCard() {
     show();
 }
 
+// ===== DATA MANAGEMENT =====
+
+// Clear all cards (with confirmation)
 function clearWords() {
     const langCards = currentLangCards();
     if (langCards.length === 0) {
@@ -1108,6 +1849,7 @@ function clearWords() {
     }
 }
 
+// Export cards to JSON file
 function exp() {
     const langCards = currentLangCards();
     const exportData = {
@@ -1124,6 +1866,7 @@ function exp() {
     a.click();
 }
 
+// Import cards from JSON file
 function handleImport(input) {
     if (!input.files[0]) return;
     input.files[0].text().then(t => {
@@ -1131,6 +1874,7 @@ function handleImport(input) {
             const data = JSON.parse(t);
             let newCards = [];
             
+            // Support both object format {cards: [...]} and array format [...]
             if (data.cards && Array.isArray(data.cards)) {
                 newCards = data.cards;
             } else if (Array.isArray(data)) {
@@ -1140,6 +1884,7 @@ function handleImport(input) {
                 return;
             }
             
+            // Validate and deduplicate
             newCards = newCards.filter(c => c.w && c.s && c.d);
             cards = cards.filter(c => !newCards.find(nc => nc.w === c.w && nc.lang === c.lang));
             cards = cards.concat(newCards);
@@ -1157,6 +1902,8 @@ function handleImport(input) {
     });
 }
 
+// ===== INITIALIZATION =====
+// Run these when page loads
 renderLangSelect();
 updateWelcomeLangSelect();
 updateWelcomeStats();
