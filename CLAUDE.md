@@ -20,15 +20,29 @@ CLAUDE.md     # This documentation
 
 ## UI Layout
 
-### Top Bar
+### Top Bar (Fixed Top-Right)
 - **Due Count**: Number of cards due for review
-- **Focus Button**: Toggle sidebar visibility
+- **Focus Button (☰/◧)**: Toggle sidebar visibility for distraction-free studying
+
+### Session Info (Fixed Top-Left)
+- **Progress**: "X/Y" showing cards studied in current session
+- **Progress Bar**: Visual progress indicator
+- **Mistake Badge**: Shows count of cards to re-review (appears during session)
 
 ### Study Panel (Main Area)
+
+#### Welcome Page (shown before session starts)
+- **Language Selector**: Choose which language to study
+- **Cards to Study Input**: Set session size (1-500, default 20)
+- **Start Button**: Begins study session (disabled if no cards due)
+
+#### Study Interface (active during session)
+- **Review Banner**: Yellow banner shown during mistake review mode
 - **Sentence**: Cloze deletion format (word replaced with `___`)
-- **Hint**: Definition + first letter in parentheses
+- **Hint**: Definition with first letter in parentheses
 - **Input Field**: Centered text input for answer
-- **Feedback**: Shows correct answer highlighted after submission
+- **Feedback Message**: Shows prompts like "Press Enter to continue"
+- **Study Actions**: Edit/Delete buttons for current card (hover to reveal)
 
 ### Sidebar Cards
 
@@ -36,13 +50,35 @@ CLAUDE.md     # This documentation
 |------|---------|
 | **Language** | Current language name, card count, selector dropdown, add/rename buttons |
 | **Stats** | Due Now, Learning, Mastered, Accuracy (per language) |
-| **Actions** | Add Card, Export, Import, Clear All buttons |
-| **Words** | Sortable list with edit/delete actions |
+| **Data** | Export, Import, Clear All buttons |
+| **Words** | Sortable list with edit/delete actions, "Add Card" button |
 
 ### Focus Mode
 - Toggle with ☰ button (top-right)
 - Hides sidebar for distraction-free studying
 - State persisted in LocalStorage
+
+---
+
+## Study Session System
+
+### Session Flow
+1. **Welcome Screen**: Choose language and session size
+2. **Study Phase**: Cards presented in random order
+3. **Mistake Review**: Every 10 cards, review mistakes (if any)
+4. **Session Complete**: Stats summary with option for new session
+
+### Mistake Review Mode
+- Cards answered incorrectly are queued for review
+- Interleaved every 10 cards during session
+- Final review round at session end if mistakes remain
+- Review banner shown when in this mode
+
+### Session Stats (Completion Screen)
+- Cards Studied
+- Correct Answers
+- Accuracy Percentage
+- Remaining cards still due
 
 ---
 
@@ -69,7 +105,7 @@ CLAUDE.md     # This documentation
 | L3 | 6 days | L3 |
 | M | interval × EF | M (Mastered) |
 
-- Failed reviews reset to L0 but preserve Easiness Factor
+- Failed reviews (quality < 3) reset to L0 but preserve Easiness Factor
 - Maximum interval: 1 year (525,600 minutes)
 
 ### Easiness Factor (EF)
@@ -85,9 +121,9 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 ## Multi-Language Support
 
 ### Language Management
-- **Add Language**: Click "+ New", enter name and code
+- **Add Language**: Click "+" button, enter name and code
 - **Switch Language**: Use dropdown selector
-- **Rename Language**: Click "Rename" button
+- **Rename Language**: Click "✎" button
 - **Card Count**: Shows cards for current language only
 
 ### Language Isolation
@@ -112,7 +148,7 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
   int: 1,                  // Current interval (minutes)
   due: 1700000000000,      // Next review timestamp (ms)
   ef: 2.5,                 // Easiness Factor
-  n: 0,                    // Repetition count (learning stage)
+  n: 0,                    // Repetition count (learning stage 0-4+)
   reviews: 0,              // Total review count
   correct: 0,              // Correct answer count
   lastReview: "2024-...",  // ISO timestamp
@@ -133,19 +169,27 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 
 ## Key Functions
 
-### Core
+### Core Algorithm
 | Function | Description |
 |----------|-------------|
 | `sm2(card, quality)` | Apply SM-2 algorithm, update interval/EF |
-| `calculateQuality(user, correct, timeMs)` | Auto-rate answer quality 0-5 |
+| `calculateQuality(user, correct, timeMs)` | Auto-rate answer quality 0-5 based on accuracy and speed |
 | `levenshtein(a, b)` | String distance for typo detection |
-| `show()` | Display next due card or "All done" |
+| `show()` | Display next due card or appropriate state |
 | `dueCards()` | Get cards ready for review (filtered by language) |
+
+### Session Management
+| Function | Description |
+|----------|-------------|
+| `startSession()` | Begin new study session |
+| `returnToWelcome()` | End session, return to welcome page |
+| `showSessionComplete()` | Display session summary stats |
+| `checkInterleaveReview()` | Check if it's time for mistake review |
 
 ### Language
 | Function | Description |
 |----------|-------------|
-| `renderLangSelect()` | Populate language dropdown |
+| `renderLangSelect()` | Populate language dropdowns |
 | `switchLang()` | Change active language |
 | `addLang()` | Create new language set |
 | `renameLang()` | Rename current language |
@@ -154,18 +198,21 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 ### Card Management
 | Function | Description |
 |----------|-------------|
-| `toggleAdd()` | Show/hide add card form |
-| `validateCard()` | Check word exists in sentence, show preview |
+| `openAddModal()` | Show add card modal |
+| `validateAddForm()` | Check word exists in sentence, show preview |
 | `saveCard()` | Add new or update existing card |
-| `editCard(i)` | Load card into edit form |
+| `editCard(i)` | Load card from list into edit form |
+| `editCurrentCard()` | Edit the card currently being studied |
+| `saveEdit()` | Save changes to currently studied card |
 | `delCard(i)` | Delete single card with confirmation |
+| `deleteCurrentCard()` | Delete the card being studied |
 | `clearWords()` | Clear current language or ALL cards |
 
 ### Data
 | Function | Description |
 |----------|-------------|
-| `exp()` | Export current language to CSV |
-| `parseCSV(text)` | Parse CSV with quoted fields |
+| `exp()` | Export current language to JSON file |
+| `handleImport(input)` | Import cards from JSON file |
 | `save()` | Persist cards to LocalStorage |
 | `saveLangs()` | Persist languages to LocalStorage |
 
@@ -173,10 +220,11 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 | Function | Description |
 |----------|-------------|
 | `updateStats()` | Refresh statistics display |
+| `updateSessionUI()` | Update progress bar and mistake badge |
 | `renderList()` | Render word list with sorting |
 | `toggleFocus()` | Toggle distraction-free mode |
 | `formatInterval(mins)` | Format minutes as "new", "5m", "2h", "3d" |
-| `resetAll()` | Reset all cards for restudy |
+| `resetAll()` | Reset all cards to "new" state |
 
 ---
 
@@ -195,24 +243,48 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 
 | Key | Action |
 |-----|--------|
-| `Enter` | Submit answer |
+| `Enter` | Submit answer OR proceed to next card |
+| `Escape` | Close modals (Add/Edit) |
+
+### Answer Flow with Enter Key
+1. Type answer → Press `Enter` → Feedback shown
+2. If correct: Word highlighted green, "Press Enter to continue"
+3. If wrong: Word highlighted red, "Press Enter to try again"
+4. Press `Enter` again → Next card (or retry if wrong)
 
 ---
 
-## CSV Format
+## JSON Export/Import Format
 
-### Export/Import Schema
+### Export Schema
 
-```csv
-Word,Definition,Example,Language
-"apple","a round fruit","She ate the apple.","en"
-"banana","a yellow fruit","The monkey ate the banana.","en"
+```json
+{
+  "version": 1,
+  "exportedAt": "2024-01-15T10:30:00.000Z",
+  "language": "English",
+  "languageCode": "en",
+  "cardCount": 50,
+  "cards": [
+    {
+      "w": "apple",
+      "d": "a round fruit",
+      "s": "She ate the apple.",
+      "lang": "en",
+      "ef": 2.5,
+      "n": 2,
+      "int": 1440,
+      "due": 1700000000000
+    }
+  ]
+}
 ```
 
-- Header row automatically skipped on import
-- Quoted fields support commas and quotes
-- Language column optional (defaults to current)
-- Duplicate cards (by word+lang) are replaced on import
+### Import Behavior
+- Supports both object format `{cards: [...]}` and array format `[...]`
+- Validates required fields (`w`, `s`, `d`)
+- Duplicate cards (by word+lang) are replaced
+- Imported cards retain their scheduling data
 
 ---
 
@@ -223,26 +295,39 @@ Word,Definition,Example,Language
 | Due First | Review timestamp (earliest first) |
 | A-Z | Word alphabetical |
 | Hardest (EF) | Lowest easiness factor first |
-| Learning Stage | Lowest repetition count first |
+| Stage | Lowest repetition count first |
 
 ---
 
 ## Study Flow
 
 1. **Display**: Show sentence with `___` and hint
-2. **Type**: User types answer and presses Enter
-3. **Evaluate**: Calculate quality based on accuracy and speed
-4. **Apply SM-2**: Update interval, EF, due time
-5. **Show Result**: Highlight correct answer (green/red)
-6. **Next**: Auto-advance after 600ms (correct) or 1200ms (wrong)
-
-When no cards due: Shows "All done" with "Study Again" button to reset all cards.
+2. **Type**: User types answer
+3. **Submit**: Press Enter, calculate quality based on accuracy and speed
+4. **Evaluate**: Apply SM-2 algorithm, update card data
+5. **Show Result**: 
+   - Correct: Word highlighted in green
+   - Wrong: Word highlighted in red, shake animation, added to mistake queue
+6. **Next**: Press Enter to continue to next card
 
 ---
 
 ## Clear Words Behavior
 
-1. Click "Clear All" → Shows confirmation dialog
+1. Click "Clear" → Shows confirmation dialog
 2. **OK** → Deletes only current language cards
 3. **Cancel** → Prompt to type "ALL" (uppercase)
 4. Type "ALL" → Deletes ALL cards across all languages
+
+---
+
+## Visual Feedback
+
+| State | Visual Indicator |
+|-------|-----------------|
+| Correct answer | Green highlighted word, gray input background |
+| Wrong answer | Red highlighted word, light red input background, shake animation |
+| Due cards | Orange status dot with glow |
+| Mastered cards | Green status dot |
+| New cards | Gray status dot |
+| Mistake review | Yellow banner with "🔄 Mistake Review Mode" |
