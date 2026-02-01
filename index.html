@@ -1751,6 +1751,11 @@ function show() {
     updateStats();
     renderList();
     
+    // Hide image panel when showing new question (only show after answer)
+    if (imagePanelOpen) {
+        toggleImagePanel();
+    }
+    
     // Priority 1: Review mistakes if in that mode
     if (reviewingMistakes && sessionMistakes.length > 0) {
         showMistakeReview();
