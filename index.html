@@ -1904,10 +1904,8 @@ function show() {
     answer.focus();
     answerStartTime = Date.now();
     
-    // Load images for the current word if panel is open
-    if (imagePanelOpen) {
-        loadImages(cur.w);
-    }
+    // Note: Images will only be shown after user answers, not before
+    // This prevents giving hints before the user attempts the answer
 }
 
 // Show a card from the mistake review queue
