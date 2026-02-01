@@ -2058,6 +2058,13 @@ answer.onkeydown = e => {
         setTimeout(() => answer.classList.remove('shake'), 500);
         waitingForNext = true;
         updateSessionUI();
+        
+        // Auto-show images after wrong answer
+        if (!imagePanelOpen) {
+            toggleImagePanel();
+        } else if (cur?.w) {
+            loadImages(cur.w);
+        }
         return;
     }
     
@@ -2096,6 +2103,13 @@ answer.onkeydown = e => {
     lastAnswerWrong = false;
     waitingForNext = true;
     msg.innerHTML = '<span style="color: #86868b;">Press Enter to continue</span>';
+    
+    // Auto-show images after correct answer
+    if (!imagePanelOpen) {
+        toggleImagePanel();
+    } else if (cur?.w) {
+        loadImages(cur.w);
+    }
     answer.value = '';
     answer.readOnly = true;
     answer.style.background = '#e8e8ed'; // Gray background (done)
