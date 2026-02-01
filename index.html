@@ -832,7 +832,9 @@
             z-index: 1000;
             transform: translateY(100%);
             transition: transform .3s ease;
-            max-height: 220px;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
         }
         .image-panel.show {
             transform: translateY(0);
@@ -845,6 +847,7 @@
             padding: .5rem 1rem;
             border-bottom: 1px solid #e8e8ed;
             background: #f5f5f7;
+            flex-shrink: 0;
         }
         .image-panel-title {
             font-size: .85rem;
@@ -880,93 +883,15 @@
         }
         
         .image-panel-content {
-            padding: 1rem;
-            overflow-x: auto;
-            overflow-y: hidden;
-            white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-            scrollbar-color: #d2d2d7 transparent;
-            min-height: 140px;
-        }
-        .image-panel-content::-webkit-scrollbar {
-            height: 6px;
-        }
-        .image-panel-content::-webkit-scrollbar-thumb {
-            background: #d2d2d7;
-            border-radius: 3px;
-        }
-        
-        .image-results {
-            display: flex;
-            gap: .75rem;
-            align-items: center;
-        }
-        
-        .image-result {
-            flex-shrink: 0;
-            width: 120px;
-            height: 120px;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #f5f5f7;
-            border: 1px solid #e8e8ed;
-            cursor: pointer;
-            transition: all .2s;
+            flex: 1;
             position: relative;
-        }
-        .image-result:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0,0,0,.15);
-        }
-        .image-result img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .image-result-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #86868b;
-            font-size: 2rem;
+            overflow: hidden;
         }
         
-        .image-loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: .5rem;
-            color: #86868b;
-            font-size: .9rem;
-            padding: 2rem;
+        .bing-iframe {
             width: 100%;
-        }
-        .image-loading::after {
-            content: '';
-            width: 16px;
-            height: 16px;
-            border: 2px solid #d2d2d7;
-            border-top-color: #0071e3;
-            border-radius: 50%;
-            animation: spin .8s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .image-error {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: .5rem;
-            color: #86868b;
-            font-size: .9rem;
-            padding: 2rem;
-            width: 100%;
+            height: 100%;
+            border: none;
         }
         
         /* Image toggle button in study panel */
@@ -1001,59 +926,10 @@
         
         /* Adjust container when image panel is visible */
         body.image-panel-open {
-            padding-bottom: 220px;
+            padding-bottom: 280px;
         }
         body.image-panel-open .study-panel {
-            max-height: calc(100vh - 280px);
-        }
-        
-        /* Image modal for full-size view */
-        .image-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,.85);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 2rem;
-        }
-        .image-modal-overlay.show {
-            display: flex;
-        }
-        .image-modal-content {
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #fff;
-        }
-        .image-modal-content img {
-            max-width: 100%;
-            max-height: 80vh;
-            display: block;
-        }
-        .image-modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(255,255,255,.2);
-            border: none;
-            color: #fff;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .image-modal-close:hover {
-            background: rgba(255,255,255,.3);
+            max-height: calc(100vh - 340px);
         }
     </style>
 </head>
@@ -1292,26 +1168,15 @@
     <div class="image-panel-header">
         <div class="image-panel-title">
             <span>🖼️</span>
-            Images for: <span class="word" id="imagePanelWord">-</span>
+            Bing Images for: <span class="word" id="imagePanelWord">-</span>
         </div>
         <div class="image-panel-actions">
-            <button onclick="refreshImages()" title="Refresh">🔄</button>
-            <button onclick="openBingSearch()" title="Open in Bing">🔍</button>
+            <button onclick="openBingSearch()" title="Open in new tab">🔗</button>
             <button class="image-panel-close" onclick="toggleImagePanel()" title="Close">×</button>
         </div>
     </div>
     <div class="image-panel-content">
-        <div class="image-results" id="imageResults">
-            <div class="image-loading">Loading images...</div>
-        </div>
-    </div>
-</div>
-
-<!-- ===== IMAGE MODAL (Full-size view) ===== -->
-<div class="image-modal-overlay" id="imageModal" onclick="closeImageModal()">
-    <button class="image-modal-close" onclick="closeImageModal()">×</button>
-    <div class="image-modal-content" onclick="event.stopPropagation()">
-        <img id="imageModalImg" src="" alt="Full size">
+        <iframe class="bing-iframe" id="bingIframe" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
     </div>
 </div>
 
@@ -2061,7 +1926,7 @@ answer.onkeydown = e => {
         if (!imagePanelOpen) {
             toggleImagePanel();
         } else if (cur?.w) {
-            loadImages(cur.w);
+            loadBingImages(cur.w);
         }
         return;
     }
@@ -2106,7 +1971,7 @@ answer.onkeydown = e => {
     if (!imagePanelOpen) {
         toggleImagePanel();
     } else if (cur?.w) {
-        loadImages(cur.w);
+        loadBingImages(cur.w);
     }
     answer.value = '';
     answer.readOnly = true;
@@ -2439,158 +2304,33 @@ function toggleImagePanel() {
         panel.classList.add('show');
         btn.classList.add('active');
         document.body.classList.add('image-panel-open');
-        // Load images for current word if in session
+        // Load Bing search for current word if in session
         if (cur && cur.w) {
-            loadImages(cur.w);
+            loadBingImages(cur.w);
         }
     } else {
         panel.classList.remove('show');
         btn.classList.remove('active');
         document.body.classList.remove('image-panel-open');
+        // Clear iframe when closing to stop loading
+        document.getElementById('bingIframe').src = 'about:blank';
     }
     
     localStorage.imagePanelOpen = imagePanelOpen;
 }
 
-// Load images from Bing Image Search
-async function loadImages(word) {
+// Load Bing Image Search in iframe
+function loadBingImages(word) {
     if (!word || word === currentImageWord) return;
     currentImageWord = word;
     
     document.getElementById('imagePanelWord').textContent = word;
-    const resultsContainer = document.getElementById('imageResults');
-    resultsContainer.innerHTML = '<div class="image-loading">Loading images...</div>';
+    const iframe = document.getElementById('bingIframe');
+    const encodedWord = encodeURIComponent(word);
     
-    try {
-        // Use Bing image search via a CORS-friendly approach
-        // We'll use the Bing image search URL with a fallback to showing search link
-        const images = await fetchBingImages(word);
-        
-        if (images.length === 0) {
-            resultsContainer.innerHTML = `
-                <div class="image-error">
-                    <span>⚠️</span> No images found. 
-                    <button onclick="openBingSearch()" style="margin-left: .5rem;">Search Bing</button>
-                </div>`;
-            return;
-        }
-        
-        resultsContainer.innerHTML = images.map((img, i) => `
-            <div class="image-result" onclick="openImageModal('${escapeHtml(img.url)}')" title="${escapeHtml(img.title || word)}">
-                <img src="${escapeHtml(img.thumbnail)}" alt="${escapeHtml(img.title || word)}" loading="lazy" onerror="this.parentElement.style.display='none'">
-            </div>
-        `).join('');
-        
-    } catch (error) {
-        console.error('Error loading images:', error);
-        resultsContainer.innerHTML = `
-            <div class="image-error">
-                <span>🔍</span> 
-                <a href="https://www.bing.com/images/search?q=${encodeURIComponent(word)}" target="_blank" style="color: #0071e3;">
-                    Search "${escapeHtml(word)}" on Bing Images
-                </a>
-            </div>`;
-    }
-}
-
-// Fetch images from multiple sources for better results
-async function fetchBingImages(query) {
-    const images = [];
-    const encodedQuery = encodeURIComponent(query);
-    
-    try {
-        // Try Wikimedia Commons API first (reliable, educational images)
-        try {
-            const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodedQuery}&srnamespace=6&format=json&origin=*&srlimit=10`;
-            const commonsResponse = await fetch(commonsUrl);
-            const commonsData = await commonsResponse.json();
-            
-            if (commonsData.query && commonsData.query.search && commonsData.query.search.length > 0) {
-                // Get image info for the search results
-                const titles = commonsData.query.search.slice(0, 6).map(s => s.title).join('|');
-                const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&iiprop=url|thumburl&iiurlwidth=300&format=json&origin=*`;
-                
-                const infoResponse = await fetch(imageInfoUrl);
-                const infoData = await infoResponse.json();
-                
-                const pages = infoData.query.pages;
-                for (const pageId in pages) {
-                    const page = pages[pageId];
-                    if (page.imageinfo && page.imageinfo[0]) {
-                        const info = page.imageinfo[0];
-                        images.push({
-                            url: info.url,
-                            thumbnail: info.thumburl || info.url,
-                            title: page.title.replace('File:', '').replace(/\.[^/.]+$/, '')
-                        });
-                    }
-                }
-            }
-        } catch (e) {
-            console.log('Wikimedia Commons fetch failed:', e);
-        }
-        
-        // Try Wikipedia as secondary source
-        if (images.length < 4) {
-            try {
-                const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodedQuery}&format=json&origin=*&srlimit=5`;
-                const wikiResponse = await fetch(wikiUrl);
-                const wikiData = await wikiResponse.json();
-                
-                if (wikiData.query && wikiData.query.search) {
-                    for (const result of wikiData.query.search.slice(0, 3)) {
-                        const imageUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(result.title)}&prop=pageimages&format=json&origin=*&pithumbsize=300`;
-                        
-                        const imgResponse = await fetch(imageUrl);
-                        const imgData = await imgResponse.json();
-                        
-                        const pages = imgData.query.pages;
-                        for (const pageId in pages) {
-                            const page = pages[pageId];
-                            if (page.thumbnail && page.thumbnail.source) {
-                                // Avoid duplicates
-                                const exists = images.some(img => img.thumbnail === page.thumbnail.source);
-                                if (!exists) {
-                                    images.push({
-                                        url: page.thumbnail.source,
-                                        thumbnail: page.thumbnail.source,
-                                        title: result.title
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (e) {
-                console.log('Wikipedia fetch failed:', e);
-            }
-        }
-        
-        // Use Lorem Flickr as a reliable fallback for any word
-        if (images.length < 6) {
-            const needed = 8 - images.length;
-            for (let i = 0; i < needed; i++) {
-                images.push({
-                    url: `https://loremflickr.com/400/400/${encodedQuery}?lock=${i}`,
-                    thumbnail: `https://loremflickr.com/120/120/${encodedQuery}?lock=${i}`,
-                    title: query
-                });
-            }
-        }
-        
-    } catch (error) {
-        console.error('Error fetching images:', error);
-    }
-    
-    return images.slice(0, 8);
-}
-
-// Refresh images for current word
-function refreshImages() {
-    if (currentImageWord) {
-        currentImageWord = ''; // Reset to force reload
-        loadImages(cur?.w || currentImageWord);
-    }
+    // Load Bing image search directly in iframe
+    // Using Bing's image search URL
+    iframe.src = `https://www.bing.com/images/search?q=${encodedWord}`;
 }
 
 // Open Bing search in new tab
@@ -2599,26 +2339,6 @@ function openBingSearch() {
     if (word) {
         window.open(`https://www.bing.com/images/search?q=${encodeURIComponent(word)}`, '_blank');
     }
-}
-
-// Open image modal for full-size view
-function openImageModal(url) {
-    const modal = document.getElementById('imageModal');
-    const img = document.getElementById('imageModalImg');
-    img.src = url;
-    modal.classList.add('show');
-}
-
-function closeImageModal() {
-    document.getElementById('imageModal').classList.remove('show');
-}
-
-// Escape HTML to prevent XSS
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 // ===== INITIALIZATION =====
