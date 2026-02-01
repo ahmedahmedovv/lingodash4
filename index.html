@@ -84,12 +84,12 @@
         .study-panel { 
             background: #fff; 
             border-radius: 20px; 
-            padding: 4rem; 
+            padding: 2.5rem; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
-            min-height: 550px; 
+            min-height: 400px; 
             box-shadow: 0 2px 8px rgba(0,0,0,.08); 
             position: sticky; 
             top: 1.5rem; /* Stick to top when scrolling */
@@ -99,10 +99,10 @@
         
         /* Example sentence with hidden word shown as ___ */
         .sentence { 
-            font-size: 2.2rem; 
+            font-size: 1.8rem; 
             line-height: 1.5; 
             text-align: center; 
-            margin-bottom: 2rem; 
+            margin-bottom: 1.5rem; 
             color: #1d1d1f; 
             max-width: 900px; 
         }
@@ -110,8 +110,8 @@
         /* Definition hint shown below the sentence */
         .hint { 
             color: #86868b; /* Gray hint text */ 
-            font-size: 1.3rem; 
-            margin-bottom: 3rem; 
+            font-size: 1.1rem; 
+            margin-bottom: 2rem; 
             text-align: center; 
             font-style: italic; 
             max-width: 800px; 
@@ -125,9 +125,9 @@
             border: 2px solid #d2d2d7; 
             background: #f5f5f7; 
             border-radius: 14px; 
-            padding: 1.3rem 2rem; 
-            width: 400px; 
-            font-size: 1.4rem; 
+            padding: 1rem 1.5rem; 
+            width: 380px; 
+            font-size: 1.3rem; 
             text-align: center; 
             outline: none; 
             transition: all .2s; 
@@ -139,8 +139,8 @@
         
         /* Feedback message (correct/incorrect/prompts) */
         .msg { 
-            margin-top: 2rem; 
-            font-size: 1.2rem; 
+            margin-top: 1.5rem; 
+            font-size: 1.1rem; 
             min-height: 1.5rem; 
             font-weight: 500; 
         }
@@ -832,7 +832,7 @@
             z-index: 1000;
             transform: translateY(100%);
             transition: transform .3s ease;
-            height: 280px;
+            height: 350px;
             display: flex;
             flex-direction: column;
         }
@@ -886,12 +886,15 @@
             flex: 1;
             position: relative;
             overflow: hidden;
+            background: #1a1a1a;
         }
         
         .bing-iframe {
             width: 100%;
             height: 100%;
             border: none;
+            margin-top: -60px; /* Hide Bing header */
+            height: calc(100% + 60px);
         }
         
         /* Image toggle button in study panel */
@@ -926,10 +929,14 @@
         
         /* Adjust container when image panel is visible */
         body.image-panel-open {
-            padding-bottom: 280px;
+            padding-bottom: 350px;
         }
         body.image-panel-open .study-panel {
-            max-height: calc(100vh - 340px);
+            max-height: calc(100vh - 400px);
+        }
+        
+        body.image-panel-open .container {
+            padding-bottom: 1rem;
         }
     </style>
 </head>
