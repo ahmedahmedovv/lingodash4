@@ -1751,9 +1751,10 @@ function show() {
     updateStats();
     renderList();
     
-    // Hide image panel when showing new question (only show after answer)
+    // Clear image panel when showing new question (only load images after answer)
     if (imagePanelOpen) {
-        toggleImagePanel();
+        document.getElementById('bingIframe').src = 'about:blank';
+        currentImageWord = '';
     }
     
     // Priority 1: Review mistakes if in that mode
@@ -1960,10 +1961,11 @@ answer.onkeydown = e => {
         waitingForNext = true;
         updateSessionUI();
         
-        // Auto-show images after wrong answer
+        // Load images after wrong answer
         if (!imagePanelOpen) {
             toggleImagePanel();
-        } else if (cur?.w) {
+        }
+        if (cur?.w) {
             loadBingImages(cur.w);
         }
         return;
@@ -2005,10 +2007,11 @@ answer.onkeydown = e => {
     waitingForNext = true;
     msg.innerHTML = '<span style="color: #86868b;">Press Enter to continue</span>';
     
-    // Auto-show images after correct answer
+    // Load images after correct answer
     if (!imagePanelOpen) {
         toggleImagePanel();
-    } else if (cur?.w) {
+    }
+    if (cur?.w) {
         loadBingImages(cur.w);
     }
     answer.value = '';
