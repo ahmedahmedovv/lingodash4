@@ -529,6 +529,74 @@
         .stat-pill.mastered { background: #e8f5e9; }
         .stat-pill.mastered .num { color: #34c759; }
 
+        /* Streak card */
+        .streak-card { 
+            background: linear-gradient(135deg, #fff9f0, #fff5f0); 
+            border-radius: 16px; 
+            padding: 1.25rem; 
+            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+            border: 1px solid #ffe4d6;
+        }
+        .streak-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .streak-title { 
+            font-size: .75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            color: #86868b; 
+            font-weight: 600; 
+        }
+        .streak-flame {
+            font-size: 1.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .streak-count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ff6b35;
+            line-height: 1;
+        }
+        .streak-label {
+            font-size: 0.85rem;
+            color: #86868b;
+            margin-top: 0.25rem;
+        }
+        .streak-progress {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #ffe4d6;
+        }
+        .streak-progress-bar {
+            height: 6px;
+            background: #ffe4d6;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .streak-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #ff9500);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+        .streak-progress-text {
+            font-size: 0.75rem;
+            color: #86868b;
+            margin-top: 0.4rem;
+            text-align: center;
+        }
+        .streak-complete {
+            color: #34c759;
+            font-weight: 600;
+        }
+
         /* Data management card (Export/Import/Clear) */
         .data-card { 
             background: #fff; 
@@ -896,6 +964,22 @@
             </div>
         </div>
 
+        <!-- STREAK CARD -->
+        <div class="streak-card">
+            <div class="streak-header">
+                <div class="streak-title">Daily Streak</div>
+                <div class="streak-flame" id="streakFlame">🔥</div>
+            </div>
+            <div class="streak-count" id="streakCount">0</div>
+            <div class="streak-label" id="streakLabel">day streak</div>
+            <div class="streak-progress">
+                <div class="streak-progress-bar">
+                    <div class="streak-progress-fill" id="streakProgressFill" style="width: 0%"></div>
+                </div>
+                <div class="streak-progress-text" id="streakProgressText">0 / 50 words today</div>
+            </div>
+        </div>
+
         <!-- DATA MANAGEMENT CARD -->
         <div class="data-card">
             <div class="data-title">Data</div>
@@ -1001,6 +1085,108 @@ const save = () => localStorage.cards = JSON.stringify(cards);
 // Save language settings
 const saveLangs = () => localStorage.languages = JSON.stringify(languages);
 const saveCurrentLang = () => localStorage.currentLang = currentLang;
+
+// ===== STREAK SYSTEM =====
+const DAILY_GOAL = 50; // Default words per day
+
+// Load streak data from localStorage
+let streakData = JSON.parse(localStorage.streakData || 'null') || {
+    currentStreak: 0,
+    lastStudyDate: null,
+    wordsStudiedToday: 0
+};
+
+// Save streak data
+const saveStreak = () => localStorage.streakData = JSON.stringify(streakData);
+
+// Get today's date string (YYYY-MM-DD)
+const getTodayString = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
+
+// Get yesterday's date string
+const getYesterdayString = () => {
+    const now = new Date();
+    now.setDate(now.getDate() - 1);
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
+
+// Check and update streak status
+function checkStreak() {
+    const today = getTodayString();
+    const yesterday = getYesterdayString();
+    
+    // If it's a new day, reset daily counter
+    if (streakData.lastStudyDate !== today) {
+        // Check if streak should be broken (more than 1 day gap)
+        if (streakData.lastStudyDate !== yesterday && streakData.lastStudyDate !== null) {
+            streakData.currentStreak = 0;
+        }
+        streakData.wordsStudiedToday = 0;
+        streakData.lastStudyDate = today;
+        saveStreak();
+    }
+}
+
+// Add words to today's count and check if goal is met
+function addWordsToStreak(count) {
+    checkStreak();
+    streakData.wordsStudiedToday += count;
+    
+    // If goal is reached for the first time today, increment streak
+    if (streakData.wordsStudiedToday >= DAILY_GOAL && streakData.wordsStudiedToday - count < DAILY_GOAL) {
+        streakData.currentStreak++;
+    }
+    
+    saveStreak();
+    updateStreakUI();
+}
+
+// Update streak UI elements
+function updateStreakUI() {
+    checkStreak();
+    
+    const streakCount = document.getElementById('streakCount');
+    const streakLabel = document.getElementById('streakLabel');
+    const streakFlame = document.getElementById('streakFlame');
+    const streakProgressFill = document.getElementById('streakProgressFill');
+    const streakProgressText = document.getElementById('streakProgressText');
+    
+    if (streakCount) streakCount.textContent = streakData.currentStreak;
+    if (streakLabel) streakLabel.textContent = streakData.currentStreak === 1 ? 'day streak' : 'days streak';
+    
+    // Update flame animation based on streak
+    if (streakFlame) {
+        if (streakData.currentStreak > 0) {
+            streakFlame.style.opacity = '1';
+            streakFlame.style.filter = 'none';
+        } else {
+            streakFlame.style.opacity = '0.5';
+            streakFlame.style.filter = 'grayscale(100%)';
+        }
+    }
+    
+    // Update progress bar
+    const progress = Math.min(100, (streakData.wordsStudiedToday / DAILY_GOAL) * 100);
+    if (streakProgressFill) streakProgressFill.style.width = `${progress}%`;
+    
+    // Update progress text
+    if (streakProgressText) {
+        if (streakData.wordsStudiedToday >= DAILY_GOAL) {
+            streakProgressText.innerHTML = `<span class="streak-complete">✓ Goal reached! ${streakData.wordsStudiedToday} words</span>`;
+        } else {
+            const remaining = DAILY_GOAL - streakData.wordsStudiedToday;
+            streakProgressText.textContent = `${streakData.wordsStudiedToday} / ${DAILY_GOAL} words today (${remaining} to go)`;
+        }
+    }
+}
+
+// Add streak info to welcome page
+function updateWelcomeStreakUI() {
+    checkStreak();
+    updateStreakUI();
+}
 
 // Get cards that are due for review in current language
 const dueCards = () => cards.filter(c => (c.due||0) <= Date.now() && (c.lang || 'en') === currentLang);
@@ -1256,6 +1442,7 @@ function returnToWelcome() {
 
 // Update progress bar and badge in top-left
 function updateSessionUI() {
+    checkStreak();
     const totalInSession = Math.min(sessionSize, sessionDueCards.length + sessionCardsStudied);
     const progress = Math.min(sessionCardsStudied, totalInSession);
     const percent = totalInSession > 0 ? (progress / totalInSession * 100) : 0;
@@ -1617,6 +1804,8 @@ answer.onkeydown = e => {
             // Normal session progress
             sessionDueCards = sessionDueCards.filter(c => !(c.w === cur.w && c.lang === cur.lang));
             sessionCardsStudied++;
+            // Add to streak counter
+            addWordsToStreak(1);
         }
         updateSessionUI();
     }
@@ -1937,9 +2126,11 @@ function handleImport(input) {
 
 // ===== INITIALIZATION =====
 // Run these when page loads
+checkStreak();
 renderLangSelect();
 updateWelcomeLangSelect();
 updateWelcomeStats();
+updateWelcomeStreakUI();
 updateStats();
 renderList();
 </script>
