@@ -1926,6 +1926,11 @@ answer.onkeydown = e => {
             sentence.textContent = cur.s.replace(new RegExp(escapeRegex(cur.w), 'gi'), '___');
             answer.focus();
             answerStartTime = Date.now();
+            // Clear image panel when asking again
+            if (imagePanelOpen) {
+                document.getElementById('bingIframe').src = 'about:blank';
+                currentImageWord = '';
+            }
             return;
         }
         
