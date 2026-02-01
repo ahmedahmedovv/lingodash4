@@ -2357,7 +2357,6 @@ function loadBingImages(word) {
     if (!word || word === currentImageWord) return;
     currentImageWord = word;
     
-    document.getElementById('imagePanelWord').textContent = word;
     const iframe = document.getElementById('bingIframe');
     const encodedWord = encodeURIComponent(word);
     
