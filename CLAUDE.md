@@ -50,12 +50,20 @@ CLAUDE.md     # This documentation
 |------|---------|
 | **Language** | Current language name, card count, selector dropdown, add/rename buttons |
 | **Stats** | Due Now, Learning, Mastered, Accuracy (per language) |
+| **Streak** | Daily streak counter, progress bar, words studied today |
 | **Data** | Export, Import, Clear All buttons |
 | **Words** | Sortable list with edit/delete actions, "Add Card" button |
 
 ### Focus Mode
 - Toggle with ☰ button (top-right)
 - Hides sidebar for distraction-free studying
+- State persisted in LocalStorage
+
+### Image Panel (Bottom)
+- Fixed bottom panel showing Bing image search results
+- Auto-opens after answering (correct or wrong)
+- Toggle with 🖼️ Images button or `I` key
+- Links to open full Bing search in new tab
 - State persisted in LocalStorage
 
 ---
@@ -79,6 +87,20 @@ CLAUDE.md     # This documentation
 - Correct Answers
 - Accuracy Percentage
 - Remaining cards still due
+
+---
+
+## Streak System
+
+### Daily Goal
+- Default: 50 words per day
+- Progress bar shows completion percentage
+- Streak increments when daily goal is reached
+
+### Streak Rules
+- Streak continues if you study every day
+- Missing a day resets streak to 0
+- Words count toward streak only on correct answers (not mistake reviews)
 
 ---
 
@@ -226,6 +248,20 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 | `formatInterval(mins)` | Format minutes as "new", "5m", "2h", "3d" |
 | `resetAll()` | Reset all cards to "new" state |
 
+### Image Panel
+| Function | Description |
+|----------|-------------|
+| `toggleImagePanel()` | Show/hide image panel |
+| `loadBingImages(word)` | Load Bing image search for word |
+| `openBingSearch()` | Open Bing search in new tab |
+
+### Streak
+| Function | Description |
+|----------|-------------|
+| `checkStreak()` | Verify/update streak status for today |
+| `addWordsToStreak(count)` | Add words to daily count, check goal |
+| `updateStreakUI()` | Refresh streak display elements |
+
 ---
 
 ## LocalStorage Keys
@@ -236,6 +272,8 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 | `languages` | JSON array of language objects |
 | `currentLang` | Currently selected language code |
 | `focusMode` | Boolean for focus mode state |
+| `imagePanelOpen` | Boolean for image panel state |
+| `streakData` | JSON object with streak info (currentStreak, lastStudyDate, wordsStudiedToday) |
 
 ---
 
@@ -244,7 +282,8 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 | Key | Action |
 |-----|--------|
 | `Enter` | Submit answer OR proceed to next card |
-| `Escape` | Close modals (Add/Edit) |
+| `Escape` | Close modals (Add/Edit/Image) |
+| `I` | Toggle image panel (when not typing) |
 
 ### Answer Flow with Enter Key
 1. Type answer → Press `Enter` → Feedback shown
@@ -305,9 +344,9 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 2. **Type**: User types answer
 3. **Submit**: Press Enter, calculate quality based on accuracy and speed
 4. **Evaluate**: Apply SM-2 algorithm, update card data
-5. **Show Result**: 
-   - Correct: Word highlighted in green
-   - Wrong: Word highlighted in red, shake animation, added to mistake queue
+5. **Show Result**:
+   - Correct: Word highlighted in green, image panel shows word images
+   - Wrong: Word highlighted in red, shake animation, added to mistake queue, image panel shows word images
 6. **Next**: Press Enter to continue to next card
 
 ---
@@ -325,9 +364,11 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 
 | State | Visual Indicator |
 |-------|-----------------|
-| Correct answer | Green highlighted word, gray input background |
-| Wrong answer | Red highlighted word, light red input background, shake animation |
+| Correct answer | Green highlighted word, gray input background, image panel opens |
+| Wrong answer | Red highlighted word, light red input background, shake animation, image panel opens |
 | Due cards | Orange status dot with glow |
 | Mastered cards | Green status dot |
 | New cards | Gray status dot |
 | Mistake review | Yellow banner with "🔄 Mistake Review Mode" |
+| Active streak | Animated flame emoji, orange progress bar |
+| Goal reached | Green checkmark in streak progress text |
