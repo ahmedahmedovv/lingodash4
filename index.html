@@ -1377,21 +1377,6 @@ function escapeRegex(str) {
 }
 
 /**
- * Speak a sentence using the Web Speech API
- * Used to reinforce pronunciation after answering
- * @param {string} text - The sentence to speak
- * @param {string} langCode - Language code (e.g., 'en', 'es', 'fr')
- */
-function speakSentence(text, langCode) {
-    if (!window.speechSynthesis) return;
-    speechSynthesis.cancel();  // Stop any previous speech
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = langCode || 'en';
-    speechSynthesis.speak(utterance);
-}
-
-/**
  * Validate that a sentence contains the target word
  * Shows error if missing, shows preview with word hidden if valid
  * @param {string} word - The word that should appear
@@ -1956,7 +1941,6 @@ answer.onkeydown = e => {
         }
         // Show the correct word in red
         sentence.innerHTML = cur.s.replace(new RegExp(`(${escapeRegex(cur.w)})`, 'gi'), `<span class="no">$1</span>`);
-        speakSentence(cur.s, cur.lang || 'en');  // TTS: hear correct pronunciation
         msg.innerHTML = '<span style="color: #86868b;">Press Enter to try again</span>';
         answer.value = '';
         answer.readOnly = true;
@@ -1990,7 +1974,6 @@ answer.onkeydown = e => {
 
     // Show the correct word in green
     sentence.innerHTML = cur.s.replace(new RegExp(`(${escapeRegex(cur.w)})`, 'gi'), `<span class="ok">$1</span>`);
-    speakSentence(cur.s, cur.lang || 'en');  // TTS: reinforce pronunciation
     
     // Update session progress
     if (inSession) {
