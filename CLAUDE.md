@@ -5,8 +5,16 @@ Single-file flashcard application with SM-2 spaced repetition algorithm and mult
 ## File Structure
 
 ```
-index.html    # Complete application (HTML, CSS, JS)
-CLAUDE.md     # This documentation
+index.html                      # Complete application (HTML, CSS, JS)
+CLAUDE.md                       # This documentation
+flashcard-tts-extension/        # Chrome extension for TTS
+├── manifest.json               # Extension configuration (Manifest V3)
+├── background.js               # Service worker (Google Translate TTS)
+├── content.js                  # Injected script for TTS controls
+├── content.css                 # TTS button styling
+├── popup.html                  # Extension popup UI
+├── popup.js                    # Popup functionality
+└── icons/                      # Extension icons (16, 48, 128px)
 ```
 
 ## Tech Stack
@@ -284,6 +292,8 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 | `Enter` | Submit answer OR proceed to next card |
 | `Escape` | Close modals (Add/Edit/Image) |
 | `I` | Toggle image panel (when not typing) |
+| `S` | Speak current word (TTS extension) |
+| `Shift + S` | Speak full sentence (TTS extension) |
 
 ### Answer Flow with Enter Key
 1. Type answer → Press `Enter` → Feedback shown
@@ -372,3 +382,61 @@ EF' = EF + (0.1 - (5 - q) × (0.08 + (5 - q) × 0.02))
 | Mistake review | Yellow banner with "🔄 Mistake Review Mode" |
 | Active streak | Animated flame emoji, orange progress bar |
 | Goal reached | Green checkmark in streak progress text |
+
+---
+
+## TTS Chrome Extension
+
+### Overview
+Chrome extension that adds Text-to-Speech using Google Translate TTS. Auto-speaks the sentence after answering.
+
+### Installation
+1. Open `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked**
+4. Select the `flashcard-tts-extension` folder
+
+### Supported URLs
+- `https://lingoflash.netlify.app/*`
+- `file:///*` (local files)
+- `http://localhost/*`
+
+### Features
+- **Auto-speak sentence**: Speaks full sentence after correct/incorrect answer
+- **Manual buttons**: Click to speak word or sentence
+- **Speed control**: 0.5x to 2x (default: 1.3x)
+- **Settings panel**: Toggle features on/off
+
+### Keyboard Shortcuts (TTS)
+
+| Key | Action |
+|-----|--------|
+| `S` | Speak current word |
+| `Shift + S` | Speak full sentence |
+
+### TTS Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Enable TTS | On | Master toggle |
+| Auto-speak on answer | On | Speak automatically after answering |
+| Speak sentence | On | Speak the full sentence |
+| Speak word only | Off | Speak just the word (alternative) |
+| Speed | 1.3x | Playback speed |
+
+### How It Works
+1. Content script detects when answer is revealed (`.ok` or `.no` class)
+2. Reads sentence text from DOM
+3. Sends to background script with language code
+4. Background fetches audio from Google Translate TTS
+5. Returns audio data URL for playback
+
+### Extension Storage Keys
+
+| Key | Content |
+|-----|---------|
+| `ttsEnabled` | Boolean for TTS on/off |
+| `autoSpeak` | Boolean for auto-speak |
+| `speakWord` | Boolean for word-only mode |
+| `speakSentence` | Boolean for sentence mode |
+| `speed` | Number for playback speed |

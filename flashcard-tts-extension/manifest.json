@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Flashcard TTS",
+  "version": "1.0.0",
+  "description": "Text-to-Speech for Flashcard App using Google Translate",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "file:///*",
+    "http://localhost/*",
+    "https://lingoflash.netlify.app/*",
+    "https://translate.googleapis.com/*",
+    "https://translate.google.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["file:///*", "http://localhost/*", "http://127.0.0.1/*", "https://lingoflash.netlify.app/*"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
