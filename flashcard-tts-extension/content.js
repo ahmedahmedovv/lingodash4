@@ -341,6 +341,15 @@ function observeAnswers() {
   if (!sentenceEl) return;
 
   const observer = new MutationObserver((mutations) => {
+    const sentenceText = sentenceEl.textContent.trim();
+    
+    // Reset lastSpokenSentence when card goes back to hidden state (showing ___)
+    // This happens when user is retrying after a wrong answer
+    if (sentenceText.includes('___')) {
+      lastSpokenSentence = '';
+      return;
+    }
+    
     // Check if word was revealed (has .ok or .no span)
     const revealed = sentenceEl.querySelector('.ok, .no');
     if (revealed && speechService.settings.autoSpeak && !speechService.speaking) {
@@ -348,19 +357,19 @@ function observeAnswers() {
       setTimeout(async () => {
         const lang = getCurrentLanguage();
 
-        // Get the full sentence text from DOM
-        const sentenceText = sentenceEl.textContent.trim();
+        // Get the full sentence text from DOM (fresh read)
+        const currentText = sentenceEl.textContent.trim();
 
         // Skip if still has blanks or same as last
-        if (sentenceText.includes('___') || sentenceText === lastSpokenSentence) {
+        if (currentText.includes('___') || currentText === lastSpokenSentence) {
           return;
         }
 
         // Speak sentence (default behavior)
         if (speechService.settings.speakSentence) {
-          lastSpokenSentence = sentenceText;
-          console.log('TTS speaking sentence:', sentenceText);
-          await speechService.speak(sentenceText, lang);
+          lastSpokenSentence = currentText;
+          console.log('TTS speaking sentence:', currentText);
+          await speechService.speak(currentText, lang);
         }
         // Or speak just the word if sentence is disabled
         else if (speechService.settings.speakWord) {

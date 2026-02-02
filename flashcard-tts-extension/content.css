@@ -232,10 +232,10 @@
 
 /* Position adjustments for flashcard app */
 .study-panel .tts-controls {
-  bottom: 4.5rem;
+  bottom: 0.5rem;
 }
 
 /* When image panel is open, adjust position */
 body.image-panel-open .tts-controls {
-  bottom: 5rem;
+  bottom: 0.5rem;
 }
