@@ -1,10 +1,10 @@
 /**
  * Flashcard TTS Extension - Content Script
  *
- * Injects TTS functionality into the flashcard app:
- * - Adds speaker buttons to speak words/sentences
+ * Provides TTS functionality for the flashcard app:
  * - Auto-speaks after correct/incorrect answers
  * - Keyboard shortcut (S key) to speak current word
+ * - Message handlers for popup TTS controls
  */
 
 // TTS Service class using Google Translate
@@ -38,7 +38,6 @@ class SpeechService {
 
     try {
       this.speaking = true;
-      this.updateButtonState(true);
 
       // Request TTS from background script
       const response = await chrome.runtime.sendMessage({
@@ -65,7 +64,8 @@ class SpeechService {
       console.error('Speech error:', error);
     } finally {
       this.speaking = false;
-      this.updateButtonState(false);
+      // Notify popup that speaking is finished
+      chrome.runtime.sendMessage({ action: 'speakingFinished' });
     }
   }
 
@@ -73,14 +73,7 @@ class SpeechService {
     this.audio.pause();
     this.audio.currentTime = 0;
     this.speaking = false;
-    this.updateButtonState(false);
-  }
-
-  updateButtonState(speaking) {
-    const buttons = document.querySelectorAll('.tts-btn');
-    buttons.forEach(btn => {
-      btn.classList.toggle('speaking', speaking);
-    });
+    chrome.runtime.sendMessage({ action: 'speakingFinished' });
   }
 }
 
@@ -125,212 +118,6 @@ function getCurrentLanguage() {
   if (welcomeLangSelect) return welcomeLangSelect.value;
 
   return null; // Let Google auto-detect
-}
-
-// Create TTS button element
-function createTTSButton(type = 'word') {
-  const btn = document.createElement('button');
-  btn.className = 'tts-btn tts-btn-' + type;
-  btn.title = type === 'word' ? 'Speak word (S)' : 'Speak sentence';
-
-  const icon = document.createElement('span');
-  icon.className = 'tts-icon';
-  icon.textContent = '\uD83D\uDD0A'; // Speaker emoji
-  btn.appendChild(icon);
-
-  btn.onclick = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (speechService.speaking) {
-      speechService.stop();
-      return;
-    }
-
-    const text = type === 'word' ? getCurrentWord() : getCurrentSentence();
-    const lang = getCurrentLanguage();
-
-    if (text) {
-      await speechService.speak(text, lang);
-    }
-  };
-
-  return btn;
-}
-
-// Inject TTS buttons into the study panel
-function injectTTSButtons() {
-  const studyPanel = document.getElementById('studyPanel');
-  if (!studyPanel) return;
-
-  // Check if already injected
-  if (document.querySelector('.tts-controls')) return;
-
-  // Create TTS controls container
-  const controls = document.createElement('div');
-  controls.className = 'tts-controls';
-
-  // Word speak button
-  const wordBtn = createTTSButton('word');
-  controls.appendChild(wordBtn);
-
-  // Sentence speak button
-  const sentBtn = createTTSButton('sentence');
-  const sentLabel = document.createElement('span');
-  sentLabel.className = 'tts-label';
-  sentLabel.textContent = 'Sentence';
-  sentBtn.appendChild(sentLabel);
-  controls.appendChild(sentBtn);
-
-  // Settings toggle
-  const settingsBtn = document.createElement('button');
-  settingsBtn.className = 'tts-btn tts-btn-settings';
-  settingsBtn.title = 'TTS Settings';
-  settingsBtn.textContent = '\u2699\uFE0F'; // Gear emoji
-  settingsBtn.onclick = toggleSettingsPanel;
-  controls.appendChild(settingsBtn);
-
-  // Insert into study panel
-  const studyActions = document.querySelector('.study-actions');
-  if (studyActions) {
-    studyActions.parentNode.insertBefore(controls, studyActions);
-  } else {
-    studyPanel.appendChild(controls);
-  }
-
-  // Create settings panel
-  createSettingsPanel();
-}
-
-// Create settings panel using DOM methods
-function createSettingsPanel() {
-  if (document.querySelector('.tts-settings-panel')) return;
-
-  const panel = document.createElement('div');
-  panel.className = 'tts-settings-panel';
-
-  // Header
-  const header = document.createElement('div');
-  header.className = 'tts-settings-header';
-
-  const headerTitle = document.createElement('span');
-  headerTitle.textContent = 'TTS Settings';
-  header.appendChild(headerTitle);
-
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'tts-settings-close';
-  closeBtn.textContent = '\u00D7';
-  closeBtn.onclick = () => panel.classList.remove('show');
-  header.appendChild(closeBtn);
-
-  panel.appendChild(header);
-
-  // Body
-  const body = document.createElement('div');
-  body.className = 'tts-settings-body';
-
-  // Create checkbox items
-  const checkboxes = [
-    { id: 'ttsEnabled', label: 'Enable TTS', checked: true },
-    { id: 'ttsAutoSpeak', label: 'Auto-speak on answer', checked: true },
-    { id: 'ttsSpeakSentence', label: 'Speak sentence', checked: true },
-    { id: 'ttsSpeakWord', label: 'Speak word only', checked: false }
-  ];
-
-  checkboxes.forEach(item => {
-    const label = document.createElement('label');
-    label.className = 'tts-checkbox';
-
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.id = item.id;
-    input.checked = item.checked;
-    input.addEventListener('change', saveSettingsFromPanel);
-    label.appendChild(input);
-
-    const span = document.createElement('span');
-    span.textContent = item.label;
-    label.appendChild(span);
-
-    body.appendChild(label);
-  });
-
-  // Speed control
-  const speedDiv = document.createElement('div');
-  speedDiv.className = 'tts-speed';
-
-  const speedLabel = document.createElement('label');
-  speedLabel.textContent = 'Speed: ';
-  const speedValue = document.createElement('span');
-  speedValue.id = 'speedValue';
-  speedValue.textContent = '1.3';
-  speedLabel.appendChild(speedValue);
-  speedLabel.appendChild(document.createTextNode('x'));
-  speedDiv.appendChild(speedLabel);
-
-  const speedInput = document.createElement('input');
-  speedInput.type = 'range';
-  speedInput.id = 'ttsSpeed';
-  speedInput.min = '0.5';
-  speedInput.max = '2';
-  speedInput.step = '0.1';
-  speedInput.value = '1.3';
-  speedInput.addEventListener('input', () => {
-    speedValue.textContent = parseFloat(speedInput.value).toFixed(1);
-  });
-  speedInput.addEventListener('change', saveSettingsFromPanel);
-  speedDiv.appendChild(speedInput);
-
-  body.appendChild(speedDiv);
-  panel.appendChild(body);
-
-  document.body.appendChild(panel);
-
-  // Load settings
-  loadSettingsToPanel();
-}
-
-function toggleSettingsPanel() {
-  const panel = document.querySelector('.tts-settings-panel');
-  if (panel) {
-    panel.classList.toggle('show');
-  }
-}
-
-async function loadSettingsToPanel() {
-  try {
-    const response = await chrome.runtime.sendMessage({ action: 'getSettings' });
-    if (response) {
-      document.getElementById('ttsEnabled').checked = response.ttsEnabled;
-      document.getElementById('ttsAutoSpeak').checked = response.autoSpeak;
-      document.getElementById('ttsSpeakWord').checked = response.speakWord;
-      document.getElementById('ttsSpeakSentence').checked = response.speakSentence;
-      document.getElementById('ttsSpeed').value = response.speed;
-      document.getElementById('speedValue').textContent = parseFloat(response.speed).toFixed(1);
-
-      speechService.settings = response;
-    }
-  } catch (e) {
-    console.log('Could not load settings');
-  }
-}
-
-async function saveSettingsFromPanel() {
-  const settings = {
-    ttsEnabled: document.getElementById('ttsEnabled').checked,
-    autoSpeak: document.getElementById('ttsAutoSpeak').checked,
-    speakWord: document.getElementById('ttsSpeakWord').checked,
-    speakSentence: document.getElementById('ttsSpeakSentence').checked,
-    speed: parseFloat(document.getElementById('ttsSpeed').value)
-  };
-
-  speechService.settings = settings;
-
-  try {
-    await chrome.runtime.sendMessage({ action: 'saveSettings', settings });
-  } catch (e) {
-    console.log('Could not save settings');
-  }
 }
 
 // Watch for answer reveals (when word is shown)
@@ -395,6 +182,19 @@ document.addEventListener('keydown', (e) => {
   // Don't trigger if typing in input
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
+  // Shift+S for sentence (check first)
+  if ((e.key === 's' || e.key === 'S') && e.shiftKey) {
+    e.preventDefault();
+    const sent = getCurrentSentence();
+    const lang = getCurrentLanguage();
+
+    if (sent) {
+      speechService.speak(sent, lang);
+    }
+    return;
+  }
+
+  // S for word
   if (e.key === 's' || e.key === 'S') {
     e.preventDefault();
     const word = getCurrentWord();
@@ -404,27 +204,57 @@ document.addEventListener('keydown', (e) => {
       speechService.speak(word, lang);
     }
   }
+});
 
-  // Shift+S for sentence
-  if ((e.key === 's' || e.key === 'S') && e.shiftKey) {
-    e.preventDefault();
-    const sent = getCurrentSentence();
-    const lang = getCurrentLanguage();
+// Handle messages from popup
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'settingsChanged') {
+    speechService.settings = { ...speechService.settings, ...request.settings };
+    sendResponse({ success: true });
+    return false;
+  }
 
-    if (sent) {
-      speechService.speak(sent, lang);
-    }
+  if (request.action === 'speakFromPopup') {
+    (async () => {
+      const lang = getCurrentLanguage();
+      const text = request.type === 'word' ? getCurrentWord() : getCurrentSentence();
+      
+      if (text) {
+        // Estimate duration for response
+        const duration = Math.max(1, text.length / 10);
+        speechService.speak(text, lang);
+        sendResponse({ success: true, duration });
+      } else {
+        sendResponse({ success: false, error: 'No text available' });
+      }
+    })();
+    return true; // Async response
+  }
+
+  if (request.action === 'stopSpeaking') {
+    speechService.stop();
+    sendResponse({ success: true });
+    return false;
   }
 });
 
+// Remove any existing TTS buttons from previous extension version
+function cleanupOldTTSButtons() {
+  const oldControls = document.querySelectorAll('.tts-controls, .tts-settings-panel');
+  oldControls.forEach(el => el.remove());
+}
+
 // Initialize when DOM is ready
 function init() {
+  // Clean up any old buttons first
+  cleanupOldTTSButtons();
+
   // Wait for app to load
   const checkReady = setInterval(() => {
     const studyPanel = document.getElementById('studyPanel');
     if (studyPanel) {
       clearInterval(checkReady);
-      injectTTSButtons();
+      cleanupOldTTSButtons(); // Clean again after panel loads
       observeAnswers();
       console.log('Flashcard TTS Extension initialized');
     }

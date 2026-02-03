@@ -1,6 +1,6 @@
 /**
  * Flashcard TTS Extension - Popup Script
- * Handles settings in the extension popup
+ * Handles settings and TTS controls in the extension popup
  */
 
 // DOM elements
@@ -11,8 +11,14 @@ const elements = {
   speakSentence: document.getElementById('speakSentence'),
   speed: document.getElementById('speed'),
   speedValue: document.getElementById('speedValue'),
-  status: document.getElementById('status')
+  status: document.getElementById('status'),
+  ttsControls: document.getElementById('ttsControls'),
+  speakWordBtn: document.getElementById('speakWordBtn'),
+  speakSentenceBtn: document.getElementById('speakSentenceBtn')
 };
+
+let currentTab = null;
+let isSpeaking = false;
 
 // Load settings from storage
 async function loadSettings() {
@@ -50,9 +56,8 @@ async function saveSettings() {
     await chrome.storage.local.set(settings);
 
     // Notify content script of settings change
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      chrome.tabs.sendMessage(tab.id, { action: 'settingsChanged', settings });
+    if (currentTab) {
+      chrome.tabs.sendMessage(currentTab.id, { action: 'settingsChanged', settings });
     }
   } catch (e) {
     console.log('Could not save settings');
@@ -63,6 +68,8 @@ async function saveSettings() {
 async function checkStatus() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    currentTab = tab;
+
     if (tab && tab.url) {
       const isFlashcardApp =
         tab.url.includes('file://') ||
@@ -73,9 +80,11 @@ async function checkStatus() {
       if (isFlashcardApp) {
         elements.status.textContent = 'TTS Ready';
         elements.status.classList.add('active');
+        elements.ttsControls.style.display = 'block';
       } else {
         elements.status.textContent = 'Open flashcard app to use TTS';
         elements.status.classList.remove('active');
+        elements.ttsControls.style.display = 'none';
       }
     }
   } catch (e) {
@@ -83,7 +92,56 @@ async function checkStatus() {
   }
 }
 
-// Event listeners
+// Send TTS message to content script
+async function sendSpeakMessage(type) {
+  if (!currentTab) return;
+
+  try {
+    // If already speaking, stop it
+    if (isSpeaking) {
+      await chrome.tabs.sendMessage(currentTab.id, { action: 'stopSpeaking' });
+      updateSpeakingState(false);
+      return;
+    }
+
+    updateSpeakingState(true, type);
+
+    const response = await chrome.tabs.sendMessage(currentTab.id, { 
+      action: 'speakFromPopup', 
+      type: type 
+    });
+
+    // If speak finished or failed
+    setTimeout(() => {
+      updateSpeakingState(false);
+    }, response && response.duration ? response.duration * 1000 : 5000);
+
+  } catch (e) {
+    console.log('Could not send speak message:', e);
+    updateSpeakingState(false);
+  }
+}
+
+// Update UI when speaking
+function updateSpeakingState(speaking, type = null) {
+  isSpeaking = speaking;
+
+  elements.speakWordBtn.classList.toggle('speaking', speaking && type === 'word');
+  elements.speakSentenceBtn.classList.toggle('speaking', speaking && type === 'sentence');
+
+  // Change icon to stop when speaking
+  const icon = speaking ? '⏹' : '🔊';
+  if (speaking && type === 'word') {
+    elements.speakWordBtn.querySelector('.icon').textContent = icon;
+  } else if (speaking && type === 'sentence') {
+    elements.speakSentenceBtn.querySelector('.icon').textContent = icon;
+  } else {
+    elements.speakWordBtn.querySelector('.icon').textContent = '🔊';
+    elements.speakSentenceBtn.querySelector('.icon').textContent = '🔊';
+  }
+}
+
+// Event listeners for settings
 elements.ttsEnabled.addEventListener('change', saveSettings);
 elements.autoSpeak.addEventListener('change', saveSettings);
 elements.speakWord.addEventListener('change', saveSettings);
@@ -94,6 +152,17 @@ elements.speed.addEventListener('input', () => {
 });
 
 elements.speed.addEventListener('change', saveSettings);
+
+// TTS button event listeners
+elements.speakWordBtn.addEventListener('click', () => sendSpeakMessage('word'));
+elements.speakSentenceBtn.addEventListener('click', () => sendSpeakMessage('sentence'));
+
+// Listen for messages from content script (speaking finished)
+chrome.runtime.onMessage.addListener((request) => {
+  if (request.action === 'speakingFinished') {
+    updateSpeakingState(false);
+  }
+});
 
 // Initialize
 loadSettings();
