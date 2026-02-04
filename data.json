@@ -1,0 +1,619 @@
+{
+    "version": 1,
+    "exportedAt": "2026-02-04T14:17:28.117Z",
+    "language": "English",
+    "languageCode": "en",
+    "cardCount": 61,
+    "cards": [
+      {
+        "w": "surplus",
+        "d": "An amount that remains when use or need is satisfied.",
+        "s": "After the harvest, the farmer sold his surplus crops at the local market.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "dwell",
+        "d": "To live in or reside at a place.",
+        "s": "It's better not to dwell on past mistakes and instead focus on the future.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "crooked",
+        "d": "Not straight; bent or twisted out of shape.",
+        "s": "The old fence had a crooked post that leaned to one side.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "painstaking",
+        "d": "Requiring careful effort and great attention to detail over a long period.",
+        "s": "She completed a painstaking restoration of the antique clock, polishing every tiny gear by hand.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "squinted",
+        "d": "To look at something with your eyes partly closed, often to see better or because of bright light.",
+        "s": "She squinted at the tiny letters on the medicine bottle, trying to read the instructions.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "unrequited",
+        "d": "Felt by one person but not returned by another, especially in matters of love.",
+        "s": "She wrote many poems about her unrequited love for the boy next door.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "studious",
+        "d": "Someone who spends a lot of time reading, learning, and paying close attention to details.",
+        "s": "Maria is so studious that she always finishes her homework before dinner and still finds time to read extra books.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "forefront",
+        "d": "The leading or most important position in a movement, field, or activity.",
+        "s": "The scientist's groundbreaking research put her at the forefront of cancer treatment advancements.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "Convent",
+        "d": "A building where a community of nuns live and work.",
+        "s": "When she was young, she attended a school run by the nuns at the local convent.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "instigator",
+        "d": "A person who causes something to happen, especially something bad or trouble.",
+        "s": "The police identified the instigator of the fight and arrested him for starting the disturbance.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "lurked",
+        "d": "Stayed hidden or moved quietly, often with a secret or harmful intention.",
+        "s": "The cat lurked behind the bushes, waiting to pounce on the unsuspecting bird.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "tacit",
+        "d": "Understood without being openly expressed or stated.",
+        "s": "The team had a tacit agreement to never discuss their past failures during meetings.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "strides",
+        "d": "Significant progress or improvements in a particular area.",
+        "s": "She has made great strides in her English speaking skills since she started practicing daily.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "nip",
+        "d": "To take a small bite or pinch quickly, often sharply or suddenly.",
+        "s": "The puppy tried to nip at my fingers while we were playing.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "clandestinely",
+        "d": "In a secretive or hidden manner, often to avoid being caught or noticed.",
+        "s": "The spy clandestinely passed the classified documents to his contact during the crowded market day.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "expectantly",
+        "d": "In a way that shows you are waiting hopefully for something to happen or arrive.",
+        "s": "The children looked up expectantly as their teacher reached into her bag, hoping she had brought treats.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "discerning",
+        "d": "Showing good judgment and understanding, especially in matters of taste or quality.",
+        "s": "The discerning customer always chose the freshest produce at the market.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "crust",
+        "d": "The hard outer layer of bread, pie, or the Earth's surface.",
+        "s": "She carefully removed the crust from her sandwich before eating it.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "bobbed",
+        "d": "Moved quickly up and down in a short motion.",
+        "s": "The apple bobbed in the bucket of water as the children tried to grab it with their teeth.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "gloomily",
+        "d": "In a way that shows sadness, darkness, or lack of hope.",
+        "s": "She stared gloomily out the window as the rain poured down without end.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "clamped",
+        "d": "Held tightly together or secured in place, often with a device.",
+        "s": "She clamped the papers between two heavy books to keep them from blowing away.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "thereof",
+        "d": "Of that or from that thing just mentioned.",
+        "s": "The contract and all terms thereof must be reviewed carefully before signing.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "pester",
+        "d": "To repeatedly annoy or bother someone, especially with frequent requests or questions.",
+        "s": "The little boy would constantly pester his older sister to play video games with him.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "groaned",
+        "d": "Made a deep, low sound because of pain, annoyance, or disappointment.",
+        "s": "She groaned when she saw the pile of homework she had to finish by tomorrow.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "triumph",
+        "d": "A great victory or success achieved after overcoming difficulties.",
+        "s": "The team's hard work led to a well-deserved triumph in the championship game.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "gleam",
+        "d": "A small, bright light reflected from a surface.",
+        "s": "The morning sun made the dew on the grass gleam like tiny diamonds.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "Ineffable",
+        "d": "Too great or extreme to be expressed or described in words.",
+        "s": "The beauty of the sunset over the ocean was so stunning that it left us with an ineffable sense of wonder.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "dill",
+        "d": "A feathery green herb with a fresh, slightly tangy flavor often used in cooking and pickling.",
+        "s": "She sprinkled fresh dill over the salmon before baking it to add extra flavor.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "croaked",
+        "d": "Made a deep, rough sound like a frog or a person with a hoarse voice.",
+        "s": "The old man croaked his answer so quietly that I had to lean in to hear him.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "shrugged",
+        "d": "Raised the shoulders slightly to express doubt, indifference, or lack of knowledge.",
+        "s": "When I asked him if he knew where the keys were, he just shrugged and walked away.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "shuddered",
+        "d": "To tremble convulsively, typically as a result of fear, cold, or disgust.",
+        "s": "When she heard the eerie noise coming from the attic, she shuddered and pulled the blanket tighter around herself.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "glumly",
+        "d": "In a way that shows sadness or low spirits.",
+        "s": "After hearing the bad news, she sat glumly in the corner and didn’t speak to anyone.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "plodded",
+        "d": "To move slowly and heavily, often with effort or tiredness.",
+        "s": "The tired hiker plodded up the steep mountain trail, taking one slow step at a time.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "prophecies",
+        "d": "Statements about future events, often believed to be divinely inspired.",
+        "s": "The ancient book was filled with mysterious prophecies about the end of the world.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "erratic",
+        "d": "Not consistent or regular in pattern or movement; unpredictable.",
+        "s": "The bus arrived at erratic times, making it hard for passengers to plan their trips.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "penchant",
+        "d": "A strong or habitual liking for something or tendency to do something.",
+        "s": "She has a penchant for collecting vintage postcards from every city she visits.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "proclaim",
+        "d": "To announce something publicly or officially, often in a formal or confident way.",
+        "s": "The mayor stood on the steps of city hall to proclaim the start of the annual festival.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "Discharge",
+        "d": "To release or let go of something, often officially or from a place.",
+        "s": "The hospital will discharge the patient tomorrow after her recovery.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "fide",
+        "d": "Trust or faith, especially in a religious or legal context.",
+        "s": "The knight swore an oath of fealty and fide to his king, promising unwavering loyalty.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "untoe",
+        "d": "To remove or loosen the fastening of shoes or boots.",
+        "s": "She had to untoe her tight boots after the long hike to relieve her sore feet.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "Preface",
+        "d": "An introductory statement at the beginning of a book or speech explaining its purpose or scope.",
+        "s": "In the preface of her novel, the author thanked her family for their support during the writing process.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "endorse",
+        "d": "To publicly or officially say that you support or approve of someone or something.",
+        "s": "The famous athlete agreed to endorse the new sports drink in a series of commercials.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "inclusive",
+        "d": "Covering or including everyone, especially those who might otherwise be left out.",
+        "s": "Our school’s new policy is inclusive, ensuring all students feel welcome regardless of their background.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "bulwark",
+        "d": "A strong defense or protection against danger or difficulty.",
+        "s": "The ancient castle walls served as a bulwark against enemy invasions for centuries.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "contested",
+        "d": "Disputed or challenged, often in a competitive or argumentative way.",
+        "s": "The two candidates fiercely contested the election results, each claiming victory.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "heinous",
+        "d": "Extremely wicked or shockingly evil.",
+        "s": "The criminal was sentenced to life in prison for his heinous acts of violence against innocent people.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "atrocities",
+        "d": "Extremely cruel or violent acts, often committed during war or conflict.",
+        "s": "The documentary exposed the atrocities committed during the civil war, shocking viewers around the world.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "reaffirms",
+        "d": "To state again strongly or confirm something that was previously said or believed.",
+        "s": "The president’s speech reaffirms the government’s commitment to improving education for all children.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "deterrence",
+        "d": "The act of discouraging someone from doing something by making them fear the consequences.",
+        "s": "The government increased police patrols as a form of deterrence against crime in the neighborhood.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "underscore",
+        "d": "To emphasize the importance or truth of something.",
+        "s": "The teacher used a red pen to underscore the key points in the student's essay.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "backbone",
+        "d": "The main support or strength of something.",
+        "s": "A strong education system is the backbone of a successful society.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "coercion",
+        "d": "The practice of forcing someone to do something by using threats or pressure.",
+        "s": "The manager denied using coercion to make employees work overtime, insisting they volunteered.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "underpins",
+        "d": "Forms the foundation or basis for something.",
+        "s": "Trust underpins every successful team, as members rely on each other to complete tasks honestly.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "sovereignty",
+        "d": "The supreme authority or power to govern a territory without outside interference.",
+        "s": "The country fought for decades to regain its sovereignty after years of foreign occupation.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "subversion",
+        "d": "An attempt to weaken or overthrow a government, system, or established order.",
+        "s": "The spy was arrested for acts of subversion after trying to leak classified documents to a foreign power.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "safeguard",
+        "d": "A measure taken to protect someone or something from harm or damage.",
+        "s": "Parents install childproof locks to safeguard their toddlers from household dangers.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "ironclad",
+        "d": "Something that is very strong, certain, or impossible to change or break.",
+        "s": "The company offered an ironclad guarantee that the product would last for ten years.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "enshrined",
+        "d": "Protected and preserved as sacred or highly important, often in a formal or official way.",
+        "s": "The country’s constitution enshrined the right to free speech for all citizens.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "interfere",
+        "d": "To get involved in a situation where your help is not wanted or needed, often causing problems.",
+        "s": "Please don’t interfere with my work unless you have something important to say.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "multilateral",
+        "d": "Involving three or more countries, parties, or groups working together.",
+        "s": "The United Nations organized a multilateral meeting to discuss climate change solutions.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      },
+      {
+        "w": "annexation",
+        "d": "The act of taking control of a territory and adding it to another country or region, often by force.",
+        "s": "The annexation of Crimea by Russia in 2014 sparked international controversy and sanctions.",
+        "int": 1,
+        "due": 0,
+        "ef": 2.5,
+        "n": 0,
+        "lang": "en"
+      }
+    ]
+  }

@@ -2012,21 +2012,35 @@ function handleImport(input) {
     input.files[0].text().then(t => {
         try {
             const data = JSON.parse(t);
-            let newCards = [];
+            let importedCards = [];
             
             // Support both object format {cards: [...]} and array format [...]
             if (data.cards && Array.isArray(data.cards)) {
-                newCards = data.cards;
+                importedCards = data.cards;
             } else if (Array.isArray(data)) {
-                newCards = data;
+                importedCards = data;
             } else {
                 alert('Invalid JSON format');
                 return;
             }
             
-            // Validate and deduplicate
-            newCards = newCards.filter(c => c.w && c.s && c.d);
-            cards = cards.filter(c => !newCards.find(nc => nc.w === c.w && nc.lang === c.lang));
+            // Validate cards
+            importedCards = importedCards.filter(c => c.w && c.s && c.d);
+            
+            // Skip duplicates - keep existing cards, only add new ones
+            const duplicates = [];
+            const newCards = [];
+            
+            for (const imported of importedCards) {
+                const exists = cards.some(c => c.w === imported.w && c.lang === imported.lang);
+                if (exists) {
+                    duplicates.push(imported.w);
+                } else {
+                    newCards.push(imported);
+                }
+            }
+            
+            // Add only new cards
             cards = cards.concat(newCards);
             save();
             
@@ -2034,7 +2048,20 @@ function handleImport(input) {
             updateStats();
             renderList();
             
-            alert(`Imported ${newCards.length} cards!`);
+            // Show result message
+            let message = '';
+            if (newCards.length > 0) {
+                message += `Imported ${newCards.length} new card${newCards.length > 1 ? 's' : ''}!`;
+            }
+            if (duplicates.length > 0) {
+                if (message) message += '\n\n';
+                message += `Skipped ${duplicates.length} duplicate${duplicates.length > 1 ? 's' : ''}:\n${duplicates.slice(0, 5).join(', ')}${duplicates.length > 5 ? ` and ${duplicates.length - 5} more` : ''}`;
+            }
+            if (!message) {
+                message = 'No valid cards to import.';
+            }
+            
+            alert(message);
         } catch (e) {
             alert('Error reading JSON file: ' + e.message);
         }
