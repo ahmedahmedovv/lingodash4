@@ -815,36 +815,6 @@
             height: calc(100% + 60px);
         }
         
-        /* Image toggle button in study panel */
-        .btn-images {
-            position: absolute;
-            bottom: 1.5rem;
-            left: 1.5rem;
-            display: none; /* Hidden by default, shown during study */
-            align-items: center;
-            gap: .4rem;
-            padding: .5rem 1rem;
-            background: #f5f5f7;
-            border: 1px solid #d2d2d7;
-            border-radius: 8px;
-            font-size: .9rem;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: all .2s;
-        }
-        .btn-images:hover {
-            opacity: 1;
-            background: #e8e8ed;
-        }
-        .btn-images.active {
-            background: #0071e3;
-            color: #fff;
-            border-color: #0071e3;
-        }
-        .btn-images.visible {
-            display: flex;
-        }
-        
         /* Adjust container when image panel is visible */
         body.image-panel-open {
             padding-bottom: 380px;
@@ -920,11 +890,6 @@
                 <button onclick="editCurrentCard()" title="Edit">✏️</button>
                 <button class="btn-delete" onclick="deleteCurrentCard()" title="Delete">🗑️</button>
             </div>
-            
-            <!-- Images button -->
-            <button class="btn-images" id="btnImages" onclick="toggleImagePanel()" title="Show word images">
-                <span>🖼️</span> Images
-            </button>
             
             <!-- EDIT MODAL: Popup to edit the current card -->
             <div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
@@ -1526,12 +1491,6 @@ document.onkeydown = e => {
         closeAddModal();
         closeImageModal();
     }
-    // 'I' key toggles image panel
-    if (e.key === 'i' || e.key === 'I') {
-        if (isStudying && document.activeElement !== answer) {
-            toggleImagePanel();
-        }
-    }
 };
 
 // ENTER key handles answer submission and progression
@@ -1945,12 +1904,11 @@ if (imagePanelOpen) {
 
 function toggleImagePanel() {
     const panel = document.getElementById('imagePanel');
-    const btn = document.getElementById('btnImages');
     imagePanelOpen = !imagePanelOpen;
     
     if (imagePanelOpen) {
         panel.classList.add('show');
-        btn.classList.add('active');
+
         document.body.classList.add('image-panel-open');
         // Load Bing search for current word if in session
         if (cur && cur.w) {
@@ -1958,7 +1916,7 @@ function toggleImagePanel() {
         }
     } else {
         panel.classList.remove('show');
-        btn.classList.remove('active');
+
         document.body.classList.remove('image-panel-open');
         // Clear iframe when closing to stop loading
         document.getElementById('bingIframe').src = 'about:blank';
