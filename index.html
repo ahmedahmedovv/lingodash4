@@ -830,11 +830,19 @@
 </head>
 <body>
 
-<!-- ===== SESSION PROGRESS (Top Left) ===== -->
-<!-- Shows "5/20" progress and how many mistakes to review -->
-<div class="session-info" id="sessionInfo" style="display: none;">
-    <div>Session: <span id="sessionProgress">0/20</span> <span id="mistakeBadge" class="mistake-badge" style="display: none;"></span></div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+<!-- ===== DAILY PROGRESS (Top Left) ===== -->
+<!-- Shows daily study progress for current language -->
+<div class="daily-progress" id="dailyProgress">
+    <div class="daily-progress-header">
+        <span class="daily-label">Today's Progress</span>
+        <span class="daily-count"><span id="dailyStudied">0</span> / <span id="dailyGoal">50</span></span>
+    </div>
+    <div class="daily-progress-bar">
+        <div class="daily-progress-fill" id="dailyProgressFill" style="width: 0%"></div>
+    </div>
+    <div class="daily-goal-reached" id="dailyGoalReached" style="display: none;">
+        🎉 Daily goal reached! Come back tomorrow.
+    </div>
 </div>
 
 <!-- ===== TOP BAR (Top Right) ===== -->
@@ -1065,6 +1073,74 @@ let cards = JSON.parse(localStorage.cards || 'null') || [
 let languages = JSON.parse(localStorage.languages || 'null') || [{code: 'en', name: 'English'}];
 let currentLang = localStorage.currentLang || 'en';
 
+// ===== DAILY STUDY TRACKING =====
+// Daily goal: 50 words per language
+const DAILY_GOAL = 50;
+
+// Load daily progress from localStorage
+// Structure: { '2024-01-15': { 'en': 23, 'es': 15, ... } }
+function getDailyProgress() {
+    const today = new Date().toISOString().split('T')[0];
+    const stored = JSON.parse(localStorage.dailyProgress || '{}');
+    
+    // Check if we need to reset (new day)
+    const lastStudyDate = localStorage.lastStudyDate;
+    if (lastStudyDate !== today) {
+        // It's a new day, reset progress
+        localStorage.lastStudyDate = today;
+        return {};
+    }
+    
+    return stored[today] || {};
+}
+
+function saveDailyProgress(progress) {
+    const today = new Date().toISOString().split('T')[0];
+    const stored = JSON.parse(localStorage.dailyProgress || '{}');
+    stored[today] = progress;
+    localStorage.dailyProgress = JSON.stringify(stored);
+    localStorage.lastStudyDate = today;
+}
+
+// Get today's count for current language
+function getTodayCount() {
+    const progress = getDailyProgress();
+    return progress[currentLang] || 0;
+}
+
+// Increment today's count for current language
+function incrementTodayCount() {
+    const progress = getDailyProgress();
+    progress[currentLang] = (progress[currentLang] || 0) + 1;
+    saveDailyProgress(progress);
+    updateDailyProgressUI();
+}
+
+// Check if daily goal is reached for current language
+function isDailyGoalReached() {
+    return getTodayCount() >= DAILY_GOAL;
+}
+
+// Update the daily progress UI
+function updateDailyProgressUI() {
+    const count = getTodayCount();
+    const percentage = Math.min((count / DAILY_GOAL) * 100, 100);
+    
+    document.getElementById('dailyStudied').textContent = count;
+    document.getElementById('dailyGoal').textContent = DAILY_GOAL;
+    
+    const fill = document.getElementById('dailyProgressFill');
+    fill.style.width = percentage + '%';
+    
+    if (count >= DAILY_GOAL) {
+        fill.classList.add('complete');
+        document.getElementById('dailyGoalReached').style.display = 'block';
+    } else {
+        fill.classList.remove('complete');
+        document.getElementById('dailyGoalReached').style.display = 'none';
+    }
+}
+
 // ===== STUDY STATE =====
 let isStudying = false;         // Is study mode active?
 let waitingForNext = false;     // Waiting for Enter key to proceed?
@@ -1240,10 +1316,25 @@ if (localStorage.focusMode === 'true') {
 // Update the "X due" count on welcome screen
 function updateWelcomeStats() {
     const due = dueCards().length;
+    const todayCount = getTodayCount();
     document.getElementById('welcomeDue').textContent = due;
     const startBtn = document.getElementById('startBtn');
-    startBtn.disabled = due === 0;
-    startBtn.textContent = due === 0 ? 'No Cards Due' : 'Start Studying';
+    
+    // Check if daily goal is already reached
+    if (todayCount >= DAILY_GOAL) {
+        startBtn.disabled = false;
+        startBtn.textContent = `Daily Goal Reached (${todayCount}/${DAILY_GOAL})`;
+        startBtn.style.background = '#34c759';
+    } else if (due === 0) {
+        startBtn.disabled = true;
+        startBtn.textContent = 'No Cards Due';
+        startBtn.style.background = '';
+    } else {
+        startBtn.disabled = false;
+        const remaining = Math.min(due, DAILY_GOAL - todayCount);
+        startBtn.textContent = `Start Studying (${remaining} for daily goal)`;
+        startBtn.style.background = '';
+    }
 }
 
 // Populate language dropdown on welcome page
@@ -1257,6 +1348,7 @@ function changeWelcomeLang() {
     currentLang = document.getElementById('welcomeLangSelect').value;
     saveCurrentLang();
     renderLangSelect();
+    updateDailyProgressUI();
     updateWelcomeStats();
     updateStats();
     renderList();
@@ -1266,11 +1358,17 @@ function changeWelcomeLang() {
 
 /**
  * Start studying - shows due cards based purely on SRS
- * No sessions, no limits - just pure spaced repetition
+ * Checks daily goal first
  */
 function startStudying() {
     const due = dueCards();
     if (due.length === 0) return;
+    
+    // Check if daily goal already reached
+    if (isDailyGoalReached()) {
+        showDailyGoalComplete();
+        return;
+    }
     
     document.getElementById('welcomePage').style.display = 'none';
     document.getElementById('studyInterface').style.display = '';
@@ -1316,6 +1414,7 @@ function switchLang() {
     saveCurrentLang();
     renderLangSelect();
     updateWelcomeLangSelect();
+    updateDailyProgressUI(); // Update daily progress for new language
     if (isStudying) {
         returnToWelcome();
     } else {
@@ -1475,6 +1574,26 @@ function showStudyComplete() {
         </div>`;
 }
 
+// Show daily goal completion screen
+function showDailyGoalComplete() {
+    const count = getTodayCount();
+    sentence.textContent = '';
+    sentence.classList.remove('done-msg');
+    hint.textContent = '';
+    answer.style.display = 'none';
+    document.getElementById('studyActions').style.display = 'none';
+    
+    msg.innerHTML = 
+        `<div class="session-complete">
+        <h2>🎉 Daily Goal Reached!</h2>
+        <p style="color: #86868b; margin: 1rem 0;">You've studied <strong>${count}</strong> words today.</p>
+        <p style="color: #86868b; margin-bottom: 1rem;">Great job! Come back tomorrow to continue.</p>
+        <div class="session-actions">
+            <button class="btn-primary" onclick="returnToWelcome()">Back to Home</button>
+        </div>
+        </div>`;
+}
+
 // Reset all cards to "new" state (for testing or restarting)
 function resetAll() {
     cards.forEach(c => { c.due = 0; c.n = 0; c.int = 1; });
@@ -1516,6 +1635,12 @@ answer.onkeydown = e => {
                 document.getElementById('bingIframe').src = 'about:blank';
                 currentImageWord = '';
             }
+            return;
+        }
+        
+        // Check if daily goal reached - show completion screen
+        if (isDailyGoalReached()) {
+            showDailyGoalComplete();
             return;
         }
         
@@ -1563,6 +1688,9 @@ answer.onkeydown = e => {
     cur.lastReview = new Date().toISOString();
     cur.lastQuality = quality;
     save();
+    
+    // Track daily progress
+    incrementTodayCount();
 
     // Show the correct word in green
     sentence.innerHTML = cur.s.replace(new RegExp(`(${escapeRegex(cur.w)})`, 'gi'), `<span class="ok">$1</span>`);
@@ -1571,7 +1699,13 @@ answer.onkeydown = e => {
     
     lastAnswerWrong = false;
     waitingForNext = true;
-    msg.innerHTML = '<span style="color: #86868b;">Press Enter to continue</span>';
+    
+    // Check if daily goal reached
+    if (isDailyGoalReached()) {
+        msg.innerHTML = '<span style="color: #34c759; font-weight: 600;">🎉 Daily goal reached! Press Enter to finish.</span>';
+    } else {
+        msg.innerHTML = '<span style="color: #86868b;">Press Enter to continue</span>';
+    }
     
     // Load images after correct answer
     if (!imagePanelOpen) {
@@ -1953,6 +2087,7 @@ updateWelcomeLangSelect();
 updateWelcomeStats();
 updateStats();
 renderList();
+updateDailyProgressUI();
 </script>
 </body>
 </html>
