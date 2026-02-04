@@ -67,58 +67,32 @@
             z-index: 10; 
         }
         
-        /* ===== DAILY PROGRESS (Top Left) ===== */
-        .daily-progress { 
-            position: fixed; 
-            top: 1.5rem; 
-            left: 1.5rem; 
-            background: #fff; 
-            padding: .75rem 1rem; 
-            border-radius: 12px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,.1); 
-            font-size: .9rem; 
-            z-index: 10;
-            min-width: 180px;
+        /* ===== DAILY PROGRESS BAR (Above Study Panel) ===== */
+        .daily-progress-bar-container {
+            width: 100%;
+            height: 4px;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transition: opacity .3s ease;
         }
-        .daily-progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: .4rem;
+        .daily-progress-bar-container.show {
+            opacity: 1;
         }
-        .daily-label {
-            font-weight: 500;
-            color: #1d1d1f;
-        }
-        .daily-count {
-            font-weight: 600;
-            color: #0071e3;
-        }
-        .daily-progress-bar { 
+        .daily-progress-bar-container .daily-progress-bar { 
             width: 100%; 
-            height: 8px; 
-            background: #e8e8ed; 
-            border-radius: 4px; 
+            height: 100%; 
+            background: rgba(0,0,0,0.06); 
+            border-radius: 2px; 
             overflow: hidden;
         }
-        .daily-progress-fill { 
+        .daily-progress-bar-container .daily-progress-fill { 
             height: 100%; 
             background: linear-gradient(90deg, #0071e3, #00c6ff); 
-            border-radius: 4px; 
+            border-radius: 2px; 
             transition: width .3s ease; 
         }
-        .daily-progress-fill.complete {
+        .daily-progress-bar-container .daily-progress-fill.complete {
             background: linear-gradient(90deg, #34c759, #30d158);
-        }
-        .daily-goal-reached {
-            margin-top: .5rem;
-            padding: .5rem;
-            background: #e8f5e9;
-            color: #34c759;
-            border-radius: 8px;
-            font-size: .85rem;
-            font-weight: 500;
-            text-align: center;
         }
         
         /* Hamburger button to toggle focus mode */
@@ -884,20 +858,7 @@
 </head>
 <body>
 
-<!-- ===== DAILY PROGRESS (Top Left) ===== -->
-<!-- Shows daily study progress for current language -->
-<div class="daily-progress" id="dailyProgress">
-    <div class="daily-progress-header">
-        <span class="daily-label">Today's Progress</span>
-        <span class="daily-count"><span id="dailyStudied">0</span> / <span id="dailyGoal">50</span></span>
-    </div>
-    <div class="daily-progress-bar">
-        <div class="daily-progress-fill" id="dailyProgressFill" style="width: 0%"></div>
-    </div>
-    <div class="daily-goal-reached" id="dailyGoalReached" style="display: none;">
-        🎉 Daily goal reached! Come back tomorrow.
-    </div>
-</div>
+
 
 <!-- ===== TOP BAR (Top Right) ===== -->
 <!-- Shows count of due cards and focus mode toggle -->
@@ -932,6 +893,13 @@
 
         <!-- STUDY INTERFACE: Shown when studying -->
         <div id="studyInterface" style="display: none; width: 100%; text-align: center;">
+            
+            <!-- Daily Progress Bar (at top of study panel) -->
+            <div class="daily-progress-bar-container" id="dailyProgressContainer">
+                <div class="daily-progress-bar">
+                    <div class="daily-progress-fill" id="dailyProgressFill" style="width: 0%"></div>
+                </div>
+            </div>
             
             <!-- Main sentence with hidden word -->
             <p class="sentence" id="sentence"></p>
@@ -1180,18 +1148,13 @@ function updateDailyProgressUI() {
     const count = getTodayCount();
     const percentage = Math.min((count / DAILY_GOAL) * 100, 100);
     
-    document.getElementById('dailyStudied').textContent = count;
-    document.getElementById('dailyGoal').textContent = DAILY_GOAL;
-    
     const fill = document.getElementById('dailyProgressFill');
     fill.style.width = percentage + '%';
     
     if (count >= DAILY_GOAL) {
         fill.classList.add('complete');
-        document.getElementById('dailyGoalReached').style.display = 'block';
     } else {
         fill.classList.remove('complete');
-        document.getElementById('dailyGoalReached').style.display = 'none';
     }
 }
 
@@ -1426,6 +1389,7 @@ function startStudying() {
     
     document.getElementById('welcomePage').style.display = 'none';
     document.getElementById('studyInterface').style.display = '';
+    document.getElementById('dailyProgressContainer').classList.add('show');
     
     // Reset study state
     isStudying = true;
@@ -1443,6 +1407,7 @@ function returnToWelcome() {
     
     document.getElementById('studyInterface').style.display = 'none';
     document.getElementById('studyActions').style.display = 'none';
+    document.getElementById('dailyProgressContainer').classList.remove('show');
     document.getElementById('welcomePage').style.display = '';
     document.getElementById('msg').innerHTML = '';
     
