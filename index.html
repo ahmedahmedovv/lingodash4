@@ -291,6 +291,52 @@
         }
         .btn-save { background: #0071e3; color: #fff; border-color: #0071e3; }
         
+        /* Preview Modal Styles */
+        .preview-modal {
+            max-width: 400px;
+        }
+        .preview-word {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: .75rem;
+            text-align: center;
+        }
+        .preview-def {
+            font-size: 1rem;
+            color: #86868b;
+            font-style: italic;
+            margin-bottom: 1rem;
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .preview-sentence {
+            font-size: 1.1rem;
+            color: #1d1d1f;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .preview-sentence .highlight {
+            background: #0071e3;
+            color: #fff;
+            padding: .1rem .4rem;
+            border-radius: 4px;
+        }
+        .preview-meta {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            font-size: .85rem;
+            color: #86868b;
+        }
+        .preview-meta span {
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
+        
         /* Feedback colors */
         .ok { color: #34c759; font-weight: 600; } /* Green for correct */
         .no { color: #ff3b30; font-weight: 600; } /* Red for incorrect */
@@ -569,6 +615,95 @@
             font-weight: 600; 
         }
         .words-title span { color: #1d1d1f; font-weight: 600; margin-left: .25rem; }
+        
+        /* Search Box */
+        .words-search {
+            position: relative;
+            margin-bottom: .75rem;
+        }
+        .words-search .search-icon {
+            position: absolute;
+            left: .75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: .9rem;
+            opacity: 0.5;
+        }
+        .words-search input {
+            width: 100%;
+            padding: .5rem .75rem .5rem 2.25rem;
+            border: 1px solid #e8e8ed;
+            border-radius: 10px;
+            font-size: .9rem;
+            background: #f5f5f7;
+            transition: all .2s;
+        }
+        .words-search input:focus {
+            outline: none;
+            border-color: #0071e3;
+            background: #fff;
+        }
+        .words-search input::placeholder {
+            color: #86868b;
+        }
+        .words-search .clear-search {
+            position: absolute;
+            right: .5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            padding: .25rem;
+            font-size: .8rem;
+            cursor: pointer;
+            opacity: 0.5;
+        }
+        .words-search .clear-search:hover {
+            opacity: 1;
+        }
+        
+        /* Filter Tabs */
+        .words-tabs {
+            display: flex;
+            gap: .25rem;
+            margin-bottom: .75rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid #f0f0f0;
+            overflow-x: auto;
+        }
+        .words-tab {
+            padding: .4rem .75rem;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: .85rem;
+            color: #86868b;
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            transition: all .15s;
+        }
+        .words-tab:hover {
+            background: #f5f5f7;
+            color: #1d1d1f;
+        }
+        .words-tab.active {
+            background: #0071e3;
+            color: #fff;
+        }
+        .tab-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .tab-dot.due { background: #ff9500; }
+        .tab-dot.learning { background: #0071e3; }
+        .tab-dot.mastered { background: #34c759; }
+        .words-tab.active .tab-dot.due { background: #fff; }
+        .words-tab.active .tab-dot.learning { background: #fff; }
+        .words-tab.active .tab-dot.mastered { background: #fff; }
         .sort-select { 
             font-size: .85rem; 
             padding: .35rem .6rem; 
@@ -645,7 +780,44 @@
         .word-meta { 
             font-size: .75rem; 
             color: #86868b; 
-            margin-top: .1rem; 
+            margin-top: .15rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+        
+        /* Stage Progress Dots */
+        .stage-dots {
+            display: flex;
+            gap: 3px;
+        }
+        .stage-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #e8e8ed;
+        }
+        .stage-dot.filled {
+            background: #0071e3;
+        }
+        .mastered-badge {
+            font-size: .7rem;
+        }
+        
+        /* Difficulty Indicator */
+        .difficulty {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-left: .2rem;
+        }
+        .difficulty.easy { background: #34c759; }
+        .difficulty.medium { background: #ff9500; }
+        .difficulty.hard { background: #ff3b30; }
+        
+        /* Card Item Clickable */
+        .word-item {
+            cursor: pointer;
         }
         
         /* Edit/Delete buttons appear on hover */
@@ -663,6 +835,7 @@
             border: none; 
             border-radius: 6px; 
             opacity: .6; 
+            cursor: pointer;
         }
         .word-actions button:hover { opacity: 1; background: #e8e8ed; }
         .word-actions button.danger { color: #ff3b30; }
@@ -1035,10 +1208,48 @@
                     </select>
                 </div>
             </div>
+            
+            <!-- Search Box -->
+            <div class="words-search">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="wordsSearch" placeholder="Search cards..." oninput="renderList()">
+                <button class="clear-search" id="clearSearch" onclick="clearWordsSearch()" style="display: none;">✕</button>
+            </div>
+            
+            <!-- Filter Tabs -->
+            <div class="words-tabs">
+                <button class="words-tab active" data-filter="all" onclick="setWordsFilter('all')">
+                    All
+                </button>
+                <button class="words-tab" data-filter="due" onclick="setWordsFilter('due')">
+                    <span class="tab-dot due"></span>Due
+                </button>
+                <button class="words-tab" data-filter="learning" onclick="setWordsFilter('learning')">
+                    <span class="tab-dot learning"></span>Learning
+                </button>
+                <button class="words-tab" data-filter="mastered" onclick="setWordsFilter('mastered')">
+                    <span class="tab-dot mastered"></span>Mastered
+                </button>
+            </div>
+            
             <!-- Scrollable list container -->
             <div class="words-list" id="wordsList"></div>
         </div>
     </aside>
+
+    <!-- CARD PREVIEW MODAL: Quick view without editing -->
+    <div class="modal-overlay" id="previewModal" onclick="if(event.target===this)closePreviewModal()">
+        <div class="modal preview-modal">
+            <div class="preview-word" id="previewWord"></div>
+            <div class="preview-def" id="previewDef"></div>
+            <div class="preview-sentence" id="previewSentence"></div>
+            <div class="preview-meta" id="previewMeta"></div>
+            <div class="modal-btns">
+                <button onclick="closePreviewModal()">Close</button>
+                <button class="btn-primary" onclick="editFromPreview()">Edit Card</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ADD CARD MODAL: Popup to create new flashcards -->
     <div class="modal-overlay" id="addModal" onclick="if(event.target===this)closeAddModal()">
@@ -1625,7 +1836,7 @@ document.onkeydown = e => {
     if (e.key === 'Escape') {
         closeEditModal();
         closeAddModal();
-        closeImageModal();
+        closePreviewModal();
     }
 };
 
@@ -1738,11 +1949,53 @@ answer.onkeydown = e => {
 
 // ===== SIDEBAR: CARD LIST =====
 
+let wordsFilter = 'all'; // all | due | learning | mastered
+
+function setWordsFilter(filter) {
+    wordsFilter = filter;
+    // Update tab UI
+    document.querySelectorAll('.words-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.filter === filter);
+    });
+    renderList();
+}
+
+function clearWordsSearch() {
+    document.getElementById('wordsSearch').value = '';
+    document.getElementById('clearSearch').style.display = 'none';
+    renderList();
+}
+
 // Render the scrollable list of all cards
 function renderList() {
     const sortBy = document.getElementById('sortSelect').value;
+    const searchTerm = document.getElementById('wordsSearch')?.value?.trim().toLowerCase() || '';
+    
+    // Show/hide clear button
+    if (document.getElementById('clearSearch')) {
+        document.getElementById('clearSearch').style.display = searchTerm ? 'block' : 'none';
+    }
+    
     // Filter to current language and add index for editing
     let sorted = cards.map((c,i) => ({...c, idx: i})).filter(c => (c.lang || 'en') === currentLang);
+    
+    // Apply search filter
+    if (searchTerm) {
+        sorted = sorted.filter(c => 
+            c.w.toLowerCase().includes(searchTerm) || 
+            c.d.toLowerCase().includes(searchTerm) ||
+            c.s.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    // Apply tab filter
+    if (wordsFilter === 'due') {
+        sorted = sorted.filter(c => (c.due||0) <= Date.now());
+    } else if (wordsFilter === 'learning') {
+        sorted = sorted.filter(c => (c.n || 0) > 0 && (c.n || 0) < 4);
+    } else if (wordsFilter === 'mastered') {
+        sorted = sorted.filter(c => (c.n || 0) >= 4);
+    }
 
     // Apply sorting
     if (sortBy === 'word') sorted.sort((a,b) => a.w.localeCompare(b.w));
@@ -1752,11 +2005,23 @@ function renderList() {
 
     // Empty state
     if (sorted.length === 0) {
+        const emptyMessage = searchTerm 
+            ? 'No cards match your search'
+            : wordsFilter === 'due' 
+                ? 'No cards due for review'
+                : wordsFilter === 'learning'
+                    ? 'No cards in learning'
+                    : wordsFilter === 'mastered'
+                        ? 'No mastered cards yet'
+                        : 'No cards yet';
+        const subMessage = searchTerm
+            ? 'Try a different search term'
+            : 'Click "Add Card" to create one';
         document.getElementById('wordsList').innerHTML = `
             <div class="words-empty">
                 <div class="icon">📝</div>
-                <div>No cards yet</div>
-                <div style="font-size: .8rem; margin-top: .25rem;">Click "Add Card" to create one</div>
+                <div>${emptyMessage}</div>
+                <div style="font-size: .8rem; margin-top: .25rem;">${subMessage}</div>
             </div>`;
         return;
     }
@@ -1765,23 +2030,89 @@ function renderList() {
     document.getElementById('wordsList').innerHTML = sorted.map(c => {
         const isDue = (c.due||0) <= Date.now();
         const isNew = (c.n || 0) === 0;
-        const ef = (c.ef || 2.5).toFixed(1);
+        const ef = (c.ef || 2.5);
         const stage = (c.n || 0);
         const stageLabel = stage === 0 ? 'New' : stage < 4 ? `Learning ${stage}` : 'Mastered';
         const statusClass = isDue ? 'due' : isNew ? 'new' : 'ok';
         
-        return `<div class="word-item">
+        // Difficulty indicator (based on EF: < 2.0 = hard, > 2.5 = easy)
+        let difficultyClass = 'medium';
+        if (ef < 2.0) difficultyClass = 'hard';
+        else if (ef > 2.5) difficultyClass = 'easy';
+        
+        // Progress dots for learning stage
+        let progressDots = '';
+        if (stage > 0 && stage < 4) {
+            progressDots = '<span class="stage-dots">' + 
+                Array(3).fill(0).map((_, i) => 
+                    `<span class="stage-dot ${i < stage ? 'filled' : ''}"></span>`
+                ).join('') + 
+            '</span>';
+        } else if (stage >= 4) {
+            progressDots = '<span class="mastered-badge">⭐</span>';
+        }
+        
+        return `<div class="word-item" onclick="showCardPreview(${c.idx}, event)">
             <div class="word-status ${statusClass}"></div>
             <div class="word-info">
                 <div class="word-name">${c.w}</div>
-                <div class="word-meta">${stageLabel} · Next: ${formatInterval(c.int)} · EF: ${ef}</div>
+                <div class="word-meta">
+                    ${stageLabel} · ${progressDots || 'Next: ' + formatInterval(c.int)}
+                    <span class="difficulty ${difficultyClass}" title="Ease Factor: ${ef.toFixed(1)}"></span>
+                </div>
             </div>
-            <div class="word-actions">
+            <div class="word-actions" onclick="event.stopPropagation()">
                 <button onclick="editCard(${c.idx})" title="Edit">✎</button>
                 <button class="danger" onclick="delCard(${c.idx})" title="Delete">🗑</button>
             </div>
         </div>`;
     }).join('');
+}
+
+// ===== CARD PREVIEW MODAL =====
+
+let previewCardIdx = -1;
+
+function showCardPreview(idx, event) {
+    // Don't open preview if clicking action buttons
+    if (event && event.target.closest('.word-actions')) return;
+    
+    const card = cards[idx];
+    if (!card) return;
+    
+    previewCardIdx = idx;
+    
+    document.getElementById('previewWord').textContent = card.w;
+    document.getElementById('previewDef').textContent = card.d;
+    document.getElementById('previewSentence').innerHTML = card.s.replace(
+        new RegExp('(' + escapeRegex(card.w) + ')', 'gi'), 
+        '<span class="highlight">$1</span>'
+    );
+    
+    const stage = card.n || 0;
+    const stageLabel = stage === 0 ? '⭐ New' : stage < 4 ? `📚 Learning ${stage}/3` : '🌟 Mastered';
+    const reviews = card.reviews || 0;
+    const accuracy = reviews > 0 ? Math.round(((card.correct || 0) / reviews) * 100) : 0;
+    
+    document.getElementById('previewMeta').innerHTML = `
+        <span>${stageLabel}</span>
+        <span>🔄 ${reviews} reviews</span>
+        <span>🎯 ${accuracy}% accuracy</span>
+    `;
+    
+    document.getElementById('previewModal').classList.add('show');
+}
+
+function closePreviewModal() {
+    document.getElementById('previewModal').classList.remove('show');
+    previewCardIdx = -1;
+}
+
+function editFromPreview() {
+    if (previewCardIdx >= 0) {
+        closePreviewModal();
+        editCard(previewCardIdx);
+    }
 }
 
 // ===== ADD CARD MODAL =====
