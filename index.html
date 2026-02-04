@@ -815,30 +815,6 @@
         .difficulty.medium { background: #ff9500; }
         .difficulty.hard { background: #ff3b30; }
         
-        /* Interval Display */
-        .interval {
-            font-size: .7rem;
-            padding: .15rem .4rem;
-            border-radius: 10px;
-            font-weight: 500;
-        }
-        .interval.due {
-            background: #fff4e6;
-            color: #ff9500;
-        }
-        .interval.learning {
-            background: #e8f4fd;
-            color: #0071e3;
-        }
-        .interval.mastered {
-            background: #e8f5e9;
-            color: #34c759;
-        }
-        .interval.new {
-            background: #f5f5f7;
-            color: #86868b;
-        }
-        
         /* Next Review Badge */
         .next-review-badge {
             display: inline-flex;
@@ -857,6 +833,29 @@
         /* Card Item Clickable */
         .word-item {
             cursor: pointer;
+        }
+        
+        /* Next Review Badge (right side of word item) */
+        .word-next-review-wrap {
+            margin-left: auto;
+            padding-right: 0.5rem;
+        }
+        .word-next-review {
+            font-size: .75rem;
+            font-weight: 500;
+            color: #0071e3;
+            background: #e8f4fd;
+            padding: 0.25rem 0.5rem;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+        .word-next-review.due {
+            color: #ff9500;
+            background: #fff4e6;
+        }
+        .word-next-review.new {
+            color: #86868b;
+            background: #f5f5f7;
         }
         
         /* Edit/Delete buttons appear on hover */
@@ -2161,16 +2160,14 @@ function renderList() {
             progressDots = '<span class="mastered-badge">⭐</span>';
         }
         
-        // Show interval days for mastered cards, or due status
-        let intervalDisplay = '';
+        // Next review time badge for right side
+        let nextReviewBadge = '';
         if (isDue) {
-            intervalDisplay = '<span class="interval due">⏰ Due now</span>';
-        } else if (stage >= 4) {
-            intervalDisplay = `<span class="interval mastered">⭐ ${formatIntervalDays(c.int)}</span>`;
-        } else if (stage > 0) {
-            intervalDisplay = `<span class="interval learning">🕐 ${formatIntervalDays(c.int)}</span>`;
+            nextReviewBadge = '<span class="word-next-review due">⏰ Due</span>';
+        } else if (stage === 0) {
+            nextReviewBadge = '<span class="word-next-review new">New</span>';
         } else {
-            intervalDisplay = '<span class="interval new">📝 New</span>';
+            nextReviewBadge = `<span class="word-next-review">🔄 ${formatNextReview(c.due)}</span>`;
         }
         
         return `<div class="word-item" onclick="showCardPreview(${c.idx}, event)">
@@ -2178,9 +2175,12 @@ function renderList() {
             <div class="word-info">
                 <div class="word-name">${c.w}</div>
                 <div class="word-meta">
-                    ${stageLabel} · ${progressDots || intervalDisplay}
+                    ${stageLabel} ${progressDots || ''}
                     <span class="difficulty ${difficultyClass}" title="Ease Factor: ${ef.toFixed(1)}"></span>
                 </div>
+            </div>
+            <div class="word-next-review-wrap">
+                ${nextReviewBadge}
             </div>
             <div class="word-actions" onclick="event.stopPropagation()">
                 <button onclick="editCard(${c.idx})" title="Edit">✎</button>
