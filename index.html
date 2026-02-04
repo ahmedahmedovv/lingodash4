@@ -1372,7 +1372,6 @@ function startStudying() {
     
     document.getElementById('welcomePage').style.display = 'none';
     document.getElementById('studyInterface').style.display = '';
-    document.getElementById('btnImages').classList.add('visible');
     
     // Reset study state
     isStudying = true;
@@ -1390,7 +1389,6 @@ function returnToWelcome() {
     
     document.getElementById('studyInterface').style.display = 'none';
     document.getElementById('studyActions').style.display = 'none';
-    document.getElementById('btnImages').classList.remove('visible');
     document.getElementById('welcomePage').style.display = '';
     document.getElementById('msg').innerHTML = '';
     
@@ -2032,7 +2030,6 @@ let currentImageWord = '';
 // Restore image panel state on load
 if (imagePanelOpen) {
     document.getElementById('imagePanel').classList.add('show');
-    document.getElementById('btnImages').classList.add('active');
     document.body.classList.add('image-panel-open');
 }
 
