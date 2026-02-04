@@ -2005,7 +2005,7 @@ answer.onkeydown = e => {
     
     // Show next review info as compact badge
     const nextReview = formatNextReview(cur.due);
-    const nextReviewBadge = `<span class="next-review-badge">📅 ${nextReview}</span>`;
+    const nextReviewBadge = `<span class="next-review-badge">🔄 ${nextReview}</span>`;
     
     // Check if daily goal reached
     if (isDailyGoalReached()) {
@@ -2217,7 +2217,7 @@ function showCardPreview(idx, event) {
     const isDue = (card.due || 0) <= Date.now();
     const nextReviewText = isDue 
         ? '<span style="background: #fff4e6; color: #ff9500; padding: 0.15rem 0.4rem; border-radius: 8px; font-weight: 500;">⏰ Due</span>' 
-        : `<span style="background: #e8f4fd; color: #0071e3; padding: 0.15rem 0.4rem; border-radius: 8px; font-weight: 500;">📅 ${formatNextReview(card.due)}</span>`;
+        : `<span style="background: #e8f4fd; color: #0071e3; padding: 0.15rem 0.4rem; border-radius: 8px; font-weight: 500;">🔄 ${formatNextReview(card.due)}</span>`;
     
     document.getElementById('previewMeta').innerHTML = `
         <span>${stageLabel}</span>
