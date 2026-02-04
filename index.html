@@ -1750,6 +1750,24 @@ function formatIntervalDays(mins) {
     return `${days} days`;
 }
 
+// Format next review time in friendly way (e.g. "5 days later")
+function formatNextReview(dueTimestamp) {
+    if (!dueTimestamp) return 'soon';
+    
+    const now = Date.now();
+    const diff = dueTimestamp - now;
+    const minutes = Math.round(diff / 60000);
+    const hours = Math.round(diff / 3600000);
+    const days = Math.round(diff / 86400000);
+    
+    if (minutes < 60) return `${minutes} minutes later`;
+    if (hours < 24) return `${hours} hours later`;
+    if (days === 1) return `tomorrow`;
+    if (days < 30) return `${days} days later`;
+    if (days < 365) return `${Math.round(days / 30)} months later`;
+    return `${Math.round(days / 365)} years later`;
+}
+
 // ===== STATS & DISPLAY =====
 
 // Update all statistics displays
@@ -1970,11 +1988,21 @@ answer.onkeydown = e => {
     lastAnswerWrong = false;
     waitingForNext = true;
     
+    // Show next review info
+    const nextReview = formatNextReview(cur.due);
+    const nextReviewMsg = `<div style="color: #0071e3; font-size: 0.95rem; margin-top: 0.5rem;">🕐 You'll see this word <strong>${nextReview}</strong></div>`;
+    
     // Check if daily goal reached
     if (isDailyGoalReached()) {
-        msg.innerHTML = '<span style="color: #34c759; font-weight: 600;">🎉 Daily goal reached! Press Enter to finish.</span>';
+        msg.innerHTML = `
+            <div style="color: #34c759; font-weight: 600;">🎉 Daily goal reached! Press Enter to finish.</div>
+            ${nextReviewMsg}
+        `;
     } else {
-        msg.innerHTML = '<span style="color: #86868b;">Press Enter to continue</span>';
+        msg.innerHTML = `
+            <div style="color: #86868b;">Press Enter to continue</div>
+            ${nextReviewMsg}
+        `;
     }
     
     // Load images after correct answer
@@ -2172,11 +2200,16 @@ function showCardPreview(idx, event) {
     const stageLabel = stage === 0 ? '⭐ New' : stage < 4 ? `📚 Learning ${stage}/3` : '🌟 Mastered';
     const reviews = card.reviews || 0;
     const accuracy = reviews > 0 ? Math.round(((card.correct || 0) / reviews) * 100) : 0;
+    const isDue = (card.due || 0) <= Date.now();
+    const nextReviewText = isDue 
+        ? '<span style="color: #ff9500;">⏰ Due now!</span>' 
+        : `<span style="color: #0071e3;">🕐 Next: ${formatNextReview(card.due)}</span>`;
     
     document.getElementById('previewMeta').innerHTML = `
         <span>${stageLabel}</span>
         <span>🔄 ${reviews} reviews</span>
         <span>🎯 ${accuracy}% accuracy</span>
+        <span>${nextReviewText}</span>
     `;
     
     document.getElementById('previewModal').classList.add('show');
