@@ -839,6 +839,21 @@
             color: #86868b;
         }
         
+        /* Next Review Badge */
+        .next-review-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: #e8f4fd;
+            color: #0071e3;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        
         /* Card Item Clickable */
         .word-item {
             cursor: pointer;
@@ -1750,7 +1765,7 @@ function formatIntervalDays(mins) {
     return `${days} days`;
 }
 
-// Format next review time in friendly way (e.g. "5 days later")
+// Format next review time in friendly way
 function formatNextReview(dueTimestamp) {
     if (!dueTimestamp) return 'soon';
     
@@ -1760,12 +1775,12 @@ function formatNextReview(dueTimestamp) {
     const hours = Math.round(diff / 3600000);
     const days = Math.round(diff / 86400000);
     
-    if (minutes < 60) return `${minutes} minutes later`;
-    if (hours < 24) return `${hours} hours later`;
+    if (minutes < 60) return `in ${minutes}m`;
+    if (hours < 24) return `in ${hours}h`;
     if (days === 1) return `tomorrow`;
-    if (days < 30) return `${days} days later`;
-    if (days < 365) return `${Math.round(days / 30)} months later`;
-    return `${Math.round(days / 365)} years later`;
+    if (days < 30) return `in ${days}d`;
+    if (days < 365) return `in ${Math.round(days / 30)}mo`;
+    return `in ${Math.round(days / 365)}y`;
 }
 
 // ===== STATS & DISPLAY =====
@@ -1988,20 +2003,19 @@ answer.onkeydown = e => {
     lastAnswerWrong = false;
     waitingForNext = true;
     
-    // Show next review info
+    // Show next review info as compact badge
     const nextReview = formatNextReview(cur.due);
-    const nextReviewMsg = `<div style="color: #0071e3; font-size: 0.95rem; margin-top: 0.5rem;">🕐 You'll see this word <strong>${nextReview}</strong></div>`;
+    const nextReviewBadge = `<span class="next-review-badge">📅 ${nextReview}</span>`;
     
     // Check if daily goal reached
     if (isDailyGoalReached()) {
         msg.innerHTML = `
-            <div style="color: #34c759; font-weight: 600;">🎉 Daily goal reached! Press Enter to finish.</div>
-            ${nextReviewMsg}
+            <div style="color: #34c759; font-weight: 600;">🎉 Daily goal reached! ${nextReviewBadge}</div>
+            <div style="color: #86868b; font-size: 0.9rem; margin-top: 0.3rem;">Press Enter to finish</div>
         `;
     } else {
         msg.innerHTML = `
-            <div style="color: #86868b;">Press Enter to continue</div>
-            ${nextReviewMsg}
+            <div style="color: #86868b;">Press Enter to continue ${nextReviewBadge}</div>
         `;
     }
     
@@ -2202,13 +2216,13 @@ function showCardPreview(idx, event) {
     const accuracy = reviews > 0 ? Math.round(((card.correct || 0) / reviews) * 100) : 0;
     const isDue = (card.due || 0) <= Date.now();
     const nextReviewText = isDue 
-        ? '<span style="color: #ff9500;">⏰ Due now!</span>' 
-        : `<span style="color: #0071e3;">🕐 Next: ${formatNextReview(card.due)}</span>`;
+        ? '<span style="background: #fff4e6; color: #ff9500; padding: 0.15rem 0.4rem; border-radius: 8px; font-weight: 500;">⏰ Due</span>' 
+        : `<span style="background: #e8f4fd; color: #0071e3; padding: 0.15rem 0.4rem; border-radius: 8px; font-weight: 500;">📅 ${formatNextReview(card.due)}</span>`;
     
     document.getElementById('previewMeta').innerHTML = `
         <span>${stageLabel}</span>
-        <span>🔄 ${reviews} reviews</span>
-        <span>🎯 ${accuracy}% accuracy</span>
+        <span>🔄 ${reviews}</span>
+        <span>🎯 ${accuracy}%</span>
         <span>${nextReviewText}</span>
     `;
     
