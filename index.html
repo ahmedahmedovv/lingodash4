@@ -1201,10 +1201,20 @@
                         <span>➕</span> Add
                     </button>
                     <select class="sort-select" id="sortSelect" onchange="renderList()">
-                        <option value="due">Due First</option>
-                        <option value="word">A-Z</option>
-                        <option value="ef">Hardest</option>
-                        <option value="stage">Stage</option>
+                        <option value="due">⏰ Due First</option>
+                        <option value="word">🔤 A-Z</option>
+                        <option value="za">🔥 Z-A</option>
+                        <option value="stage">📚 Stage</option>
+                        <option value="accuracy-high">🎯 Best Recall</option>
+                        <option value="accuracy-low">🚨 Needs Practice</option>
+                        <option value="most-reviewed">📖 Most Studied</option>
+                        <option value="least-reviewed">📕 Least Studied</option>
+                        <option value="recent">🔔 Recently Added</option>
+                        <option value="oldest">📅 Oldest First</option>
+                        <option value="hardest-ef">🤢 Hardest (EF)</option>
+                        <option value="easiest-ef">😌 Easiest (EF)</option>
+                        <option value="longest-interval">🧠 Longest Interval</option>
+                        <option value="random">🎲 Random</option>
                     </select>
                 </div>
             </div>
@@ -1297,9 +1307,9 @@ const msg = document.getElementById('msg');
 // ===== DATA STORAGE =====
 // Load cards from localStorage, or use default starter cards
 let cards = JSON.parse(localStorage.cards || 'null') || [
-    {w:'apple', s:'She took a bite of the crisp red apple.', d:'a round fruit', lang:'en'},
-    {w:'banana', s:'The monkey peeled the banana before eating.', d:'a long curved yellow fruit', lang:'en'},
-    {w:'door', s:'Please close the door behind you.', d:'a barrier for an entrance', lang:'en'}
+    {w:'apple', s:'She took a bite of the crisp red apple.', d:'a round fruit', lang:'en', addedAt: Date.now() - 86400000 * 3},
+    {w:'banana', s:'The monkey peeled the banana before eating.', d:'a long curved yellow fruit', lang:'en', addedAt: Date.now() - 86400000 * 2},
+    {w:'door', s:'Please close the door behind you.', d:'a barrier for an entrance', lang:'en', addedAt: Date.now() - 86400000}
 ], cur, editIdx = -1, answerStartTime = 0;
 
 // Languages list with current selection
@@ -1999,9 +2009,34 @@ function renderList() {
 
     // Apply sorting
     if (sortBy === 'word') sorted.sort((a,b) => a.w.localeCompare(b.w));
+    else if (sortBy === 'za') sorted.sort((a,b) => b.w.localeCompare(a.w));
     else if (sortBy === 'due') sorted.sort((a,b) => (a.due||0) - (b.due||0));
-    else if (sortBy === 'ef') sorted.sort((a,b) => (a.ef||2.5) - (b.ef||2.5));
     else if (sortBy === 'stage') sorted.sort((a,b) => (a.n||0) - (b.n||0));
+    else if (sortBy === 'accuracy-high') {
+        sorted.sort((a,b) => {
+            const accA = (a.reviews || 0) > 0 ? (a.correct || 0) / a.reviews : 0;
+            const accB = (b.reviews || 0) > 0 ? (b.correct || 0) / b.reviews : 0;
+            return accB - accA; // High to low
+        });
+    }
+    else if (sortBy === 'accuracy-low') {
+        sorted.sort((a,b) => {
+            const accA = (a.reviews || 0) > 0 ? (a.correct || 0) / a.reviews : 0;
+            const accB = (b.reviews || 0) > 0 ? (b.correct || 0) / b.reviews : 0;
+            // Put cards with no reviews at the end
+            if (a.reviews === 0 && b.reviews > 0) return 1;
+            if (b.reviews === 0 && a.reviews > 0) return -1;
+            return accA - accB; // Low to high
+        });
+    }
+    else if (sortBy === 'most-reviewed') sorted.sort((a,b) => (b.reviews || 0) - (a.reviews || 0));
+    else if (sortBy === 'least-reviewed') sorted.sort((a,b) => (a.reviews || 0) - (b.reviews || 0));
+    else if (sortBy === 'recent') sorted.sort((a,b) => (b.addedAt || 0) - (a.addedAt || 0));
+    else if (sortBy === 'oldest') sorted.sort((a,b) => (a.addedAt || 0) - (b.addedAt || 0));
+    else if (sortBy === 'hardest-ef') sorted.sort((a,b) => (a.ef || 2.5) - (b.ef || 2.5));
+    else if (sortBy === 'easiest-ef') sorted.sort((a,b) => (b.ef || 2.5) - (a.ef || 2.5));
+    else if (sortBy === 'longest-interval') sorted.sort((a,b) => (b.int || 0) - (a.int || 0));
+    else if (sortBy === 'random') sorted.sort(() => Math.random() - 0.5);
 
     // Empty state
     if (sorted.length === 0) {
@@ -2161,8 +2196,8 @@ function saveCard() {
         cards[editIdx].d = d;
         cards[editIdx].lang = currentLang;
     } else {
-        // Add new card with SM-2 defaults
-        cards.push({w, s, d, int: 1, due: 0, ef: 2.5, n: 0, lang: currentLang});
+        // Add new card with SM-2 defaults and timestamp
+        cards.push({w, s, d, int: 1, due: 0, ef: 2.5, n: 0, lang: currentLang, addedAt: Date.now()});
     }
 
     save();
@@ -2367,6 +2402,8 @@ function handleImport(input) {
                 if (exists) {
                     duplicates.push(imported.w);
                 } else {
+                    // Add timestamp if missing
+                    if (!imported.addedAt) imported.addedAt = Date.now();
                     newCards.push(imported);
                 }
             }
