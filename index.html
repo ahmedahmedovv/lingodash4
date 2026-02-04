@@ -815,6 +815,30 @@
         .difficulty.medium { background: #ff9500; }
         .difficulty.hard { background: #ff3b30; }
         
+        /* Interval Display */
+        .interval {
+            font-size: .7rem;
+            padding: .15rem .4rem;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .interval.due {
+            background: #fff4e6;
+            color: #ff9500;
+        }
+        .interval.learning {
+            background: #e8f4fd;
+            color: #0071e3;
+        }
+        .interval.mastered {
+            background: #e8f5e9;
+            color: #34c759;
+        }
+        .interval.new {
+            background: #f5f5f7;
+            color: #86868b;
+        }
+        
         /* Card Item Clickable */
         .word-item {
             cursor: pointer;
@@ -1718,6 +1742,14 @@ function formatInterval(mins) {
     return `${Math.round(mins/1440)}d`;
 }
 
+// Format interval as days (for display in card list)
+function formatIntervalDays(mins) {
+    if (!mins || mins <= 1) return 'Due now';
+    const days = Math.round(mins / 1440);
+    if (days === 1) return '1 day';
+    return `${days} days`;
+}
+
 // ===== STATS & DISPLAY =====
 
 // Update all statistics displays
@@ -2087,12 +2119,24 @@ function renderList() {
             progressDots = '<span class="mastered-badge">⭐</span>';
         }
         
+        // Show interval days for mastered cards, or due status
+        let intervalDisplay = '';
+        if (isDue) {
+            intervalDisplay = '<span class="interval due">⏰ Due now</span>';
+        } else if (stage >= 4) {
+            intervalDisplay = `<span class="interval mastered">⭐ ${formatIntervalDays(c.int)}</span>`;
+        } else if (stage > 0) {
+            intervalDisplay = `<span class="interval learning">🕐 ${formatIntervalDays(c.int)}</span>`;
+        } else {
+            intervalDisplay = '<span class="interval new">📝 New</span>';
+        }
+        
         return `<div class="word-item" onclick="showCardPreview(${c.idx}, event)">
             <div class="word-status ${statusClass}"></div>
             <div class="word-info">
                 <div class="word-name">${c.w}</div>
                 <div class="word-meta">
-                    ${stageLabel} · ${progressDots || 'Next: ' + formatInterval(c.int)}
+                    ${stageLabel} · ${progressDots || intervalDisplay}
                     <span class="difficulty ${difficultyClass}" title="Ease Factor: ${ef.toFixed(1)}"></span>
                 </div>
             </div>
