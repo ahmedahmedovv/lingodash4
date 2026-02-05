@@ -75,10 +75,11 @@ async function checkStatus() {
         tab.url.includes('file://') ||
         tab.url.includes('localhost') ||
         tab.url.includes('127.0.0.1') ||
-        tab.url.includes('lingoflash.netlify.app');
+        tab.url.includes('lingoflash.netlify.app') ||
+        tab.url.includes('lingoflash.yds.today');
 
       if (isFlashcardApp) {
-        elements.status.textContent = 'TTS Ready';
+        elements.status.textContent = 'TTS Ready (Google + Fallback)';
         elements.status.classList.add('active');
         elements.ttsControls.style.display = 'block';
       } else {

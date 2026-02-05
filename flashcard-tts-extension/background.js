@@ -36,10 +36,16 @@ async function fetchAudioAsDataUrl(text, lang) {
   const url = getTTSUrl(text, lang);
 
   try {
+    // Note: Google Translate TTS may block requests without proper referrer
+    // Adding extra headers to mimic a browser request
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://translate.google.com/'
+      },
+      referrerPolicy: 'origin'
     });
 
     if (!response.ok) {
@@ -79,9 +85,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           detectedLang
         });
       } catch (error) {
+        console.error('Google TTS failed:', error);
+        // Tell content script to fallback to Web Speech API
         sendResponse({
           success: false,
-          error: error.message
+          error: error.message,
+          fallbackToWebSpeech: true,
+          detectedLang: lang || 'en'
         });
       }
     })();
