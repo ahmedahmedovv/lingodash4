@@ -1,237 +1,138 @@
-/**
- * Tinder YDS Color Palette
- * A warm, sepia-toned color scheme designed for vocabulary learning apps
- * Inspired by flashcards and academic materials
- */
-
-/* ========================================
-   CSS VARIABLES - Import into your project
-   ======================================== */
+/* =============================================
+   FLASHCARDS APP - COLOR PALETTE
+   =============================================
+   A warm, organic color system designed for 
+   comfortable extended study sessions.
+   
+   CORE PRINCIPLES:
+   - Warm cream backgrounds reduce eye strain
+   - Earthy tones (sage green, terracotta) feel natural
+   - High enough contrast for readability
+   - Soft shadows for subtle depth
+   ============================================= */
 
 :root {
-  /* Primary Background Colors */
-  --color-bg-primary: #f4ecd8;      /* Main app background - warm cream */
-  --color-bg-secondary: #fdf6e3;    /* Card background - light cream */
-  --color-bg-tertiary: #f5efe3;     /* List items, secondary surfaces */
-  --color-bg-hover: #f0e6d3;        /* Hover states, active buttons */
-  --color-bg-highlight: #ebe1d3;    /* Highlighted items on hover */
+  /* ----- BACKGROUND COLORS (Warm Cream Palette) ----- */
+  /* Primary: Main page background - warm cream */
+  --color-bg-primary: #FDF8F3;
+  
+  /* Secondary: Cards, panels - slightly lighter cream */
+  --color-bg-secondary: #FFFFFF;
+  
+  /* Tertiary: Inputs, hover states - subtle cream tint */
+  --color-bg-tertiary: #F7F2ED;
+  
+  /* Hover: Interactive element hover state */
+  --color-bg-hover: #EDE8E3;
 
-  /* Primary Text Colors (Brown Scale) */
-  --color-text-primary: #5c4a32;    /* Main text - dark brown */
-  --color-text-secondary: #6b5a48;  /* Secondary text - medium brown */
-  --color-text-muted: #8b7355;      /* Muted text, icons - light brown */
-  --color-text-light: #a09078;      /* Placeholder, disabled text */
-  --color-text-dark: #3d3229;       /* Headings, important text */
+  /* ----- TEXT COLORS (Warm Browns) ----- */
+  /* Primary: Main body text - dark warm brown */
+  --color-text-primary: #4A4036;
+  
+  /* Dark: Headings, important text - deeper brown */
+  --color-text-dark: #2D241E;
+  
+  /* Muted: Secondary text, hints - medium brown */
+  --color-text-muted: #7A6B5D;
+  
+  /* Light: Disabled states, placeholders */
+  --color-text-light: #A89B8F;
 
-  /* Border & Divider Colors */
-  --color-border-primary: #c4b49a;  /* Main borders, buttons */
-  --color-border-secondary: #e8dcc8;/* Light borders, dividers */
-  --color-border-light: #e8d4a8;    /* Subtle borders, highlights */
+  /* ----- BORDER COLORS ----- */
+  /* Primary: Input borders, dividers */
+  --color-border-primary: #D4CCC4;
+  
+  /* Secondary: Card borders, subtle dividers */
+  --color-border-secondary: #E8E2DC;
 
-  /* Semantic Colors - Success */
-  --color-success: #5a7c5a;         /* Know/correct - sage green */
-  --color-success-light: #a8c4a8;   /* Light green border */
-  --color-success-bg: #e8f5e9;      /* Very light green background */
-  --color-success-text: #2e7d32;    /* Dark green text */
-  --color-success-pale: #c8e6c9;    /* Pale green background */
+  /* ----- SUCCESS COLORS (Sage Green) ----- */
+  /* Main success color - muted sage green */
+  --color-success: #6B8E6B;
+  
+  /* Light: Success hover, highlights */
+  --color-success-light: #8BA88B;
+  
+  /* Dark: Success text on light backgrounds */
+  --color-success-text: #4A6B4A;
+  
+  /* Background: Success state backgrounds */
+  --color-success-bg: rgba(107, 142, 107, 0.12);
 
-  /* Semantic Colors - Error/Danger */
-  --color-error: #a65c5c;           /* Don't know/incorrect - muted red */
-  --color-error-light: #c4a8a8;     /* Light red border */
-  --color-error-pale: rgba(166, 92, 92, 0.15); /* Pale red background */
-  --color-error-text: #c0392b;      /* Red text */
+  /* ----- ERROR COLORS (Muted Terracotta) ----- */
+  /* Main error color - soft terracotta */
+  --color-error: #B86B6B;
+  
+  /* Light: Error borders */
+  --color-error-light: #D49999;
+  
+  /* Pale: Error background tint */
+  --color-error-pale: rgba(184, 107, 107, 0.15);
+  
+  /* Text: Error message text */
+  --color-error-text: #9A5252;
 
-  /* Progress Bar Colors */
-  --color-progress-orange: #e67e22; /* In progress - orange */
-  --color-progress-orange-light: #f39c12; /* Orange lighter */
-  --color-progress-green: #27ae60;  /* Complete - green */
-  --color-progress-green-light: #2ecc71; /* Green lighter */
-  --color-progress-green-alt: #4caf50; /* Alternative green */
+  /* ----- PROGRESS COLORS ----- */
+  /* Orange: Due items, warnings - soft orange */
+  --color-progress-orange: #D4854A;
+  
+  /* Orange Light: Gradients, highlights */
+  --color-progress-orange-light: #E8A87C;
+  
+  /* Green: Completed items - matches success */
+  --color-progress-green: var(--color-success);
+  
+  /* Green Light: Gradient companion */
+  --color-progress-green-light: var(--color-success-light);
 
-  /* Neutral Colors */
-  --color-neutral-light: #f5f5f5;   /* Light gray background */
-  --color-neutral-text: #9e9e9e;    /* Gray text */
-
-  /* Shadow Colors */
-  --color-shadow: rgba(92, 74, 50, 0.15);  /* Primary shadow */
-  --color-shadow-dark: rgba(92, 74, 50, 0.2); /* Darker shadow */
-  --color-shadow-heavy: rgba(92, 74, 50, 0.7); /* Heavy shadow for overlays */
-
-  /* Gradient Colors */
-  --color-gradient-brown-start: #8b7355;
-  --color-gradient-brown-end: #a08060;
+  /* ----- SHADOW COLORS ----- */
+  /* Standard: Cards, panels - warm tinted shadow */
+  --color-shadow: rgba(74, 64, 54, 0.08);
+  
+  /* Dark: Modals, elevated elements */
+  --color-shadow-dark: rgba(74, 64, 54, 0.15);
+  
+  /* Heavy: Modal overlays - for backdrop */
+  --color-shadow-heavy: rgba(45, 36, 30, 0.45);
 }
 
-/* ========================================
-   TAILWIND CONFIG - Copy to tailwind.config.js
-   ======================================== */
-
+/* =============================================
+   DARK MODE (Optional Enhancement)
+   Uncomment to enable dark mode support
+   ============================================= */
 /*
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        // Background Colors
-        'cream': {
-          50: '#fdf6e3',
-          100: '#f5efe3',
-          200: '#f0e6d3',
-          300: '#ebe1d3',
-          400: '#e8dcc8',
-          500: '#e8d4a8',
-          DEFAULT: '#f4ecd8',
-        },
-        // Brown Text Scale
-        'brown': {
-          50: '#a09078',
-          100: '#8b7355',
-          200: '#6b5a48',
-          300: '#5c4a32',
-          400: '#4a3f35',
-          500: '#3d3229',
-          DEFAULT: '#5c4a32',
-        },
-        // Border Colors
-        'border': {
-          'primary': '#c4b49a',
-          'secondary': '#e8dcc8',
-          'light': '#e8d4a8',
-        },
-        // Semantic Colors
-        'success': {
-          DEFAULT: '#5a7c5a',
-          light: '#a8c4a8',
-          bg: '#e8f5e9',
-          text: '#2e7d32',
-          pale: '#c8e6c9',
-        },
-        'error': {
-          DEFAULT: '#a65c5c',
-          light: '#c4a8a8',
-          pale: 'rgba(166, 92, 92, 0.15)',
-          text: '#c0392b',
-        },
-        // Progress Colors
-        'progress': {
-          orange: '#e67e22',
-          'orange-light': '#f39c12',
-          green: '#27ae60',
-          'green-light': '#2ecc71',
-        },
-      },
-      boxShadow: {
-        'card': '0 4px 20px rgba(92, 74, 50, 0.15)',
-        'card-hover': '0 8px 40px rgba(92, 74, 50, 0.12)',
-        'modal': '0 20px 60px rgba(0, 0, 0, 0.3)',
-      },
-    },
-  },
-}
-*/
-
-/* ========================================
-   JSON PALETTE - For design tools (Figma, etc.)
-   ======================================== */
-
-/*
-{
-  "name": "Tinder YDS",
-  "description": "Warm sepia-toned palette for educational apps",
-  "colors": {
-    "background": {
-      "primary": "#f4ecd8",
-      "secondary": "#fdf6e3",
-      "tertiary": "#f5efe3",
-      "hover": "#f0e6d3",
-      "highlight": "#ebe1d3"
-    },
-    "text": {
-      "primary": "#5c4a32",
-      "secondary": "#6b5a48",
-      "muted": "#8b7355",
-      "light": "#a09078",
-      "dark": "#3d3229"
-    },
-    "border": {
-      "primary": "#c4b49a",
-      "secondary": "#e8dcc8",
-      "light": "#e8d4a8"
-    },
-    "semantic": {
-      "success": "#5a7c5a",
-      "successLight": "#a8c4a8",
-      "successBg": "#e8f5e9",
-      "successText": "#2e7d32",
-      "error": "#a65c5c",
-      "errorLight": "#c4a8a8",
-      "errorText": "#c0392b"
-    },
-    "progress": {
-      "orange": "#e67e22",
-      "orangeLight": "#f39c12",
-      "green": "#27ae60",
-      "greenLight": "#2ecc71"
-    }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-primary: #1A1714;
+    --color-bg-secondary: #252019;
+    --color-bg-tertiary: #2F2820;
+    --color-bg-hover: #3A3228;
+    
+    --color-text-primary: #E8E0D8;
+    --color-text-dark: #F5F0EC;
+    --color-text-muted: #A89B8F;
+    --color-text-light: #6B5F55;
+    
+    --color-border-primary: #3A3228;
+    --color-border-secondary: #2F2820;
+    
+    --color-success: #7BA87B;
+    --color-success-light: #9BC29B;
+    --color-success-text: #A8D4A8;
+    --color-success-bg: rgba(123, 168, 123, 0.15);
+    
+    --color-error: #C97E7E;
+    --color-error-light: #D9A0A0;
+    --color-error-pale: rgba(201, 126, 126, 0.15);
+    --color-error-text: #E8A8A8;
+    
+    --color-progress-orange: #E0985A;
+    --color-progress-orange-light: #EBB88A;
+    --color-progress-green: var(--color-success);
+    --color-progress-green-light: var(--color-success-light);
+    
+    --color-shadow: rgba(0, 0, 0, 0.25);
+    --color-shadow-dark: rgba(0, 0, 0, 0.4);
+    --color-shadow-heavy: rgba(0, 0, 0, 0.7);
   }
 }
 */
-
-/* ========================================
-   USAGE EXAMPLES
-   ======================================== */
-
-/* Body Background */
-.body-example {
-  background-color: var(--color-bg-primary); /* #f4ecd8 */
-  color: var(--color-text-primary); /* #5c4a32 */
-}
-
-/* Card Component */
-.card-example {
-  background-color: var(--color-bg-secondary); /* #fdf6e3 */
-  border: 1px solid var(--color-border-secondary); /* #e8dcc8 */
-  box-shadow: 0 4px 20px var(--color-shadow);
-  border-radius: 16px;
-}
-
-/* Success Button */
-.btn-success-example {
-  background-color: var(--color-success); /* #5a7c5a */
-  border-color: var(--color-success);
-  color: var(--color-bg-secondary); /* #fdf6e3 */
-}
-
-/* Error Button */
-.btn-error-example {
-  background-color: var(--color-error); /* #a65c5c */
-  border-color: var(--color-error);
-  color: var(--color-bg-secondary); /* #fdf6e3 */
-}
-
-/* Progress Bar - In Progress */
-.progress-orange-example {
-  background: linear-gradient(90deg, #e67e22, #f39c12);
-}
-
-/* Progress Bar - Complete */
-.progress-green-example {
-  background: linear-gradient(90deg, #27ae60, #2ecc71);
-}
-
-/* Icon Button */
-.icon-btn-example {
-  background: transparent;
-  border: 1.5px solid var(--color-border-primary); /* #c4b49a */
-  color: var(--color-text-muted); /* #8b7355 */
-}
-
-.icon-btn-example:hover {
-  background: var(--color-bg-hover); /* #f0e6d3 */
-  border-color: var(--color-text-muted); /* #8b7355 */
-}
-
-/* Badge */
-.badge-streak-example {
-  background: var(--color-error-pale); /* rgba(166, 92, 92, 0.15) */
-  color: var(--color-error); /* #a65c5c */
-}
