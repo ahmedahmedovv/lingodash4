@@ -1724,8 +1724,13 @@ function updateWelcomeStats() {
     // Check if daily goal is already reached
     if (todayCount >= DAILY_GOAL) {
         startBtn.disabled = false;
-        startBtn.textContent = `Daily Goal Reached (${todayCount}/${DAILY_GOAL})`;
-        startBtn.style.background = 'var(--color-success)';
+        if (due > 0) {
+            startBtn.textContent = `Continue Studying (${due} more due)`;
+            startBtn.style.background = 'var(--color-success)';
+        } else {
+            startBtn.textContent = `Daily Goal Reached (${todayCount}/${DAILY_GOAL})`;
+            startBtn.style.background = 'var(--color-success)';
+        }
     } else if (due === 0) {
         startBtn.disabled = true;
         startBtn.textContent = 'No Cards Due';
@@ -1759,17 +1764,11 @@ function changeWelcomeLang() {
 
 /**
  * Start studying - shows due cards based purely on SRS
- * Checks daily goal first
+ * Allows studying even if daily goal reached
  */
 function startStudying() {
     const due = dueCards();
     if (due.length === 0) return;
-    
-    // Check if daily goal already reached
-    if (isDailyGoalReached()) {
-        showDailyGoalComplete();
-        return;
-    }
     
     document.getElementById('welcomePage').style.display = 'none';
     document.getElementById('studyInterface').style.display = '';
@@ -2010,15 +2009,31 @@ function showDailyGoalComplete() {
     answer.style.display = 'none';
     document.getElementById('studyActions').style.display = 'none';
     
+    // Check if there are more due cards available
+    const remainingDue = dueCards().length;
+    const hasMoreCards = remainingDue > 0;
+    
     msg.innerHTML = 
         `<div class="session-complete">
         <h2>🎉 Daily Goal Reached!</h2>
         <p style="color: var(--color-text-muted); margin: 1rem 0;">You've studied <strong>${count}</strong> words today.</p>
-        <p style="color: var(--color-text-muted); margin-bottom: 1rem;">Great job! Come back tomorrow to continue.</p>
+        <p style="color: var(--color-text-muted); margin-bottom: 1rem;">Great job! ${hasMoreCards ? `There are <strong>${remainingDue}</strong> more cards due.` : 'Come back tomorrow to continue.'}</p>
         <div class="session-actions">
+            ${hasMoreCards ? `<button class="btn-success" onclick="continueStudying()">Continue Studying</button>` : ''}
             <button class="btn-primary" onclick="returnToWelcome()">Back to Home</button>
         </div>
         </div>`;
+}
+
+// Continue studying beyond daily goal
+function continueStudying() {
+    // Reset UI for studying
+    answer.style.display = '';
+    document.getElementById('studyActions').style.display = '';
+    msg.innerHTML = '';
+    
+    // Show next card
+    show();
 }
 
 // Reset all cards to "new" state (for testing or restarting)
@@ -2030,12 +2045,31 @@ function resetAll() {
 
 // ===== KEYBOARD SHORTCUTS =====
 
-// ESC key closes modals
+// ESC key closes modals and allows finishing study when daily goal reached
 document.onkeydown = e => {
     if (e.key === 'Escape') {
-        closeEditModal();
-        closeAddModal();
-        closePreviewModal();
+        // Close any open modals first
+        const editModal = document.getElementById('editModal');
+        const addModal = document.getElementById('addModal');
+        const previewModal = document.getElementById('previewModal');
+        
+        if (editModal?.classList.contains('show')) {
+            closeEditModal();
+            return;
+        }
+        if (addModal?.classList.contains('show')) {
+            closeAddModal();
+            return;
+        }
+        if (previewModal?.classList.contains('show')) {
+            closePreviewModal();
+            return;
+        }
+        
+        // If daily goal is reached and waiting for next, ESC finishes studying
+        if (isStudying && waitingForNext && isDailyGoalReached()) {
+            returnToWelcome();
+        }
     }
 };
 
@@ -2065,10 +2099,16 @@ answer.onkeydown = e => {
             return;
         }
         
-        // Check if daily goal reached - show completion screen
+        // Check if daily goal reached - but allow continuing
         if (isDailyGoalReached()) {
-            showDailyGoalComplete();
-            return;
+            // Check if there are more due cards
+            const remainingDue = dueCards().length;
+            if (remainingDue === 0) {
+                // No more cards, show completion screen
+                showDailyGoalComplete();
+                return;
+            }
+            // Otherwise continue to next card
         }
         
         // Move to next card
@@ -2135,7 +2175,7 @@ answer.onkeydown = e => {
     if (isDailyGoalReached()) {
         msg.innerHTML = `
             <div style="color: var(--color-success); font-weight: 600;">🎉 Daily goal reached! ${nextReviewBadge}</div>
-            <div style="color: var(--color-text-muted); font-size: 0.9rem; margin-top: 0.3rem;">Press Enter to finish</div>
+            <div style="color: var(--color-text-muted); font-size: 0.9rem; margin-top: 0.3rem;">Press Enter to continue or ESC to finish</div>
         `;
     } else {
         msg.innerHTML = `
