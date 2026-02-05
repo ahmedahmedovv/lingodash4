@@ -1,0 +1,254 @@
+// Tinder YDS Color Palette
+// A warm, sepia-toned color scheme designed for vocabulary learning apps
+// Inspired by flashcards and academic materials
+
+// ========================================
+// COLOR VARIABLES
+// ========================================
+
+// Primary Background Colors
+$bg-primary: #f4ecd8;      // Main app background - warm cream
+$bg-secondary: #fdf6e3;    // Card background - light cream
+$bg-tertiary: #f5efe3;     // List items, secondary surfaces
+$bg-hover: #f0e6d3;        // Button active state, secondary background
+$bg-highlight: #ebe1d3;    // Highlighted items on hover
+
+// Primary Text Colors (Brown Scale)
+$text-primary: #5c4a32;    // Main text - dark brown
+$text-secondary: #6b5a48;  // Secondary text - medium brown
+$text-muted: #8b7355;      // Muted text, icons - light brown
+$text-light: #a09078;      // Placeholder, disabled text
+$text-dark: #3d3229;       // Headings, important text
+
+// Border & Divider Colors
+$border-primary: #c4b49a;  // Main borders, buttons
+$border-secondary: #e8dcc8;// Light borders, dividers
+$border-light: #e8d4a8;    // Subtle borders, highlights
+
+// Semantic Colors - Success
+$success: #5a7c5a;         // Know/correct - sage green
+$success-light: #a8c4a8;   // Light green border
+$success-bg: #e8f5e9;      // Very light green background
+$success-text: #2e7d32;    // Dark green text
+$success-pale: #c8e6c9;    // Pale green background
+
+// Semantic Colors - Error/Danger
+$error: #a65c5c;           // Don't know/incorrect - muted red
+$error-light: #c4a8a8;     // Light red border
+$error-pale: rgba(166, 92, 92, 0.15); // Pale red background
+$error-text: #c0392b;      // Red text
+
+// Progress Bar Colors
+$progress-orange: #e67e22;        // In progress - orange
+$progress-orange-light: #f39c12;  // Orange lighter
+$progress-green: #27ae60;         // Complete - green
+$progress-green-light: #2ecc71;   // Green lighter
+$progress-green-alt: #4caf50;     // Alternative green
+
+// Neutral Colors
+$neutral-light: #f5f5f5;   // Light gray background
+$neutral-text: #9e9e9e;    // Gray text
+
+// Shadow Colors
+$shadow: rgba(92, 74, 50, 0.15);   // Primary shadow
+$shadow-dark: rgba(92, 74, 50, 0.2); // Darker shadow
+$shadow-heavy: rgba(92, 74, 50, 0.7); // Heavy shadow for overlays
+
+// ========================================
+// MAPS FOR ITERATION
+// ========================================
+
+$background-colors: (
+  'primary': $bg-primary,
+  'secondary': $bg-secondary,
+  'tertiary': $bg-tertiary,
+  'hover': $bg-hover,
+  'highlight': $bg-highlight
+);
+
+$text-colors: (
+  'primary': $text-primary,
+  'secondary': $text-secondary,
+  'muted': $text-muted,
+  'light': $text-light,
+  'dark': $text-dark
+);
+
+$border-colors: (
+  'primary': $border-primary,
+  'secondary': $border-secondary,
+  'light': $border-light
+);
+
+$semantic-colors: (
+  'success': $success,
+  'success-light': $success-light,
+  'success-bg': $success-bg,
+  'success-text': $success-text,
+  'success-pale': $success-pale,
+  'error': $error,
+  'error-light': $error-light,
+  'error-pale': $error-pale,
+  'error-text': $error-text
+);
+
+$progress-colors: (
+  'orange': $progress-orange,
+  'orange-light': $progress-orange-light,
+  'green': $progress-green,
+  'green-light': $progress-green-light
+);
+
+// ========================================
+// MIXINS
+// ========================================
+
+@mixin card-shadow {
+  box-shadow: 0 4px 20px $shadow;
+}
+
+@mixin card-shadow-hover {
+  box-shadow: 0 8px 40px $shadow-dark;
+}
+
+@mixin modal-shadow {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+@mixin gradient-brown {
+  background: linear-gradient(90deg, #8b7355, #a08060);
+}
+
+@mixin gradient-progress-orange {
+  background: linear-gradient(90deg, $progress-orange, $progress-orange-light);
+}
+
+@mixin gradient-progress-green {
+  background: linear-gradient(90deg, $progress-green, $progress-green-light);
+}
+
+// ========================================
+// UTILITY CLASSES (Optional)
+// ========================================
+
+.bg-primary { background-color: $bg-primary; }
+.bg-secondary { background-color: $bg-secondary; }
+.bg-tertiary { background-color: $bg-tertiary; }
+.bg-hover { background-color: $bg-hover; }
+.bg-highlight { background-color: $bg-highlight; }
+
+.text-primary { color: $text-primary; }
+.text-secondary { color: $text-secondary; }
+.text-muted { color: $text-muted; }
+.text-light { color: $text-light; }
+.text-dark { color: $text-dark; }
+
+.border-primary { border-color: $border-primary; }
+.border-secondary { border-color: $border-secondary; }
+.border-light { border-color: $border-light; }
+
+.text-success { color: $success; }
+.text-error { color: $error; }
+.bg-success { background-color: $success; }
+.bg-error { background-color: $error; }
+
+// ========================================
+// EXAMPLE COMPONENT STYLES
+// ========================================
+
+%card-base {
+  background-color: $bg-secondary;
+  border: 1px solid $border-secondary;
+  border-radius: 16px;
+  @include card-shadow;
+  
+  &:hover {
+    @include card-shadow-hover;
+  }
+}
+
+%button-base {
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.button-primary {
+  @extend %button-base;
+  background-color: $text-muted;
+  color: $bg-secondary;
+  border: none;
+  
+  &:hover {
+    background-color: darken($text-muted, 10%);
+  }
+}
+
+.button-secondary {
+  @extend %button-base;
+  background-color: transparent;
+  color: $text-muted;
+  border: 1.5px solid $border-primary;
+  
+  &:hover {
+    background-color: $bg-hover;
+    border-color: $text-muted;
+  }
+}
+
+.button-success {
+  @extend %button-base;
+  background-color: $success;
+  color: $bg-secondary;
+  border: none;
+  
+  &:hover {
+    background-color: darken($success, 10%);
+  }
+}
+
+.button-error {
+  @extend %button-base;
+  background-color: $error;
+  color: $bg-secondary;
+  border: none;
+  
+  &:hover {
+    background-color: darken($error, 10%);
+  }
+}
+
+.card {
+  @extend %card-base;
+  padding: 24px;
+}
+
+.badge-success {
+  background-color: $success-bg;
+  color: $success-text;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+}
+
+.badge-error {
+  background-color: $error-pale;
+  color: $error;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+}
+
+.progress-orange {
+  @include gradient-progress-orange;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.progress-green {
+  @include gradient-progress-green;
+  height: 8px;
+  border-radius: 4px;
+}
