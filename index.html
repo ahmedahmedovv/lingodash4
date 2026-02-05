@@ -375,9 +375,56 @@
             gap: .3rem;
         }
         
-        /* Feedback colors */
-        .ok { color: var(--color-success); font-weight: 600; } /* Sage green for correct */
-        .no { color: var(--color-error); font-weight: 600; } /* Muted red for incorrect */
+        /* Feedback colors - HIGH CONTRAST */
+        .ok { 
+            background: var(--color-success);
+            color: #FFFFFF;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(107, 142, 107, 0.4);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            animation: correctPulse 0.5s ease;
+        }
+        .no { 
+            background: var(--color-error);
+            color: #FFFFFF;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(184, 107, 107, 0.4);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            animation: wrongShake 0.5s ease;
+        }
+        
+        /* Correct answer pulse animation */
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Wrong answer enhanced shake */
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            10% { transform: translateX(-4px); }
+            30% { transform: translateX(4px); }
+            50% { transform: translateX(-4px); }
+            70% { transform: translateX(4px); }
+            90% { transform: translateX(-2px); }
+        }
+        
+        /* Input field states */
+        input[type="text"].correct {
+            border-color: var(--color-success) !important;
+            background: rgba(107, 142, 107, 0.1) !important;
+            box-shadow: 0 0 0 4px rgba(107, 142, 107, 0.15) !important;
+        }
+        input[type="text"].wrong {
+            border-color: var(--color-error) !important;
+            background: rgba(184, 107, 107, 0.1) !important;
+            box-shadow: 0 0 0 4px rgba(184, 107, 107, 0.15) !important;
+        }
         .done-msg { color: var(--color-text-muted); }
         .done-msg button { margin-top: 1rem; }
 
@@ -1956,6 +2003,7 @@ function show() {
     answer.style.display = '';
     answer.readOnly = false;
     answer.style.background = '';
+    answer.classList.remove('correct', 'wrong');
     msg.textContent = '';
     document.getElementById('studyActions').style.display = 'flex';
     
@@ -2084,11 +2132,13 @@ answer.onkeydown = e => {
         
         answer.readOnly = false;
         answer.style.background = '';
+        answer.classList.remove('correct', 'wrong');
         
         // If wrong, give another chance on same card
         if (lastAnswerWrong) {
             lastAnswerWrong = false;
             sentence.textContent = cur.s.replace(new RegExp(escapeRegex(cur.w), 'gi'), '___');
+            answer.value = ''; // Clear wrong answer
             answer.focus();
             answerStartTime = Date.now();
             // Clear image panel when asking again
@@ -2124,12 +2174,17 @@ answer.onkeydown = e => {
     // WRONG ANSWER
     if (!isCorrect) {
         lastAnswerWrong = true;
-        // Show the correct word in red
+        // Show the correct word with high contrast red styling
         sentence.innerHTML = cur.s.replace(new RegExp(`(${escapeRegex(cur.w)})`, 'gi'), `<span class="no">$1</span>`);
-        msg.innerHTML = '<span style="color: var(--color-text-muted);">Press Enter to try again</span>';
-        answer.value = '';
+        msg.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
+                <span style="font-size: 1.2rem;">❌</span>
+                <span style="color: var(--color-error); font-weight: 600;">Incorrect</span>
+            </div>
+            <div style="color: var(--color-text-muted); font-size: 0.9rem; margin-top: 0.3rem;">Press Enter to try again</div>
+        `;
+        answer.classList.add('wrong');
         answer.readOnly = true;
-        answer.style.background = 'var(--color-error-pale)'; // Light red background
         answer.classList.add('shake'); // Shake animation
         setTimeout(() => answer.classList.remove('shake'), 500);
         waitingForNext = true;
@@ -2159,7 +2214,7 @@ answer.onkeydown = e => {
     // Track daily progress
     incrementTodayCount();
 
-    // Show the correct word in green
+    // Show the correct word with high contrast green styling
     sentence.innerHTML = cur.s.replace(new RegExp(`(${escapeRegex(cur.w)})`, 'gi'), `<span class="ok">$1</span>`);
     
     // Update stats (pure SRS - no session tracking needed)
@@ -2171,15 +2226,26 @@ answer.onkeydown = e => {
     const nextReview = formatNextReview(cur.due);
     const nextReviewBadge = `<span class="next-review-badge">🔄 ${nextReview}</span>`;
     
+    // Style the input as correct
+    answer.classList.add('correct');
+    answer.readOnly = true;
+    
     // Check if daily goal reached
     if (isDailyGoalReached()) {
         msg.innerHTML = `
-            <div style="color: var(--color-success); font-weight: 600;">🎉 Daily goal reached! ${nextReviewBadge}</div>
-            <div style="color: var(--color-text-muted); font-size: 0.9rem; margin-top: 0.3rem;">Press Enter to continue or ESC to finish</div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center; color: var(--color-success); font-weight: 600;">
+                <span style="font-size: 1.2rem;">✓</span>
+                <span>Correct! 🎉 Daily goal reached!</span>
+            </div>
+            <div style="color: var(--color-text-muted); font-size: 0.9rem; margin-top: 0.3rem;">Press Enter to continue or ESC to finish ${nextReviewBadge}</div>
         `;
     } else {
         msg.innerHTML = `
-            <div style="color: var(--color-text-muted);">Press Enter to continue ${nextReviewBadge}</div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center; color: var(--color-success); font-weight: 600;">
+                <span style="font-size: 1.2rem;">✓</span>
+                <span>Correct!</span>
+            </div>
+            <div style="color: var(--color-text-muted); font-size: 0.9rem; margin-top: 0.3rem;">Press Enter to continue ${nextReviewBadge}</div>
         `;
     }
     
@@ -2190,9 +2256,6 @@ answer.onkeydown = e => {
     if (cur?.w) {
         loadBingImages(cur.w);
     }
-    answer.value = '';
-    answer.readOnly = true;
-    answer.style.background = 'var(--color-elevation-3)'; // Done state - higher elevation
 };
 
 // ===== SIDEBAR: CARD LIST =====
