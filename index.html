@@ -103,7 +103,7 @@
         
         /* Hamburger button to toggle focus mode */
         .focus-btn { 
-            background: var(--color-bg-secondary); 
+            background: var(--color-elevation-2); 
             border: 1px solid var(--color-border-primary); 
             color: var(--color-text-primary);
             font-size: 1.1rem; 
@@ -112,12 +112,12 @@
             border-radius: 8px; 
             transition: all .2s; 
         }
-        .focus-btn:hover { background: var(--color-bg-hover); }
+        .focus-btn:hover { background: var(--color-elevation-3); }
 
         /* ===== STUDY PANEL (Main Learning Area) ===== */
         /* Cream card where you actually study flashcards */
         .study-panel { 
-            background: var(--color-bg-secondary); 
+            background: var(--color-elevation-1); 
             border-radius: 20px; 
             padding: 2.5rem; 
             display: flex; 
@@ -131,6 +131,10 @@
             align-self: flex-start; 
             z-index: 5; 
             border: 1px solid var(--color-border-secondary);
+            transition: box-shadow .3s ease, transform .3s ease;
+        }
+        .study-panel:hover {
+            box-shadow: 0 6px 28px var(--color-shadow-dark);
         }
         
         /* Example sentence with hidden word shown as ___ */
@@ -159,7 +163,7 @@
         /* Main text input where you type the answer */
         input[type="text"] { 
             border: 2px solid var(--color-border-primary); 
-            background: var(--color-bg-tertiary); 
+            background: var(--color-elevation-2); 
             color: var(--color-text-primary);
             border-radius: 14px; 
             padding: 1rem 1.5rem; 
@@ -167,11 +171,16 @@
             font-size: 1.3rem; 
             text-align: center; 
             outline: none; 
-            transition: all .2s; 
+            transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease; 
+        }
+        input[type="text"]:hover {
+            border-color: var(--color-border-secondary);
+            background: var(--color-elevation-1);
         }
         input[type="text"]:focus { 
             border-color: var(--color-success); /* Sage green on focus */ 
-            background: var(--color-bg-secondary); 
+            background: var(--color-elevation-1); 
+            box-shadow: 0 0 0 4px var(--color-focus-bg);
         }
         
         /* Feedback message (correct/incorrect/prompts) */
@@ -202,7 +211,7 @@
             height: 36px; 
             padding: 0; 
             font-size: 1rem; 
-            background: var(--color-bg-tertiary); 
+            background: var(--color-elevation-2); 
             border: 1px solid var(--color-border-secondary); 
             border-radius: 8px; 
             cursor: pointer; 
@@ -211,7 +220,7 @@
         }
         .study-actions button:hover { 
             opacity: 1; 
-            background: var(--color-bg-hover); 
+            background: var(--color-elevation-3); 
             transform: scale(1.05); 
         }
         /* Delete button turns red on hover */
@@ -226,22 +235,38 @@
             position: fixed; 
             top: 0; left: 0; right: 0; bottom: 0; 
             background: var(--color-shadow-heavy); 
-            display: none; 
+            display: flex; 
             align-items: center; 
             justify-content: center; 
             z-index: 100; 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .2s ease, visibility .2s ease;
         }
-        .modal-overlay.show { display: flex; }
+        .modal-overlay.show { 
+            opacity: 1;
+            visibility: visible;
+        }
         
         /* Cream modal box */
         .modal { 
-            background: var(--color-bg-secondary); 
+            background: var(--color-elevation-1); 
             border-radius: 16px; 
             padding: 2rem; 
             width: 90%; 
             max-width: 500px; 
-            box-shadow: 0 20px 60px var(--color-shadow-dark); 
+            box-shadow: 
+                0 25px 80px var(--color-shadow-dark),
+                0 10px 30px rgba(0, 0, 0, 0.1); 
             border: 1px solid var(--color-border-secondary);
+            transform: scale(0.95);
+            opacity: 0;
+            transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1), 
+                        opacity .2s ease;
+        }
+        .modal-overlay.show .modal {
+            transform: scale(1);
+            opacity: 1;
         }
         .modal h3 { margin-bottom: 1.5rem; font-size: 1.3rem; color: var(--color-text-dark); }
         .modal .form-group { margin-bottom: 1rem; }
@@ -258,13 +283,13 @@
             border-radius: 8px; 
             font: inherit; 
             font-size: 1rem; 
-            background: var(--color-bg-tertiary);
+            background: var(--color-elevation-2);
             color: var(--color-text-primary);
         }
         .modal input:focus, .modal textarea:focus { 
             outline: none; 
             border-color: var(--color-success); 
-            background: var(--color-bg-secondary);
+            background: var(--color-elevation-1);
         }
         .modal textarea { height: 80px; resize: none; }
         
@@ -283,7 +308,7 @@
             color: var(--color-text-muted); 
             margin-top: .5rem; 
             padding: .5rem; 
-            background: var(--color-bg-tertiary); 
+            background: var(--color-elevation-2); 
             border-radius: 6px; 
             display: none; 
         }
@@ -379,10 +404,15 @@
             max-width: 450px; 
         }
         .session-stat { 
-            background: var(--color-bg-tertiary); 
+            background: var(--color-elevation-2); 
             padding: 1.25rem; 
             border-radius: 12px; 
             border: 1px solid var(--color-border-secondary);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .session-stat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--color-shadow);
         }
         .session-stat .num { 
             font-size: 2.2rem; 
@@ -403,7 +433,7 @@
         /* ===== WELCOME PAGE ===== */
         /* Shown before starting a study session */
         .welcome-page { 
-            background: var(--color-bg-secondary); 
+            background: var(--color-elevation-1); 
             border-radius: 20px; 
             padding: 3rem; 
             display: flex; 
@@ -414,6 +444,10 @@
             box-shadow: 0 4px 20px var(--color-shadow); 
             text-align: center;
             border: 1px solid var(--color-border-secondary);
+            transition: box-shadow .3s ease, transform .3s ease;
+        }
+        .welcome-page:hover {
+            box-shadow: 0 6px 28px var(--color-shadow-dark);
         }
         .welcome-page h1 { font-size: 2rem; margin-bottom: 2rem; color: var(--color-text-dark); }
         .welcome-form { width: 100%; max-width: 360px; }
@@ -432,7 +466,7 @@
             font: inherit; 
             font-size: 1.2rem; 
             margin-bottom: 1.5rem; 
-            background: var(--color-bg-tertiary); 
+            background: var(--color-elevation-2); 
             color: var(--color-text-primary);
         }
         .welcome-form button { 
@@ -456,7 +490,7 @@
 
         /* ===== BUTTON STYLES ===== */
         button { 
-            background: var(--color-bg-tertiary); 
+            background: var(--color-elevation-2); 
             border: 1px solid var(--color-border-primary); 
             color: var(--color-text-primary); 
             padding: .7rem 1.4rem; 
@@ -464,9 +498,22 @@
             font: inherit; 
             font-size: 1.05rem; 
             cursor: pointer; 
-            transition: all .2s; 
+            transition: background-color .2s ease, border-color .2s ease, transform .15s ease, box-shadow .2s ease; 
         }
-        button:hover { background: var(--color-bg-hover); }
+        button:hover { 
+            background: var(--color-elevation-3); 
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px var(--color-shadow);
+        }
+        button:active { 
+            background: var(--color-active);
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        button:focus-visible {
+            outline: 2px solid var(--color-focus-ring);
+            outline-offset: 2px;
+        }
         
         /* Primary action button (sage green) */
         .btn-primary { 
@@ -501,11 +548,15 @@
 
         /* Header card: Language selector + stats */
         .sidebar-header { 
-            background: var(--color-bg-secondary); 
+            background: var(--color-elevation-1); 
             border-radius: 16px; 
             padding: 1.5rem; 
             box-shadow: 0 4px 20px var(--color-shadow); 
             border: 1px solid var(--color-border-secondary);
+            transition: box-shadow .3s ease;
+        }
+        .sidebar-header:hover {
+            box-shadow: 0 6px 24px var(--color-shadow-dark);
         }
         .lang-section { 
             display: flex; 
@@ -530,14 +581,17 @@
             padding: .5rem .75rem; 
             border-radius: 8px; 
             border: 1px solid var(--color-border-primary); 
-            background: var(--color-bg-tertiary); 
+            background: var(--color-elevation-2); 
             color: var(--color-text-primary);
             font: inherit; 
             font-size: .95rem; 
             cursor: pointer; 
             transition: all .2s; 
         }
-        .lang-select:hover { border-color: var(--color-success); }
+        .lang-select:hover { 
+            border-color: var(--color-success); 
+            background: var(--color-elevation-1);
+        }
         .lang-actions { display: flex; gap: .25rem; }
         .lang-actions button { 
             padding: .4rem .5rem; 
@@ -547,7 +601,7 @@
             border-radius: 6px; 
             opacity: .6; 
         }
-        .lang-actions button:hover { opacity: 1; background: var(--color-bg-hover); }
+        .lang-actions button:hover { opacity: 1; background: var(--color-elevation-3); }
 
         /* Stats pills: Due, Learning, Mastered, Accuracy */
         .stats-row { 
@@ -560,9 +614,14 @@
             align-items: center; 
             gap: .4rem; 
             padding: .5rem .75rem; 
-            background: var(--color-bg-tertiary); 
+            background: var(--color-elevation-2); 
             border-radius: 20px; 
-            font-size: .9rem; 
+            font-size: .9rem;
+            transition: transform .15s ease, background-color .15s ease;
+        }
+        .stat-pill:hover {
+            transform: scale(1.02);
+            background: var(--color-elevation-3);
         }
         .stat-pill .icon { font-size: .95rem; }
         .stat-pill .num { font-weight: 600; color: var(--color-text-dark); }
@@ -576,11 +635,15 @@
 
         /* Data management card (Export/Import/Clear) */
         .data-card { 
-            background: var(--color-bg-secondary); 
+            background: var(--color-elevation-1); 
             border-radius: 16px; 
             padding: 1.25rem; 
             box-shadow: 0 4px 20px var(--color-shadow); 
             border: 1px solid var(--color-border-secondary);
+            transition: box-shadow .3s ease;
+        }
+        .data-card:hover {
+            box-shadow: 0 6px 24px var(--color-shadow-dark);
         }
         .data-title { 
             font-size: .75rem; 
@@ -599,11 +662,19 @@
             gap: .4rem; 
             padding: .6rem; 
             font-size: .85rem; 
-            background: var(--color-bg-tertiary); 
+            background: var(--color-elevation-2); 
             border: 1px solid transparent; 
-            border-radius: 8px; 
+            border-radius: 8px;
+            transition: background-color .2s ease, transform .1s ease;
         }
-        .data-btns button:hover { background: var(--color-bg-hover); }
+        .data-btns button:hover { 
+            background: var(--color-elevation-3); 
+            transform: translateY(-1px);
+        }
+        .data-btns button:active {
+            background: var(--color-active);
+            transform: translateY(0);
+        }
         .data-btns button.danger { color: var(--color-error); }
         .data-btns button.danger:hover { 
             background: var(--color-error-pale); 
@@ -612,7 +683,7 @@
 
         /* Words list card (scrollable list of all cards) */
         .words-card { 
-            background: var(--color-bg-secondary); 
+            background: var(--color-elevation-1); 
             border-radius: 16px; 
             padding: 1.25rem; 
             box-shadow: 0 4px 20px var(--color-shadow); 
@@ -621,6 +692,10 @@
             flex-direction: column; 
             min-height: 0; 
             border: 1px solid var(--color-border-secondary);
+            transition: box-shadow .3s ease;
+        }
+        .words-card:hover {
+            box-shadow: 0 6px 24px var(--color-shadow-dark);
         }
         .words-header { 
             display: flex; 
@@ -657,14 +732,14 @@
             border: 1px solid var(--color-border-secondary);
             border-radius: 10px;
             font-size: .9rem;
-            background: var(--color-bg-tertiary);
+            background: var(--color-elevation-2);
             color: var(--color-text-primary);
             transition: all .2s;
         }
         .words-search input:focus {
             outline: none;
             border-color: var(--color-success);
-            background: var(--color-bg-secondary);
+            background: var(--color-elevation-1);
         }
         .words-search input::placeholder {
             color: var(--color-text-light);
@@ -706,15 +781,20 @@
             display: flex;
             align-items: center;
             gap: .4rem;
-            transition: all .15s;
+            transition: background-color .15s ease, color .15s ease, transform .1s ease;
         }
         .words-tab:hover {
-            background: var(--color-bg-tertiary);
+            background: var(--color-hover-subtle);
             color: var(--color-text-primary);
+        }
+        .words-tab:active {
+            background: var(--color-active);
+            transform: scale(0.97);
         }
         .words-tab.active {
             background: var(--color-success);
-            color: var(--color-bg-secondary);
+            color: var(--color-elevation-1);
+            box-shadow: 0 2px 6px rgba(107, 142, 107, 0.3);
         }
         .tab-dot {
             width: 6px;
@@ -732,11 +812,20 @@
             padding: .35rem .6rem; 
             border-radius: 8px; 
             border: 1px solid var(--color-border-primary); 
-            background: var(--color-bg-tertiary);
+            background: var(--color-elevation-2);
             color: var(--color-text-primary);
-            cursor: pointer; 
+            cursor: pointer;
+            transition: border-color .2s ease, background-color .2s ease;
         }
-        .sort-select:hover { border-color: var(--color-success); }
+        .sort-select:hover { 
+            border-color: var(--color-success); 
+            background: var(--color-elevation-1);
+        }
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--color-success);
+            box-shadow: 0 0 0 3px var(--color-focus-bg);
+        }
         
         /* Sage green "Add Card" button */
         .btn-add-card { 
@@ -774,9 +863,15 @@
             padding: .6rem .5rem; 
             border-radius: 10px; 
             gap: .75rem; 
-            transition: background .15s; 
+            transition: background-color .15s ease, transform .1s ease; 
         }
-        .word-item:hover { background: var(--color-bg-tertiary); }
+        .word-item:hover { 
+            background: var(--color-hover-subtle); 
+        }
+        .word-item:active {
+            background: var(--color-active);
+            transform: scale(0.995);
+        }
         
         /* Status dot: orange=due, green=mastered, gray=new */
         .word-status { 
@@ -879,7 +974,7 @@
         }
         .word-next-review.new {
             color: var(--color-text-muted);
-            background: var(--color-bg-tertiary);
+            background: var(--color-elevation-2);
         }
         
         /* Edit/Delete buttons appear on hover */
@@ -899,7 +994,7 @@
             opacity: .6; 
             cursor: pointer;
         }
-        .word-actions button:hover { opacity: 1; background: var(--color-bg-hover); }
+        .word-actions button:hover { opacity: 1; background: var(--color-elevation-3); }
         .word-actions button.danger { color: var(--color-error); }
         .word-actions button.danger:hover { background: var(--color-error-pale); }
 
@@ -917,7 +1012,7 @@
             display: none; 
             margin-top: .75rem; 
             padding: .75rem; 
-            background: var(--color-bg-tertiary); 
+            background: var(--color-elevation-2); 
             border-radius: 10px; 
             border: 1px solid var(--color-border-secondary);
         }
@@ -933,7 +1028,7 @@
             border-radius: 8px; 
             font: inherit; 
             font-size: .9rem; 
-            background: var(--color-bg-secondary);
+            background: var(--color-elevation-1);
             color: var(--color-text-primary);
         }
         .lang-form-btns { 
@@ -976,7 +1071,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--color-bg-tertiary);
+            background: var(--color-elevation-2);
             border-top: 1px solid var(--color-border-primary);
             box-shadow: 0 -4px 20px var(--color-shadow);
             z-index: 1000;
@@ -996,7 +1091,7 @@
             justify-content: space-between;
             padding: .5rem 1rem;
             border-bottom: 1px solid var(--color-border-secondary);
-            background: var(--color-bg-tertiary);
+            background: var(--color-elevation-2);
             flex-shrink: 0;
         }
         .image-panel-title {
@@ -1017,14 +1112,14 @@
         .image-panel-actions button {
             padding: .35rem .75rem;
             font-size: .8rem;
-            background: var(--color-bg-secondary);
+            background: var(--color-elevation-1);
             border: 1px solid var(--color-border-primary);
             border-radius: 6px;
             cursor: pointer;
             color: var(--color-text-primary);
         }
         .image-panel-actions button:hover {
-            background: var(--color-bg-hover);
+            background: var(--color-elevation-3);
         }
         .image-panel-close-btn {
             position: absolute;
@@ -1032,7 +1127,7 @@
             right: 8px;
             width: 32px;
             height: 32px;
-            background: var(--color-bg-secondary);
+            background: var(--color-elevation-1);
             border: 1px solid var(--color-border-primary);
             border-radius: 8px;
             font-size: 1.2rem;
@@ -1045,7 +1140,7 @@
             color: var(--color-text-primary);
         }
         .image-panel-close-btn:hover {
-            background: var(--color-bg-hover);
+            background: var(--color-elevation-3);
         }
         .image-panel-link-btn {
             position: absolute;
@@ -1053,7 +1148,7 @@
             right: 48px;
             width: 32px;
             height: 32px;
-            background: var(--color-bg-secondary);
+            background: var(--color-elevation-1);
             border: 1px solid var(--color-border-primary);
             border-radius: 8px;
             font-size: 0.9rem;
@@ -1066,14 +1161,14 @@
             color: var(--color-text-primary);
         }
         .image-panel-link-btn:hover {
-            background: var(--color-bg-hover);
+            background: var(--color-elevation-3);
         }
         
         .image-panel-content {
             flex: 1;
             position: relative;
             overflow: hidden;
-            background: var(--color-bg-tertiary);
+            background: var(--color-elevation-2);
         }
         
         .bing-iframe {
@@ -2057,7 +2152,7 @@ answer.onkeydown = e => {
     }
     answer.value = '';
     answer.readOnly = true;
-    answer.style.background = 'var(--color-bg-hover)'; // Hover color background (done)
+    answer.style.background = 'var(--color-elevation-3)'; // Done state - higher elevation
 };
 
 // ===== SIDEBAR: CARD LIST =====

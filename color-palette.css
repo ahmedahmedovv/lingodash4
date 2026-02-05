@@ -9,6 +9,16 @@
    - Earthy tones (sage green, terracotta) feel natural
    - High enough contrast for readability
    - Soft shadows for subtle depth
+   
+   ELEVATION SYSTEM (New):
+   Creates visual hierarchy through layered backgrounds.
+   Higher elevation = closer to user = lighter color.
+   
+   Elevation 0: Page background     (--color-elevation-0)
+   Elevation 1: Cards, panels       (--color-elevation-1)
+   Elevation 2: Inputs, buttons     (--color-elevation-2)
+   Elevation 3: Hover states        (--color-elevation-3)
+   Elevation 4: Peak (dragged)      (--color-elevation-4)
    ============================================= */
 
 :root {
@@ -93,6 +103,49 @@
   
   /* Heavy: Modal overlays - for backdrop */
   --color-shadow-heavy: rgba(45, 36, 30, 0.45);
+
+  /* =============================================
+     ELEVATION SYSTEM (Visual Hierarchy)
+     =============================================
+     Creates clear depth perception through 
+     layered backgrounds. Higher elevation = 
+     lighter/closer to user.
+     ============================================= */
+  
+  /* Elevation 0: Deepest layer - page background */
+  --color-elevation-0: var(--color-bg-primary);
+  
+  /* Elevation 1: Cards, panels - resting on page */
+  --color-elevation-1: #FFFFFF;
+  
+  /* Elevation 2: Inputs, buttons - interactive elements */
+  --color-elevation-2: #F7F2ED;
+  
+  /* Elevation 3: Hover states, pressed elements */
+  --color-elevation-3: #EDE8E3;
+  
+  /* Elevation 4: Dragged items, peak elevation */
+  --color-elevation-4: #E5E0DA;
+  
+  /* ----- INTERACTIVE STATES ----- */
+  /* Subtle hover - for list items, rows */
+  --color-hover-subtle: rgba(107, 142, 107, 0.06);
+  
+  /* Accent hover - for primary actions */
+  --color-hover-accent: rgba(107, 142, 107, 0.12);
+  
+  /* Active/pressed state */
+  --color-active: rgba(74, 64, 54, 0.08);
+  
+  /* Selected state - for active tabs, cards */
+  --color-selected: rgba(107, 142, 107, 0.15);
+  
+  /* ----- FOCUS & ACCESSIBILITY ----- */
+  /* Focus ring color */
+  --color-focus-ring: var(--color-success);
+  
+  /* Focus background tint */
+  --color-focus-bg: rgba(107, 142, 107, 0.08);
 }
 
 /* =============================================
@@ -133,6 +186,20 @@
     --color-shadow: rgba(0, 0, 0, 0.25);
     --color-shadow-dark: rgba(0, 0, 0, 0.4);
     --color-shadow-heavy: rgba(0, 0, 0, 0.7);
+    
+    /* Elevation colors - Dark mode (inverted: higher = lighter) */
+    --color-elevation-0: #1A1714;
+    --color-elevation-1: #252019;
+    --color-elevation-2: #2F2820;
+    --color-elevation-3: #3A3228;
+    --color-elevation-4: #453C30;
+    
+    --color-hover-subtle: rgba(123, 168, 123, 0.08);
+    --color-hover-accent: rgba(123, 168, 123, 0.15);
+    --color-active: rgba(0, 0, 0, 0.2);
+    --color-selected: rgba(123, 168, 123, 0.2);
+    --color-focus-ring: var(--color-success);
+    --color-focus-bg: rgba(123, 168, 123, 0.12);
   }
 }
 */
