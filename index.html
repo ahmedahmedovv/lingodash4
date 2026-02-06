@@ -229,18 +229,7 @@
             border-color: var(--color-error-light); 
         }
         
-        /* TTS button speaking state */
-        .study-actions button.speaking {
-            background: var(--color-success);
-            border-color: var(--color-success);
-            opacity: 1;
-            animation: ttsPulse 1s ease-in-out infinite;
-        }
-        @keyframes ttsPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
+
         /* ===== MODAL DIALOGS (Add/Edit Card) ===== */
         /* Dark overlay behind modal */
         .modal-overlay { 
@@ -1312,7 +1301,6 @@
             
             <!-- Quick edit/delete for current card -->
             <div class="study-actions" id="studyActions">
-                <button onclick="speakCurrent()" title="Speak (S)">🔊</button>
                 <button onclick="editCurrentCard()" title="Edit">✏️</button>
                 <button class="btn-delete" onclick="deleteCurrentCard()" title="Delete">🗑️</button>
             </div>
@@ -1372,11 +1360,7 @@
                 </div>
             </div>
             
-            <!-- TTS indicator -->
-            <div id="tts-indicator" style="display: none; font-size: 0.75rem; color: var(--color-success); margin-bottom: 0.5rem; text-align: center;">
-                🔊 TTS Ready
-            </div>
-            
+
             <!-- Stats pills row -->
             <div class="stats-row">
                 <div class="stat-pill due">
@@ -2112,19 +2096,8 @@ function resetAll() {
 // ===== KEYBOARD SHORTCUTS =====
 
 // ESC key closes modals and allows finishing study when daily goal reached
-// S key triggers TTS (when not typing in input)
 document.onkeydown = e => {
-    // S key for TTS (when not in input field)
-    if ((e.key === 's' || e.key === 'S') && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-        speakCurrent();
-        return;
-    }
-    
     if (e.key === 'Escape') {
-        // Stop TTS when ESC pressed
-        stopTTS();
-        
         // Close any open modals first
         const editModal = document.getElementById('editModal');
         const addModal = document.getElementById('addModal');
@@ -2277,18 +2250,6 @@ answer.onkeydown = e => {
             <div style="color: var(--color-text-muted); font-size: 0.9rem; margin-top: 0.3rem;">Press Enter to continue ${nextReviewBadge}</div>
         `;
     }
-    
-    // Auto-speak the word after correct answer (with slight delay)
-    setTimeout(() => {
-        if (ttsSynth && cur?.w) {
-            const utterance = new SpeechSynthesisUtterance(cur.w);
-            utterance.lang = getTTSLang(currentLang);
-            utterance.rate = 1.0;
-            const voice = getTTSVoice(utterance.lang);
-            if (voice) utterance.voice = voice;
-            ttsSynth.speak(utterance);
-        }
-    }, 500);
     
     // Load images after correct answer
     if (!imagePanelOpen) {
@@ -2596,154 +2557,6 @@ function delCard(i) {
     }
 }
 
-// ===== BUILT-IN TTS (Web Speech API) =====
-
-let ttsSynth = null;
-let ttsSpeaking = false;
-
-// Initialize TTS
-function initTTS() {
-    if ('speechSynthesis' in window) {
-        ttsSynth = window.speechSynthesis;
-        
-        // Show TTS indicator
-        const indicator = document.getElementById('tts-indicator');
-        if (indicator) indicator.style.display = 'block';
-        
-        // Load voices (may be async)
-        if (ttsSynth.onvoiceschanged !== undefined) {
-            ttsSynth.onvoiceschanged = () => {
-                console.log('TTS voices loaded:', ttsSynth.getVoices().length);
-            };
-        }
-        console.log('TTS initialized');
-    } else {
-        console.log('Web Speech API not supported');
-    }
-}
-
-// Get voice for language
-function getTTSVoice(lang) {
-    if (!ttsSynth) return null;
-    const voices = ttsSynth.getVoices();
-    if (!voices.length) return null;
-    
-    // Try exact match
-    let voice = voices.find(v => v.lang === lang);
-    if (voice) return voice;
-    
-    // Try prefix match
-    const prefix = lang.split('-')[0];
-    voice = voices.find(v => v.lang.startsWith(prefix));
-    if (voice) return voice;
-    
-    return voices[0];
-}
-
-// Map app language codes to TTS codes
-function getTTSLang(appLang) {
-    const map = {
-        'en': 'en-US',
-        'es': 'es-ES',
-        'fr': 'fr-FR',
-        'de': 'de-DE',
-        'it': 'it-IT',
-        'pt': 'pt-PT',
-        'ru': 'ru-RU',
-        'ja': 'ja-JP',
-        'ko': 'ko-KR',
-        'zh': 'zh-CN',
-        'ar': 'ar-SA',
-        'hi': 'hi-IN',
-        'tr': 'tr-TR',
-        'pl': 'pl-PL',
-        'nl': 'nl-NL',
-        'sv': 'sv-SE',
-        'da': 'da-DK',
-        'no': 'nb-NO',
-        'fi': 'fi-FI',
-        'cs': 'cs-CZ',
-        'hu': 'hu-HU',
-        'ro': 'ro-RO',
-        'el': 'el-GR',
-        'he': 'he-IL',
-        'th': 'th-TH',
-        'vi': 'vi-VN',
-        'id': 'id-ID',
-        'uk': 'uk-UA'
-    };
-    return map[appLang] || 'en-US';
-}
-
-// Speak current word or sentence
-function speakCurrent() {
-    if (!ttsSynth || ttsSpeaking) {
-        stopTTS();
-        return;
-    }
-    
-    const sentenceEl = document.getElementById('sentence');
-    if (!sentenceEl) return;
-    
-    // Get text to speak - if word revealed, speak it; otherwise speak full sentence
-    let text = sentenceEl.textContent.trim();
-    const revealed = sentenceEl.querySelector('.ok, .no');
-    
-    if (revealed) {
-        // Speak just the revealed word
-        text = revealed.textContent.trim();
-    } else if (text.includes('___')) {
-        // Replace ___ with the actual word for speaking
-        text = text.replace(/___/g, cur?.w || '');
-    }
-    
-    if (!text) return;
-    
-    // Cancel any ongoing speech
-    ttsSynth.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = getTTSLang(currentLang);
-    utterance.rate = 1.0;
-    utterance.pitch = 1;
-    
-    const voice = getTTSVoice(utterance.lang);
-    if (voice) utterance.voice = voice;
-    
-    // Visual feedback
-    const speakBtn = document.querySelector('.study-actions button[title*="Speak"]');
-    if (speakBtn) speakBtn.classList.add('speaking');
-    ttsSpeaking = true;
-    
-    utterance.onend = () => {
-        ttsSpeaking = false;
-        if (speakBtn) speakBtn.classList.remove('speaking');
-    };
-    
-    utterance.onerror = () => {
-        ttsSpeaking = false;
-        if (speakBtn) speakBtn.classList.remove('speaking');
-    };
-    
-    ttsSynth.speak(utterance);
-}
-
-// Stop TTS
-function stopTTS() {
-    if (ttsSynth) {
-        ttsSynth.cancel();
-    }
-    ttsSpeaking = false;
-    const speakBtn = document.querySelector('.study-actions button[title*="Speak"]');
-    if (speakBtn) speakBtn.classList.remove('speaking');
-}
-
-// Auto-speak after answer (optional, can be enabled in settings later)
-function autoSpeakAnswer() {
-    // Speak after a short delay
-    setTimeout(() => speakCurrent(), 300);
-}
-
 // ===== STUDY PANEL: EDIT CURRENT CARD =====
 
 // Edit the card currently being studied
@@ -3007,7 +2820,6 @@ updateWelcomeStats();
 updateStats();
 renderList();
 updateDailyProgressUI();
-initTTS(); // Initialize Web Speech API
 </script>
 </body>
 </html>
